@@ -68,7 +68,6 @@ private function run()
 		$this->pages_count = ceil($this->table_rows_count/$this->rows);
 		
 
-
 		if( $this->current_page < 1 )
 		{
 			$this->current_page = 1;

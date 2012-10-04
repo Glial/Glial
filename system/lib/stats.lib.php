@@ -27,10 +27,7 @@ class stats
 			
 			$GLOBALS['_SQL']->sql_save($data);
 		}
-		
-		
-		
-	
+
 	}
 
 
