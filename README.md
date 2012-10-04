@@ -4,7 +4,7 @@ glial
 glial framework php
 www.glial-framework-php.com
 
-Why use Glial?
+<h2>Why use Glial?</h2>
 
 BUILD APPLICATIONS QUICKLY
 Many common components are included: translation tools, database access, code profiling, encryption, validation, and more.
