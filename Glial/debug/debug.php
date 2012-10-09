@@ -95,7 +95,4 @@ class debug {
     <div id='chart_memory'></div>";
 		return $code;
 	}
-
 }
-
-?>
