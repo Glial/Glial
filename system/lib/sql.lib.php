@@ -52,6 +52,18 @@ class sql {
 		
 	}
 
+	function sql_num_fields($res) {
+		
+	}
+
+	function sql_field_name($result, $i) {
+		
+	}
+
+	function sql_free_result($result) {
+
+	}
+
 	function _insert_id() {
 		
 	}
@@ -320,8 +332,8 @@ class sql {
 					history::insert($table, $id_table, $param, $this->_history_type, $this->_history_user, $type_query);
 					$this->_history_type = HISTORY_TYPE;
 					$this->_history_user = null;
-					
-					
+
+
 					$this->last_id = $id_table;
 				}
 			}

@@ -295,7 +295,8 @@ function select($table, $field, $data, $default_id="",$classo="", $ajax =0)
 		}
 		else
 		{	
-			if ( (! empty($_GET[$table][$field]) && $_GET[$table][$field] === $val['id']) || (! empty($default_id) && $default_id === $val['id']))
+			
+			if ( (! empty($_GET[$table][$field]) && $_GET[$table][$field] === $val['id']) || (! empty($default_id) && $default_id == $val['id']))
 			{
 				$ret .= "<option value=\"".$val['id']."\" selected=\"selected\">".$val['libelle']."</option>";
 			}

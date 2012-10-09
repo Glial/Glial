@@ -169,7 +169,7 @@ if (!empty($_SERVER["argc"])) {
                 if ($ob->is_valid == 0) {
 
                     if ($_SERVER['REQUEST_METHOD'] === "GET") {
-                        $msg = $GLOBALS['_LG']->getTranslation(__("Hello,") . "<br />" . __("Thank you for registering on") . " www.estrildidae.net.<br />"
+                        $msg = $GLOBALS['_LG']->getTranslation(__("Hello,") . "<br />" . __("Thank you for registering.") . "<br />"
                                 . __("To finalise your registration, please check your email and click on the confirmation. Once you've done this, your registration will be complete."));
 
                         $title = $GLOBALS['_LG']->getTranslation(__("Restricted acess"));
@@ -219,10 +219,11 @@ if (!empty($_SERVER["argc"])) {
 
             set_flash("error", __("Acess denied"), __("Acess denied") . " : " . $msg);
 
-            debug($_SYSTEM);
+            //debug($_SYSTEM);
             
-            //header("location: " . LINK . $url);
-            die("ERROR access");
+            header("location: " . LINK . $url);
+            exit;
+			//die("ERROR access");
         }
     }
 }

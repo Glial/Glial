@@ -498,7 +498,8 @@ print "<h1>Translations</h1><pre>" . print_r($translations, true) . "</pre>";
 		
 		if ( !	$this->_SQL->sql_save($data))
 		{
-			debug($this->_SQL->error);
+			debug($data);
+			debug($this->_SQL->sql_error());
 			die("erreur enregistrement");
 		}
 	}
@@ -506,7 +507,7 @@ print "<h1>Translations</h1><pre>" . print_r($translations, true) . "</pre>";
 	
 	
 	
-	
+	//deprecated
 	private function insert_db($iso, $source, $text, $key, $translate_auto)
 	{
 
