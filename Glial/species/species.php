@@ -431,8 +431,24 @@ class species_tree {
 			debug($data);
 			die();
 		}
-		
+
 		return $id;
+	}
+
+	static function html_pic($url, $img, $name, $alt) {
+		echo "<span class=\"shadowImage\">";
+		echo '<div class="photo_link passive">';
+		echo "<a href=\"" . $url . "\">";
+
+		echo '<div class="bigleaderpix">
+<div class="caption">
+<p>' . $name . '</p>
+</div>
+<div class="bigleaderlien"></div>
+<img width="158" height="158" alt="' . $alt . '" title="' . $alt . '" src="' . $img . '">
+</div>';
+
+		echo '</a></div></span>';
 	}
 
 }
