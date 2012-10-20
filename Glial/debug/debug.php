@@ -73,13 +73,49 @@ class debug {
 	<script type='text/javascript' src='https://www.google.com/jsapi'></script>
 	<script type='text/javascript'>
       google.load('visualization', '1', {packages:['corechart']});
+      google.setOnLoadCallback(drawChart2);
+      function drawChart2() {
+        var data = google.visualization.arrayToDataTable([
+          ['Comment text', 'Seconds'],";
+		foreach ($this->memorydiff as $i => $m)
+		{
+
+			$code .= "[
+				'" . htmlentities(str_replace("'", "\'", $this->comment[$i])) . "',
+				" . ($this->timerdiff[$i]) . ",
+				],";
+		}
+		$code = substr($code, 0, -1);
+		$code .= "]);
+
+        var options = {
+          title: 'Execution time'
+        };
+
+        var chart2 = new google.visualization.LineChart(document.getElementById('chart_memory'));
+        chart2.draw(data, options);
+      }
+</script>
+    <div id='chart_memory'></div>";
+		return $code;
+	}
+
+	function graph2() {
+		$code = "
+	<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+	<script type='text/javascript'>
+      google.load('visualization', '1', {packages:['corechart']});
       google.setOnLoadCallback(drawChart);
       function drawChart() {
         var data = google.visualization.arrayToDataTable([
-          ['Comment text', 'Memory Bytes','Seconds * 10^7','Peak usage'],";
+          ['Comment text', 'Memory Bytes','Peak usage'],";
 		foreach ($this->memorydiff as $i => $m)
 		{
-			$code .= "['" . htmlentities(str_replace("'", "\'", $this->comment[$i])) . "', " . str_replace("+", null, str_replace("-", null, $m)) . ",".($this->timerdiff[$i]*100000000).", ".$this->memory_get_peak_usage[$i]."],";
+			$code .= "[
+				'" . htmlentities(str_replace("'", "\'", $this->comment[$i])) . "',
+				" . str_replace("+", null, str_replace("-", null, $m))/1024/1024 . ",
+				" . $this->memory_get_peak_usage[$i]/1024/1024 . "
+				],";
 		}
 		$code = substr($code, 0, -1);
 		$code .= "]);
@@ -88,11 +124,12 @@ class debug {
           title: 'Memory'
         };
 
-        var chart = new google.visualization.LineChart(document.getElementById('chart_memory'));
+        var chart = new google.visualization.LineChart(document.getElementById('chart_execution_time'));
         chart.draw(data, options);
       }
 </script>
-    <div id='chart_memory'></div>";
+    <div id='chart_execution_time'></div>";
 		return $code;
 	}
+
 }
