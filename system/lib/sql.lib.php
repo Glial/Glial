@@ -259,7 +259,7 @@ class sql {
 					if ($key === 'id')
 						continue;
 
-					$str[] = $key . " = '" . $data[$table][$key] . "'";
+					$str[] = "`".$key . "` = '" . $data[$table][$key] . "'";
 				}
 
 				$sql = "UPDATE `" . $table . "` SET " . implode(",", $str) . " WHERE id= " . $this->sql_real_escape_string($id) . "";
