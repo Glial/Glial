@@ -351,6 +351,14 @@ class iucn {
 
 		return $data;
 	}
+	/*
+	 * 
+	 * 
+	 * Have to include :
+	 * - List of Conservation Actions
+	 * - List of Threats
+	 * 
+	 */
 
 	static function get_species_classification($id) {
 		$data = array();
@@ -359,6 +367,8 @@ class iucn {
 		$ch = curl_init();
 
 		$user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.79 Safari/537.1'; // simule Firefox 4.
+		
+		$header = array();
 		$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,";
 		$header[0] .= "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
 		$header[] = "Cache-Control: max-age=0";
@@ -377,14 +387,28 @@ class iucn {
 		curl_close($ch);
 
 		$content = wlHtmlDom::getTagContent($content, '<div id="detailsPage"', true);
+		
+		if (! $content)
+		{
+			return false;
+		}
+		
+		
+		
 		$table = wlHtmlDom::getTagContents($content, '<table class="tab_data" cellpadding="0" cellspacing="0">', true);
 
+		if (! $table)
+		{
+			return false;
+		}
+		
+		
 		$Habitats = wlHtmlDom::getTagContents($table[0], '<table cellpadding="0" cellspacing="0">', true);
 
 		$tr_habitat = wlHtmlDom::getTagContents($Habitats[0], '<tr>', true);
 
 		//print_r($Habitats);
-		print_r($tr_habitat);
+		//print_r($tr_habitat);
 
 
 		foreach ($tr_habitat as $tr)
