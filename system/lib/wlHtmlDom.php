@@ -146,7 +146,10 @@ class wlHtmlDom {
             if($strip) {
                 $contentToReplace = self::getTagContent($html, $tagSlice, false);
             }
-            $html = str_replace($contentToReplace, '', $html);
+            //$html = str_replace($contentToReplace, '', $html);
+			$start = strpos ($html, $contentToReplace);
+			$html = substr($html,0,$start).substr($html,$start+ strlen($contentToReplace));
+			
             $content = self::getTagContent($html, $tagSlice, $strip);
         }
         return $ret;
