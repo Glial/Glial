@@ -491,10 +491,10 @@ class webex {
     static function convert_xml_to_array($xml) {
         $xml = self::clean_xml($xml);
         $xml = simplexml_load_string($xml);
-
+		
         $json = json_encode($xml);
         $array = json_decode($json, TRUE);
-
+		
         return $array;
     }
 
@@ -522,11 +522,6 @@ class webex {
             $site_name = $out[1];
         } 
         
-        
-        
-        
-
-
         return $site_name;
     }
 }
