@@ -100,7 +100,6 @@ if (empty($_SERVER["argc"]))
 	}
 }
 
-
 include_once(APP_DIR . '/controller/history.controller.php');
 
 $_SQL->get_table_to_history();
@@ -134,7 +133,7 @@ $_DEBUG->save("Language loaded");
 define('LINK', WWW_ROOT . $_LG->Get() . "/");
 
 //mode with php-cli
-if (!empty($_SERVER["argc"]))
+if (ISCLI)
 {
 	if ($_SERVER["argc"] >= 3)
 	{
@@ -151,7 +150,7 @@ if (!empty($_SERVER["argc"]))
 	}
 }
 else
-{ //mode with apache
+{  //mode with apache
 
 
 	/* remplacer par le code en dessous */
@@ -188,7 +187,7 @@ else
 						$msg = $GLOBALS['_LG']->getTranslation(__("Hello,") . "<br />" . __("Thank you for registering.") . "<br />"
 							. __("To finalise your registration, please check your email and click on the confirmation. Once you've done this, your registration will be complete."));
 
-						$title = $GLOBALS['_LG']->getTranslation(__("Restricted acess"));
+						$title = $GLOBALS['_LG']->getTranslation(__("Restricted access"));
 						set_flash("caution", $title, $msg);
 					}
 
@@ -197,12 +196,11 @@ else
 			}
 		}
 	}
-	
+
 	$_DEBUG->save("User connexion");
 
 	//echo $GLOBALS['_SITE']['id_group'];
 	//die("group");
-
 
 	/*
 	  remplacer par le code au dessus
@@ -222,9 +220,6 @@ else
 
 
 
-
-
-
 	$dir = TMP . "acl" . DS . "acl.txt";
 	$GLOBALS['_SYSTEM']['acl'] = unserialize(file_get_contents($dir));
 
@@ -233,6 +228,16 @@ else
 	// a mettre dans un class je pense ACL ?
 	if (empty($GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$_SYSTEM['controller']][$_SYSTEM['action']]))
 	{
+
+		echo ">>>>WWWWWWWWWWWWWW<br />";
+		debug($GLOBALS['_SITE']);
+		debug($_SYSTEM['controller']);
+		debug($GLOBALS['_SYSTEM']['acl']);
+
+
+		echo "Problem right ! ";
+		exit;
+
 		//|| $GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$_SYSTEM['controller']][$_SYSTEM['action']] != 1)
 		if ($_SYSTEM['controller'] !== "" && $_SYSTEM['action'] !== "")
 		{
@@ -269,6 +274,8 @@ $controller->get_controller();
 
 
 
+
+
 if (!$controller->layout_name)
 {
 	$controller->display();
@@ -277,17 +284,9 @@ else
 {
 	$controller->set_layout();
 
-
 	$_DEBUG->save("Layout loaded");
 
-	define("_BBC_PAGE_NAME", $_SYSTEM['controller'] . '/' . $_SYSTEM['action']);
-	define("_BBCLONE_DIR", "bbclone/");
-	define("COUNTER", _BBCLONE_DIR . "mark_page.php");
-	if (is_readable(COUNTER))
-		include_once(COUNTER);
-
-
-	if (($GLOBALS['_SITE']['IdUser'] == 3 || ENVIRONEMENT) && ($controller->layout_name == "default" || $controller->layout_name == "admin"))
+	if (($GLOBALS['_SITE']['IdUser'] == 3 || ENVIRONEMENT) && (!ISCLI))
 	{//ENVIRONEMENT
 		$execution_time = microtime(true) - TIME_START;
 
@@ -331,7 +330,7 @@ else
 		echo "REQUEST";
 		debug($_REQUEST);
 		debug($_SERVER);
-		
+
 		debug($_SITE);
 
 
