@@ -55,5 +55,23 @@ class xeno_canto {
 		
 		return $data;
 	}
+	
+	
+	static function get_kmz()
+	{
+		
+		$sql = "SELECT * FROM species_tree_nominal where class='Aves'";
+		
+		
+		$_SQL = Singleton::getInstance(SQL_DRIVER);
+		
+		$res = $_SQL->sql_query($sql);
+		
+		while($ob  = $_SQL->sql_fetch_object($res))
+		{
+			shell_exec("cd /home/www/species/tmp/kmz/; wget http://www.xeno-canto.org/ranges/". str_replace( " ", "_", $ob->nominal).".kmz");
+		}
+
+	}
 
 }

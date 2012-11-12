@@ -1,0 +1,795 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Polygon Class Documentation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+<!--
+.header {
+        font-family: Verdana, Arial, Helvetica, sans-serif;
+        font-size: 16pt;
+        font-style: normal;
+        line-height: normal;
+        font-weight: normal;
+        font-variant: normal;
+        text-transform: none;
+        color: #000000;
+}
+.subheader {
+        font-family: Verdana, Arial, Helvetica, sans-serif;
+        font-size: 14pt;
+        font-style: normal;
+        line-height: normal;
+        font-weight: normal;
+        font-variant: normal;
+        text-transform: none;
+        color: #000000;
+}
+.normal {
+        font-family: Verdana, Arial, Helvetica, sans-serif;
+        font-size: 10pt;
+        font-style: normal;
+        line-height: normal;
+        font-weight: normal;
+        font-variant: normal;
+        text-transform: none;
+        list-style-position: inside;
+        list-style-image: none;
+        list-style-type: circle;
+}
+.code {
+        font-family: "Courier New", Courier, mono;
+        font-size: 10pt;
+        font-style: normal;
+        line-height: normal;
+        font-weight: bold;
+        font-variant: normal;
+        text-transform: none;
+        background-color: #DDDDDD;
+        color: #000099;
+        text-align: left;
+}
+-->
+</style>
+<style type="text/css">
+<!--
+.small {
+        font-family: Verdana, Arial, Helvetica, sans-serif;
+        font-size: 9pt;
+        font-style: normal;
+        line-height: normal;
+        font-weight: normal;
+        font-variant: normal;
+        text-transform: none;
+        text-align: justify;
+}
+-->
+</style>
+<style type="text/css">
+<!--
+.table {
+        font-family: "Courier New", Courier, mono;
+        font-size: 12pt;
+        font-style: normal;
+        line-height: normal;
+        font-weight: normal;
+        font-variant: normal;
+        text-transform: none;
+}
+-->
+</style>
+<meta name="keywords" content="polygon clipping, php class, boolean operations">
+</head>
+
+<body>
+<table width="100%" border="0" cellspacing="1" cellpadding="1">
+  <tr> 
+    <td><div align="left"><span class="header">Polygon Class v1.6 Documentation</span><br>
+        <span class="normal">Copyright &copy; 2005-2010 Brenor Brophy</span></div></td>
+  </tr>
+  <tr> 
+    <td class="normal"><hr>
+      The source code included in this package is free software; you can redistribute 
+      it and/or modify it under the terms of the <a href="http://www.opensource.org/licenses/gpl-license.php">GNU 
+      General Public License</a> as published by the Free Software Foundation.<br> 
+      <br>
+      This program is distributed in the hope that it will be useful, but WITHOUT 
+      ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+      FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+      <hr> </td>
+  </tr>
+  <tr> 
+    <td class="normal"><p class="subheader">Contents</p>
+      <ul class="normal">
+        <li>&nbsp;<a href="#about">About this Class</a></li>
+        <li>&nbsp;<a href="#arc">Arc Segments</a></li>
+        <li>&nbsp;<a href="#dv">Degenerate Vertex Issue</a></li>
+        <li>&nbsp;<a href="#use">Class Methods</a></li>
+        <li>&nbsp;<a href="#example">Code Examples</a></li>
+        <li>&nbsp;<a href="#rev">Revision History</a><br>
+        </li>
+      </ul></td>
+  </tr>
+  <tr> 
+    <td class="normal"><p class="subheader"><a name="about"></a>About the Polygon 
+        Class</p>
+      <p>Polygon is a PHP class, that allows the creation of polygons with both 
+        line and arc segments between vertices. Polygons may be convex or concave 
+        and may self intersect. Methods are available to perform clipping and 
+        boolean operations between arbitrary polygons; to perform tests for vertex 
+        inside a polygon and polygon inside a polygon; and to move or rotate a 
+        polygon.</p>
+      <p>A vertex is a point at a location x,y. A segment lies between two vertices, 
+        by default it is a line, but it may also be an arc with a center at Xc,Yc 
+        and a direction either clockwise or anti-clockwise. The radius of an arc 
+        is the distance from its starting vertex to its center. The center of 
+        the arc Xc,Yc must be equidistant from both starting and ending vertices.</p>
+      <p>A polygon is composed of a double linked list of vertices. The linked 
+        list of vertices is closed, that is, the last vertex in the list links 
+        back to the first one (and the first links to the last). Thus the polygons 
+        must always be a closed shape, though they may self intersect. The diagram 
+        below shows an example of the data structure. Each vertex (V1,V2,V3,V4) 
+        links backwards and forwards to its neighbors. Segments (S1,S2,S3,S4) 
+        exist as separate objects. A vertex object holds a reference to its previous 
+        and next segment object. The polygon object only holds a reference to 
+        the first vertex in the polygon.</p>
+      <p>&nbsp;</p></td>
+  </tr>
+  <tr> 
+    <td><div align="center"> <img src="http://getwx.com/Poly/ll.gif" width="391" height="144"></div></td>
+  </tr>
+  <tr> 
+    <td class="normal"><p>&nbsp;</p>
+      <p>Polygon implements the basic data structure and a method for performing 
+        boolean operations between polygons from the excellent paper entitled 
+        &quot;Efficient Clipping of Arbitrary Polygons&quot; by Gunther Greiner 
+        (greiner at informatik dot uni-erlangen dot de) and Kai Hormann (hormann 
+        at informatik dot tu-clausthal dot de), ACM Transactions on Graphics 1998;17(2):71-83. 
+        The paper may be accessed at:</p>
+      <p align="center"><a href="http://www2.in.tu-clausthal.de/%7Ehormann/papers/Greiner.1998.ECO.pdf">http://www2.in.tu-clausthal.de/~hormann/papers/Greiner.1998.ECO.pdf</a></p>
+      <p>Using the algorithm described I have extended the capability to support 
+        arc segments between vertices.</p>
+      <p>&nbsp;</p></td>
+  </tr>
+  <tr>
+    <td class="subheader"><p><a name="arc"></a>Arc Segments</p>
+      <p class="normal">The original application for the polygon class needed 
+        arc segments and so the algorithm was extended to deal with them. Of course, 
+        strictly speaking there is no such thing as polygon with arc segments, 
+        so they are something of a kluge, though a very useful one for many CAD 
+        &amp; mapping operations. Arc segments must be constant radius and are 
+        defined by their center coordinate, their direction (CW or CCW) and of 
+        course their starting and ending vertices.</p>
+      <p class="normal">An arc segment is created by adding a vertex that in addition 
+        to the vertex coordinates also specifies the arc segment center coordinate, 
+        and the arc direction. The direction is either clockwise(d=-1) or counter-clockwise(d=+1) 
+        from the starting vertex point. The end of the arc is the next vertex. 
+        This means of course that the next vertex added to the polygon must fall 
+        on the arc. The polygon class does not enforce this, so its quite possible 
+        to add a vertex that does not meet this requirement, in this case the 
+        polygon is not closed and you will encounter problems when you try to 
+        perform boolean operations upon it. Figure 2 below illustrates how a polygon 
+        with arc segments is created.</p>
+      <p align="center" class="normal"><img src="http://getwx.com/Poly/arc.gif" width="581" height="313"></p>
+      <p align="center" class="normal">&nbsp;</p></td>
+  </tr>
+  <tr> 
+    <td class="subheader"><p><a name="dv"></a>Degenerate Vertex Issue</p>
+      <p class="normal">A significant issue with the Greiner/Hormann algorithm 
+        is how it treats degenerate vertices. A degenerate vertex is a vertex 
+        of one polygon that falls exactly on the edge of another polygon. This 
+        situation can easily arise if two polygons have a vertex at the same coordinate 
+        or have an edge or part of in edge in common. The algorithm solves the 
+        problem by perturbing the vertex very slightly, that is, it changes one 
+        coordinate by a very small amount so that it no longer falls exactly on 
+        the edge of the other polygon. Unfortunately this perturb method while 
+        working much of the time can still lead to unsatisfactory and unpredictable 
+        results in some cases. The issue is explained in detail in the paper &quot;An 
+        Extension of Polygon Clipping To Resolve Degenerate Cases&quot; by Dae 
+        Hyun Kim (cregeo at gmail dot com) and Myoung-Jun Kim. The published paper 
+        is available from:</p>
+      <p align="center" class="normal"><a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.91.9804&rep=rep1&type=pdf">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.91.9804&amp;rep=rep1&amp;type=pdf</a></p>
+      <p class="normal">A slightly more verbose pre-publication version is available 
+        with DH Kim's permission at:</p>
+      <p align="center" class="normal"><a href="http://getwx.com/Poly/Kim-Kim-Extended-Clipping.pdf">http://getwx.com/Poly/Kim-Kim-Extended-Clipping.pdf</a></p>
+      <p class="normal">The modified algorithm as described in this paper is not 
+        yet incorporated into the polygon class.</p>
+      <p class="normal">Degenerate vertices caused by arc segments, such as a 
+        line from one polygon tangentially touching an arc in the other polygon, 
+        or two arc segments in two polygons touching at a single point, will not 
+        work correctly for boolean operations.</p></td>
+  </tr>
+  <tr> 
+    <td class="subheader"><p><a name="use"></a>Polygon Class Methods<br>
+        &nbsp; </p></td>
+  </tr>
+  <tr> 
+    <td><table width="90%" border="0" align="center" cellpadding="1">
+        <tr> 
+          <td class="code">$poly =&amp; <font color="#006600">new</font> polygon();</td>
+        </tr>
+        <tr> 
+          <td class="small">Creates a new polygon. It has no vertices so there 
+            is nothing you can do with it yet.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code"><a name="addv"></a>$poly-&gt;addv($x, $y, [$xc, $yc, 
+            $direction]);</td>
+        </tr>
+        <tr> 
+          <td class="small">Add a vertex at point $x, $y. Polygon doesn't care 
+            what units you use for coordinates, but it will assume that they are 
+            coordinates on a 2 dimensional plane when it performs any geometric 
+            operations. So for example $x,$y could be pixels on an image or Easting 
+            or Northing values in meters from a map. It is fine to store other 
+            types of (non-planer) coordinates in $x,$y, like for example a Longitude/Latitude. 
+            But you must convert them to planer coordinates before you do any 
+            geometry. By default the method adds a line segment. However an arc 
+            segment may be added using the optional arguments $xc, $yc and $direction. 
+            As you would expect $xc, $yc is the center of the arc. $direction 
+            should be +1 for anti-clockwise or -1 for clockwise. This method creates 
+            a new vertex object for $x,$y and a new segment object with $xc,$yc,$direction. 
+            It then links them into the polygon object vertex list.<br> &nbsp; 
+          </td>
+        </tr>
+        <tr> 
+          <td class="code">$v =&amp; $poly-&gt;getFirst();</td>
+        </tr>
+        <tr> 
+          <td class="small">Returns a reference to the first vertex object in 
+            a polygon. Used if you wish to start iterating over the list of vertices 
+            in a polygon.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$p =&amp; $poly-&gt;NextPoly();</td>
+        </tr>
+        <tr> 
+          <td class="small">A polygon object may store a reference to another 
+            polygon object. This method returns that reference if it exists, else 
+            it returns NULL. It is possible for a clipping or boolean operation 
+            between two polygons to result in several new polygons. When this 
+            happens the method returns a reference to the first polygon in a linked 
+            list of polygons. Subsequent polygons in the list are accessed with 
+            the NextPoly() method.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code"><a name="printpoly"></a>$poly-&gt;print_poly();</td>
+        </tr>
+        <tr> 
+          <td class="small">This function is useful for debug. It will output 
+            each vertex in the format (X,Y)(Xc,Yc,d). If it is called to print 
+            a polygon during the boolean method then it may display additional 
+            information about vertices which are intersection points between the 
+            polygons being processed by the boolean method.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$v =&amp; $poly-&gt;del($old);</td>
+        </tr>
+        <tr> 
+          <td class="small">This method deletes a vertex from a polygon ($old 
+            should be a reference to the vertex to be deleted). It also deletes 
+            the vertex and associated segment objects from memory. It returns 
+            a reference to the next vertex in the polygon (the one right after 
+            the one just deleted).<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$p =&amp; $poly-&gt;copy_poly();</td>
+        </tr>
+        <tr> 
+          <td class="small">This method generates a copy of the polygon and returns 
+            a reference to the copy. A polygon object just contains a reference 
+            to the first vertex in a linked list. So simply copying the polygon 
+            object (by using the assignment operator = for example) will not work. 
+            This method creates a completely new list of vertices with identical 
+            coordinates.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$found = $poly-&gt;ints($p1, $p2, $q1, $q2, $num_ints, 
+            $ints_x, $ints_y, $alpha_P, $alpha_Q);</td>
+        </tr>
+        <tr> 
+          <td class="small">Find all intersections between the segment defined 
+            by vertices $p1, $p2 and vertices $q1, $q2. The number of intersections 
+            found is returned by reference in $num_ints, this will be a number 
+            between 0 &amp; 2. A 0 means no intersections were found. Arc to line 
+            and arc to arc intersections may return 0, 1 or 2. A line line intersection 
+            can only return 0 or 1. $ints_x and $ints_y are arrays that return 
+            all intersection coordinates by reference. $alpha_P and $alpha_Q are 
+            also arrays that return associated alpha values by reference for each 
+            intersection found. An alpha value is a number between 0 and 1 that 
+            represents where along a segment an intersection occurred. $alpha_P 
+            is for segment $p1,$p2. $alpha_Q is for segment $q1,$q2. An alpha 
+            value of 0.5 would mean that the intersection occurred exactly in 
+            the middle of the segment (halfway between p1 and p2 for example). 
+            An alpha value of 0.25 would mean that the intersection occurred 25% 
+            along the segment starting from the beginning (that is 25% along the 
+            segment from p1 for example). The alpha values work in exactly the 
+            same way for both line and arc segments. The method returns TRUE if 
+            any intersections were found and FALSE if none were found.<br> &nbsp; 
+          </td>
+        </tr>
+        <tr> 
+          <td class="code">$inside = $poly-&gt;isInside($v);</td>
+        </tr>
+        <tr> 
+          <td class="small">This method returns TRUE if vertex $v is inside the 
+            polygon. A known &quot;feature&quot; of this method (as of version 
+            1.1) is that it may return FALSE even when a vertex is inside a polygon 
+            if the y coordinate of the vertex is exactly the same as the y coordinate 
+            of a vertex in the polygon whose x coordinate is less than the vertex 
+            begin tested (that is, the polygon vertex is exactly left of the vertex 
+            being tested).<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$inside = $poly-&gt;isPolyInside($poly1);</td>
+        </tr>
+        <tr> 
+          <td class="small">This method works in a similar way to the one above. 
+            In this case all of $poly1 is checked to determine if it lies within 
+            the polygon. The method treats arc segments correctly. TRUE is returned 
+            if $poly1 is completely enclosed by $poly, else FALSE is returned. 
+            A polygon is considered to be inside another polygon if all vertices 
+            of the the first polygon lie within the second polygon and no points 
+            of intersection exist between both polygons.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$outside = $poly-&gt;isPolyOutside($poly1);</td>
+        </tr>
+        <tr> 
+          <td class="small">This method works in a similar way to the one above. 
+            In this case all of $poly1 is checked to determine if it lies outside 
+            the polygon. The method treats arc segments correctly. TRUE is returned 
+            if $poly1 is completely outside of $poly, else FALSE is returned. 
+            A polygon is considered to be outside another polygon if all vertices 
+            of the the first polygon lie outside the second polygon and no points 
+            of intersection exist between both polygons.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$intersect = $poly-&gt;isPolyIntersect($poly1);</td>
+        </tr>
+        <tr> 
+          <td class="small">This method returns TRUE if there exists any intersection 
+            between the two polygons.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$intersect = $poly-&gt;isPolySelfIntersect();</td>
+        </tr>
+        <tr> 
+          <td class="small">This method returns TRUE if there exists any self 
+            intersection in the polygon.<br> &nbsp;</td>
+        </tr>
+        <tr> 
+          <td class="code"><a name="bool"></a>$polyR =&amp; $polyA-&gt;boolean($polyB, 
+            $oper);</td>
+        </tr>
+        <tr> 
+          <td class="small"><p>This method allows 4 different operations between 
+              $polyA and $polyB selected by the argument $oper as follows:<br>
+            </p>
+            <table width="90%" border="0" align="center" cellpadding="1" class="small">
+              <tr> 
+                <td><div align="center"><strong>$oper</strong></div></td>
+                <td><strong>Operation</strong></td>
+                <td><strong>Value of $polyR of if no intersection exists</strong></td>
+              </tr>
+              <tr> 
+                <td><div align="center">&quot;A&amp;B&quot;</div></td>
+                <td>AND, Intersection</td>
+                <td>Copy of $polyA</td>
+              </tr>
+              <tr> 
+                <td><div align="center">&quot;A|B&quot;</div></td>
+                <td>OR, Union</td>
+                <td>Polygon list consisting of $polyA and $polyB</td>
+              </tr>
+              <tr> 
+                <td><div align="center">&quot;A\B&quot;</div></td>
+                <td>A - B</td>
+                <td>Copy of $polyA</td>
+              </tr>
+              <tr> 
+                <td><div align="center">&quot;B\A&quot;</div></td>
+                <td>B - A</td>
+                <td>Copy of $polyB</td>
+              </tr>
+            </table>
+            <p>This is a very powerful method and was in fact initial reason for 
+              creating this class. The method returns a polygon representing the 
+              result of the operation between the two initial polygons. It may 
+              return a polygon list if multiple polygons were generated in the 
+              operation. In the case where no points of intersection exist between 
+              the two polygons then the table above shows what the method will 
+              return. The algorithm used in this method is from the research paper 
+              mentioned at the start of this document. It is a well written and 
+              easy to understand paper that is well worth reading.<br>
+              &nbsp; </p></td>
+        </tr>
+        <tr> 
+          <td class="code">$distance = $poly-&gt;dist($x1, $y1, $x2, $y2);</td>
+        </tr>
+        <tr> 
+          <td class="small">Calculates and returns the straight line distance 
+            between point x1,y1 and point x2,y2. <br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$a = $poly-&gt;angle($xc, $yc, $x, $y);</td>
+        </tr>
+        <tr> 
+          <td class="small">Returns the angle in radians between the line $xc, 
+            $xc to $x, $y and a horizontal line extending from $xc, $yc to the 
+            right (that is to the 3 O'Clock position on a circle whose center 
+            is $xc, $yc). This function is used to calculate the start and end 
+            angles for the imagearc function (when we are drawing arcs) and to 
+            calculate the alpha value for arc segments in the ints() method.<br> 
+            &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$poly-&gt;move($delta_x, $delta_y);</td>
+        </tr>
+        <tr> 
+          <td class="small">Move a polygon (that is all vertices that comprise 
+            a polygon) by $delta_x, $delta_y.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$poly-&gt;rotate($center_x, $center_y, $angle);</td>
+        </tr>
+        <tr> 
+          <td class="small">Rotate a polygon $angle radians about a point $center_x, 
+            $center_y. Positive values for $angle rotate anti-clockwise. negative 
+            values rotate clockwise.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$bounding_rectangle =&amp; $poly-&gt;bRect();</td>
+        </tr>
+        <tr> 
+          <td class="small">This method returns a new polygon that represents 
+            a bounding rectangle for $poly. The polygon returned will have 4 vertices 
+            as follows (xMin,yMin)(xMin,yMax)(xMax,yMax)(xMax,yMin). Arc segments 
+            within $poly will be treated correctly.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$poly-&gt;scale($sx, $sy);</td>
+        </tr>
+        <tr> 
+          <td class="small">Multiplies all x coordinates of $poly by $sx and all 
+            y coordinates by $sy. Effectively resizing the polygon by the x and 
+            Y scales given in $sx and $sy.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$poly-&gt;translate($xmin, $ymin, $xmax, $ymax);</td>
+        </tr>
+        <tr> 
+          <td class="small">Combines the scale &amp; move methods to translate 
+            $poly to a boundary rectangle defined by the corners ($xmin,$ymin) 
+            and ($xmax,$ymax).<br> &nbsp; </td>
+        </tr>
+      </table>
+      <p>&nbsp;</p></td>
+  </tr>
+  <tr> 
+    <td class="subheader"><p>Vertex Class Methods<br>
+        <span class="normal">(In general you should not need any of these)</span><br>
+        &nbsp; </p></td>
+  </tr>
+  <tr> 
+    <td> <table width="90%" align="center" border="0" cellpadding="1">
+        <tr> 
+          <td class="code">$v =&amp; <font color="#006600">new</font> vertex($x, 
+            $y, [$xc, $yc, $direction]);</td>
+        </tr>
+        <tr> 
+          <td class="small">This method creates a new vertex. Its arguments work 
+            exactly the same as the polygon method <a href="#addv">addv()</a>.<br> 
+            &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$v-&gt;setX($x); $v-&gt;setY($y); $v-&gt;setXc($xc); 
+            $v-&gt;setYc($yc);</td>
+        </tr>
+        <tr> 
+          <td class="small">Setter methods for vertex x,y and arc segment center 
+            Xc,Yc. <br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$x = $v-&gt;X(); $y = $v-&gt;Y(); $xc = $v-&gt;Xc([$gate]); 
+            $yc = $v-&gt;Yc([$gate]); $d = $v-&gt;d([$gate]); </td>
+        </tr>
+        <tr> 
+          <td class="small">Getter methods for vertex x,y and arc segment center 
+            Xc,Yc and direction d. A useful test to determine if a segment is 
+            an arc or not is to test the value of d. A non-zero value (-1 or +1) 
+            indicates an arc, 0 indicates a line. The optional $gate variable 
+            for the segment getter methods is only used if the vertex $v is an 
+            intersection between two polygons and we which to control whether 
+            we get the previous or next segment in the intersecting polygon. This 
+            capability is only used by the polygon <a href="#bool">boolean</a> 
+            method.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$v-&gt;setNext($nv); $v-&gt;setPrev($pv); $n =&amp; 
+            $v-&gt;Next(); $p =&amp; $v-&gt;Prev(); </td>
+        </tr>
+        <tr> 
+          <td class="small">Setter &amp; Getter methods for the Next/Previous 
+            pointers in the polygon double linked list. The $v-&gt;Next() method 
+            may be used when iterating over a polygon.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$v-&gt;setNextPoly($p); $np =&amp; $v-&gt;NextPoly();</td>
+        </tr>
+        <tr> 
+          <td class="small">In a polygon list the reference to NextPoly is stored 
+            in the first vertex of the polygon. These are the setter and getter 
+            methods for the NextPoly reference.<br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$v-&gt;print_vertex();</td>
+        </tr>
+        <tr> 
+          <td class="small">Method called by <a href="#printpoly">print_poly()</a> 
+            to print out a polygons vertices. <br> &nbsp; </td>
+        </tr>
+        <tr> 
+          <td class="code">$ident = $v-&gt;id();</td>
+        </tr>
+        <tr> 
+          <td class="small">Returns the unique identity number of a vertex. This 
+            number is a random number between 0 and 1,000,000 that is assigned 
+            to the vertex when it is created. It is used to easily compare vertices 
+            for equality, typically to determine that we have reached the end 
+            of a polygon because the current vertex id is the same as the id of 
+            the first vertex in the polygon.<br> &nbsp; </td>
+        </tr>
+      </table>
+      <p>&nbsp;</p></td>
+  </tr>
+  <tr> 
+    <td class="subheader"><p><a name="example"></a>Code Examples<br>
+        &nbsp; </p></td>
+  </tr>
+  <tr> 
+    <td><table width="90%" border="0" align="center" cellpadding="1">
+        <tr> 
+          <td class="small">Create a new polygon and add some vertices to it. 
+            This creates a 100x100 square.</td>
+        </tr>
+        <tr> 
+          <td class="code">$polyA =&amp; <font color="#006600">new</font> polygon();<br>
+            $polyA-&gt;addv(<font color="#FF0000">0</font>,<font color="#FF0000">0</font>);<br>
+            $polyA-&gt;addv(<font color="#FF0000">100</font>,<font color="#FF0000">0</font>);<br>
+            $polyA-&gt;addv(<font color="#FF0000">100</font>,<font color="#FF0000">100</font>);<br>
+            $polyA-&gt;addv(<font color="#FF0000">0</font>,<font color="#FF0000">100</font>); 
+          </td>
+        </tr>
+        <tr> 
+          <td class="small"><br>
+            The polygon class does not handle a polygon with a single vertex, 
+            at least two are needed. In this case a circle is represented by a 
+            polygon with two vertices, each with 180 degree arc between them. 
+            A circle with radius 50, centered at 100,100 would be created with 
+            the following code. Remember, the polygon is always closed, so the 
+            second vertex describes an arc from 100,50 centered on 100,100, clockwise 
+            back to the start point which is the first vertex at 100,150.</td>
+        </tr>
+        <tr> 
+          <td class="code"><p>$polyB =&amp; <font color="#006600">new</font> polygon();<br>
+              $polyB-&gt;addv(<font color="#FF0000">100</font>,<font color="#FF0000">150</font>,<font color="#FF0000">100</font>,<font color="#FF0000">100</font>,<font color="#FF0000">1</font>); 
+              <font color="#FF9900">// Arc from top, anti-clockwise</font><br>
+              $polyB-&gt;addv(<font color="#FF0000">100</font>,<font color="#FF0000">50</font>,<font color="#FF0000">100</font>,<font color="#FF0000">100</font>,<font color="#FF0000">1</font>); 
+              <font color="#FF9900">// to bottom of circle, and back</font></p></td>
+        </tr>
+        <tr> 
+          <td class="small"><br>
+            Given the square ($polyA) and the circle ($polyB) created above we 
+            can now use the boolean method to get the Intersection, Union and 
+            difference with the following code:</td>
+        </tr>
+        <tr> 
+          <td class="code">$poly1 =&amp; $polyA-&gt;boolean($polyB,<font color="#990033">&quot;A&amp;B&quot;</font>) 
+            <font color="#FF9900">// AND, Intersect operation</font><br>
+            $poly2 =&amp; $polyA-&gt;boolean($polyB,<font color="#990000">&quot;A|B&quot;</font>) 
+            <font color="#FF9900">// OR, Union operation</font><br>
+            $poly3 =&amp; $polyA-&gt;boolean($polyB,<font color="#990000">&quot;A\B&quot;</font>) 
+            <font color="#FF9900">// A - B</font><br>
+            $poly4 =&amp; $polyA-&gt;boolean($polyB,<font color="#990000">&quot;B\A&quot;</font>) 
+            <font color="#FF9900">// B - A</font></td>
+        </tr>
+        <tr> 
+          <td class="small"><br>
+            Remember that the boolean method may return a polygon list. So any 
+            functions that handle polygons should also handle the polygon list 
+            case. A simple way to do this is as follows:</td>
+        </tr>
+        <tr> 
+          <td class="code"><font color="#006600">do</font><br>
+            {<br> &nbsp; <font color="#FF9900">//</font><br> &nbsp; <font color="#FF9900">// 
+            do something with the polygon here</font><br> &nbsp; <font color="#FF9900">//</font><br> 
+            &nbsp; $poly =&amp; $poly-&gt;NextPoly();<br>
+            }<br> <font color="#006600">while</font>($poly); </td>
+        </tr>
+        <tr> 
+          <td class="small"><br>
+            The following code draws a polygon in an image $i. It illustrates 
+            how you iterate over all vertices in a polygon and all polygons in 
+            a polygon list.</td>
+        </tr>
+        <tr> 
+          <td class="code"><p><font color="#FF9900">/*<br>
+              ** A simple function that draws the polygons onto an image<br>
+              **<br>
+              ** $x,$y .. are an offset that will be added to all coordinates 
+              of the polygon<br>
+              ** $i &nbsp;&nbsp;&nbsp;.. an image created with the imagecreate 
+              function<br>
+              ** $p &nbsp;&nbsp;&nbsp;.. A polygon Object to be drawn (could be 
+              a list of polygons)<br>
+              ** $col&nbsp; .. An array of allocated colors for the image<br>
+              ** $c &nbsp;&nbsp;&nbsp;.. Index to the colors array - i.e. the 
+              draw color<br>
+              **<br>
+              ** Real Angle &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0 &nbsp;45 &nbsp;90 
+              135 180 225 270 315 360<br>
+              ** imagearc Angle 360 315 270 225 180 135 &nbsp;90 &nbsp;45&nbsp;&nbsp; 
+              0 (To draw real angle)<br>
+              ** Thus imagearc Angle = 360 - Real Angle<br>
+              **<br>
+              ** If d == -1 the arc is Anti-Clockwise, d == 1 the arc is clockwise<br>
+              **<br>
+              ** imagearc only draws clockwise arcs, so if we have an Anti-Clockwise 
+              arc we<br>
+              ** must reverse the order of start-angle and end-angle.<br>
+              **<br>
+              ** images have their origin point (0,0) at the top left corner. 
+              However in<br>
+              ** real world math the origin is at the bottom left. This really 
+              only matters<br>
+              ** for arcs (determining clockwise or anti-clockwise). Thus the 
+              points in<br>
+              ** the polygon are assumed to exist in real world coordinates. Thus 
+              they<br>
+              ** are 'inverted' in the y-axis to plot them on the image.<br>
+              */</font><br>
+              <font color="#006600">function</font> drawPolyAt($x, $y, &amp;$i, 
+              &amp;$p, &amp;$col, $c)<br>
+              {<br>
+              <font color="#006600">&nbsp;&nbsp;if</font> ($i) $sy = <font color="#0000FF">imagesy</font>($i); 
+              <font color="#FF9900">// Determine the height of the image in pixels</font><br>
+              <font color="#FF9900">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 
+              All $y coords will be subtracted from this</font><br>
+              <font color="#006600">&nbsp;&nbsp;if</font> ($p) <font color="#FF9900">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 
+              If a polygon exists</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;<font color="#006600">do</font> <font color="#FF9900">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 
+              For all polygons in the list<br>
+              </font>&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$v =&amp; $p-&gt;getFirst(); 
+              <font color="#FF9900">&nbsp;// get the first vertex of the polygon</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#006600">do</font> 
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#FF9900">// 
+              For all vertices in this polygon</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$n =&amp; $v-&gt;Next(); 
+              &nbsp;&nbsp;&nbsp;<font color="#FF9900">// Get the next vertex</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#006600">if</font> 
+              ($v-&gt;d() == 0) &nbsp;&nbsp;&nbsp;<font color="#FF9900">// Check 
+              is this an Arc segment</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#FF9900">// 
+              It is a line</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#FF9900">// 
+              So draw a line vertex to vertex</font> <br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000FF">imageLine</font>($i,$x+$v-&gt;X(),$sy-($y+$v-&gt;Y()),$x+$n-&gt;X(),$sy-($y+$n-&gt;Y()),$col[$c]);<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#006600">else</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#FF9900">// 
+              It is an Arc</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$s = 
+              360-<font color="#0000FF">rad2deg</font>($p-&gt;angle($v-&gt;Xc(), 
+              $v-&gt;Yc(), $v-&gt;X(), $v-&gt;Y())); <font color="#FF9900">// 
+              Start angle</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$e = 
+              360-<font color="#0000FF">rad2deg</font>($p-&gt;angle($v-&gt;Xc(), 
+              $v-&gt;Yc(), $n-&gt;X(), $n-&gt;Y())); <font color="#FF9900">// 
+              End angle</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$dia 
+              = 2*$p-&gt;dist($v-&gt;X(), $v-&gt;Y(), $v-&gt;Xc(), $v-&gt;Yc());<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#006600">if</font> 
+              ($v-&gt;d() == -1) <font color="#FF9900">// Clockwise</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000FF">imagearc</font>($i, 
+              $x+$v-&gt;Xc(), $sy-($y+$v-&gt;Yc()),$dia,$dia,$s,$e,$col[$c]);<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#006600">else</font> 
+              <font color="#FF9900">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 
+              Anti-Clockwise</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000FF">imagearc</font>($i, 
+              $x+$v-&gt;Xc(), $sy-($y+$v-&gt;Yc()),$dia,$dia,$e,$s,$col[$c]);<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$v =&amp; $n; <font color="#FF9900">// 
+              Move to next vertex</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#006600">while</font> 
+              ($v-&gt;id() != $p-&gt;first-&gt;id()); <font color="#FF9900">// 
+              Keep drawing until the last vertex</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$p =&amp; $p-&gt;NextPoly(); 
+              <font color="#FF9900">// Get the next polygon in the list</font><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;<font color="#006600">while</font> ($p); 
+              <font color="#FF9900">// Keep drawing polygons as long as they exist</font><br>
+              }</p></td>
+        </tr>
+      </table>
+      <p>&nbsp;</p></td>
+  </tr>
+  <tr> 
+    <td class="subheader"><a name="rev"></a>Revision History<br> &nbsp; </td>
+  </tr>
+  <tr> 
+    <td><table width="90%" align="center" cellpadding="2" class="normal">
+        <tr> 
+          <td valign="top"><strong>Rev</strong></td>
+          <td valign="top" nowrap><strong>Date</strong></td>
+          <td valign="top"><strong>Details</strong></td>
+        </tr>
+        <tr> 
+          <td valign="top">1.0</td>
+          <td valign="top" nowrap>25 Aug 2005</td>
+          <td valign="top">Initial Release.</td>
+        </tr>
+        <tr> 
+          <td valign="top">1.1</td>
+          <td valign="top" nowrap>4 Sep 2005</td>
+          <td valign="top">Added the following methods to the polygon Class in 
+            response to a user request:<br> &nbsp;&nbsp;Move($dx,$dy)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 
+            Move a polygon<br> &nbsp;&nbsp;Rotate($xc,$yc,$angle)&nbsp;&nbsp;&nbsp;&nbsp;// 
+            Rotate a polygon<br> &nbsp;&nbsp;isPolyInside($p)&nbsp;&nbsp;&nbsp;&nbsp;// 
+            Test if a polygon is inside another polygon<br>
+            Created new class documentation (readme.htm)<br>
+            Removed old html documentation from polyExample.php<br>
+            Added screen shots of the example images to the class homepage<br>
+            Added software license language to all source files.</td>
+        </tr>
+        <tr> 
+          <td valign="top">1.2</td>
+          <td valign="top" nowrap>7 Sep 2005</td>
+          <td valign="top">Fixed a divide by zero error when an attempt is made 
+            to find an intersection between two arcs with the same center point.</td>
+        </tr>
+        <tr> 
+          <td valign="top">1.3</td>
+          <td valign="top" nowrap>16 Apr 2006</td>
+          <td valign="top">Fixed a bug in the ints() function. The perturb() function 
+            was being called with uninitialized parameters. This caused incorrect 
+            clipping in cases where a vertex on one polygon exactly fell on a 
+            line segment of the other polygon. Thanks to Allan Wright who found 
+            the bug.</td>
+        </tr>
+        <tr> 
+          <td valign="top">1.4</td>
+          <td valign="top" nowrap>19 Mar 2009</td>
+          <td valign="top">Added isPolyOutside($p) and isPolyIntersect($p) methods. 
+            Added an example to show how they work in polyExample.php. Fixed a 
+            significant bug in the perturb() function in polygon.php. The old 
+            function was simply wrong and could cause unexpected results.</td>
+        </tr>
+        <tr> 
+          <td valign="top">1.5</td>
+          <td valign="top" nowrap>16 Jul 2009</td>
+          <td valign="top">Added isPolySelfIntersect() method. Added a new example 
+            to show how its used in polyExample.php.</td>
+        </tr>
+        <tr> 
+          <td valign="top">1.6</td>
+          <td valign="top" nowrap>15 May 2010</td>
+          <td valign="top"><p>Added scale() &amp; translate() methods. Modified 
+              move(), rotate(), bRect() methods to correctly handle Polygon lists.<br>
+              Fixed a bug in how the perturb function is called. It was being 
+              incorrectly called for intersections between lines when the intersection 
+              occurred outside the line segments. Added some more examples of 
+              degenerate vertices in the polyExample.php file, and added a section 
+              in the this readme file about arc segments and the degenerate vertex 
+              issue.</p></td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+</body>
+</html>
