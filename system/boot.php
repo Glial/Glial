@@ -147,7 +147,7 @@ if (ISCLI)
 		echo "Usage :\n";
 		echo "php index.php controlleur action [params]\n";
 		die();
-	}
+	} 
 }
 else
 {  //mode with apache
@@ -229,6 +229,7 @@ else
 	if (empty($GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$_SYSTEM['controller']][$_SYSTEM['action']]))
 	{
 
+		/*
 		echo ">>>>WWWWWWWWWWWWWW<br />";
 		debug($GLOBALS['_SITE']);
 		debug($_SYSTEM['controller']);
@@ -237,6 +238,8 @@ else
 
 		echo "Problem right ! ";
 		exit;
+		 * 
+		 */
 
 		//|| $GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$_SYSTEM['controller']][$_SYSTEM['action']] != 1)
 		if ($_SYSTEM['controller'] !== "" && $_SYSTEM['action'] !== "")
