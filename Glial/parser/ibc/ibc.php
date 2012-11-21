@@ -2,9 +2,11 @@
 
 namespace glial\parser\ibc;
 
-class ibc {
+class ibc
+{
 
-	static function get_species_from_family($famliy = "waxbills-estrildidae") {
+	static function get_species_from_family($famliy = "waxbills-estrildidae")
+	{
 		$url = "http://ibc.lynxeds.com/family/" . $famliy;
 
 		$ch = curl_init();
@@ -30,14 +32,14 @@ class ibc {
 		$data = array();
 
 		$content2 = \wlHtmlDom::getTagContent($content, '<ul id="media-status-specie" class="media-status-specie">', true);
-		if (false === $content2)
+		if ( false === $content2 )
 		{
 			return false;
 		}
 		$tab_li = \wlHtmlDom::getTagContents($content2, '<li', true);
 
 
-		foreach ($tab_li as $li)
+		foreach ( $tab_li as $li )
 		{
 			$out = array();
 
@@ -58,7 +60,8 @@ class ibc {
 		return $data;
 	}
 
-	static function get_order_and_family() {
+	static function get_order_and_family()
+	{
 
 		$url = "http://ibc.lynxeds.com/";
 
@@ -86,20 +89,21 @@ class ibc {
 		$content2 = \wlHtmlDom::getTagContent($content, '<div class="order-content">', true);
 		$data_order = \wlHtmlDom::getTagContents($content, '<ul class="menu" id="', true);
 
-		foreach($data_order as $order)
+		foreach ( $data_order as $order )
 		{
 			$ordername = \wlHtmlDom::getTagContent($order, '<a>', true);
 			$li = \wlHtmlDom::getTagContents($order, '<ul style="display: none;">', true);
-			
-			foreach($li as $family)
+
+			foreach ( $li as $family )
 			{
 				$english = \wlHtmlDom::getTagContent($family, '<strong>', true);
 				$url = explode('"', $family);
-				preg_match('/\((.*?)\)/',$family,$match);
-				$data[$ordername][$match[1]]['url'] = "http://ibc.lynxeds.com".$url[1];
+				preg_match('/\((.*?)\)/', $family, $match);
+				$data[$ordername][$match[1]]['url'] = "http://ibc.lynxeds.com" . $url[1];
 				$data[$ordername][$match[1]]['english'] = $english;
 			}
 		}
 		return $data;
 	}
+
 }
