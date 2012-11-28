@@ -115,9 +115,6 @@ class csv
 	static function ms_export_csv($sql_query, $what = '', $csv_terminated = "\n", $csv_separator = ";", $csv_enclosed = "\"", $csv_escaped = "\\", $csv_columns = true, $removeCRLF = true)
 	{
 
-
-
-
 		// Gets the data from the database
 		$result = mssql_query($sql_query);
 		//$result = PMA_DBI_query($sql_query, null, PMA_DBI_QUERY_UNBUFFERED); => to delete
@@ -127,26 +124,33 @@ class csv
 		// If required, get fields name at the first line
 		if ( isset($csv_columns) )
 		{
-
-
 			$schema_insert = '';
 
-			for ( $i = 0; $i < $fields_cnt; $i++ )
+			$sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='ARKA_PIV_BIZFILE_FULL' order by ORDINAL_POSITION";
+
+			$res = mssql_query($sql);//to prevent only returns 1st 30 characters of fieldname.
+
+
+			while ( $ob = mssql_fetch_object($res) )
 			{
 				if ( $csv_enclosed == '' )
 				{
-					$schema_insert .= stripslashes(mssql_field_name($result, $i));
+					
+					
+					$schema_insert .= stripslashes($ob->COLUMN_NAME);
 				}
 				else
 				{
-					/*$schema_insert .= $csv_enclosed
-						. str_replace($csv_enclosed, $csv_escaped . $csv_enclosed, stripslashes(mssql_field_name($result, $i)))
-						. $csv_enclosed;*/
-					$schema_insert.=mssql_field_name($result, $i);
+					$schema_insert .= $csv_enclosed
+						. str_replace($csv_enclosed, $csv_escaped . $csv_enclosed, stripslashes($ob->COLUMN_NAME))
+						. $csv_enclosed;
 				}
+
+
 				$schema_insert .= $csv_separator;
-			} // end for
-			$schema_insert = trim(substr($schema_insert, 0, -1));
+			}
+
+			$schema_insert = trim(substr($schema_insert, 0, -strlen($csv_separator)));
 
 			if ( !export::export_output_handler($schema_insert . $csv_terminated) )
 			{
@@ -160,13 +164,11 @@ class csv
 			$schema_insert = '';
 			for ( $j = 0; $j < $fields_cnt; $j++ )
 			{
-				if ($j == 12)
+				if ( $j == 12 )
 				{
 					$row[$j] = strtolower($row[$j]);
 				}
-				
-				
-				
+
 				if ( !isset($row[$j]) || is_null($row[$j]) )
 				{
 					//$schema_insert .= $GLOBALS[$what . '_null'];
@@ -222,8 +224,7 @@ class csv
 				return false;
 			}
 		}//end while
-
-
+		
 		mssql_free_result($result);
 
 		return true;
@@ -235,4 +236,3 @@ class csv
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-?>

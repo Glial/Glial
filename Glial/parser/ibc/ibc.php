@@ -105,5 +105,4 @@ class ibc
 		}
 		return $data;
 	}
-
 }
