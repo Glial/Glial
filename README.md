@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 glial
 =====
 
@@ -32,3 +33,9 @@ There are no code generators and endless configuration files, so setting up is f
 
 <h3>COMMUNITY SUPPORT</h3>
 A very active community forum and IRC channel means that most questions are answered very quickly.
+=======
+synapse
+=======
+
+synapse instance for glial framework php
+>>>>>>> branch 'master' of https://github.com/Esysteme/synapse.git
