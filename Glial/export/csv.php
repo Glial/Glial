@@ -4,7 +4,6 @@ include_once LIBRARY . 'Glial/export/export.php';
 
 class csv
 {
-
 	static function export_csv($sql_query, $what = '', $csv_terminated = "\n", $csv_separator = ";", $csv_enclosed = "\"", $csv_escaped = "\\")
 	{
 
@@ -16,6 +15,7 @@ class csv
 		$result = mysql_query($sql_query);
 		//$result = PMA_DBI_query($sql_query, null, PMA_DBI_QUERY_UNBUFFERED); => to delete
 
+		
 		$fields_cnt = mysql_num_fields($result);
 
 		// If required, get fields name at the first line
