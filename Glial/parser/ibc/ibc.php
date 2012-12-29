@@ -127,57 +127,59 @@ class ibc {
 		curl_close($ch);
 
 		$data = array();
-		$content2 = \wlHtmlDom::getTagContent($content, "<h4><a", true);
+		$content2 = \wlHtmlDom::getTagContent($content, "<h4>", true);
+		$content2 = \wlHtmlDom::getTagContent($content2, "<a", true);
 		$family_name = preg_split("#[\(\)]+#", $content2);
 		$data['family_name'] = $family_name[0];
 		$data['family_english'] = $family_name[1];
 		$content2 = \wlHtmlDom::getTagContent($content, "<h3><a", true);
-		$content2 = preg_replace("#<li>(.+)</li>#", "$1", $content2);
 		$name = preg_split("#[\(\)]+#", $content2);
 		$data['name'] = $name[0];
-		$data['scientific_name'] = $name[1];
-		$content2 = \wlHtmlDom::getTagContent($content, '<ul class="status"><li', true);
-		$data['status'] = $content2;
-		$content2 = \wlHtmlDom::getTagContent($content, '<div class="photo-frame"', true);
-		$content2 = preg_replace('#<a href="(.+)" .+<div class="caption-photo">(.+)#', "$1 ($2)", $content2);
-		$photo_infos = preg_split("#[\(\)]+#", $content2);
-		$data['photo_url'] = $photo_infos[0];
-		$data['legende'] = $photo_infos[1];
-		$upload_info = \wlHtmlDom::getTagContents($content, '<ul class="datails no-margin"', true);
-		foreach ($upload_info as $info)
-		{
-			$info = preg_replace('#.+<li><span class="(.+)".+</span>(.+)#isU', '$1 ($2)', $info);
-			if (preg_match("#photo_info#", $info))
-				$data['recorded'] = preg_replace('#.+ \(<span class=".+">(.+)</span>\)#isU', '$1', $info);
-			else if (preg_match("#uploaded#", $info))
-				$data['uploaded'] = preg_replace('#.+<em>(.+)</em>.+#isU', '$1', $info);
-			else if (preg_match("#author#", $info))
-			{
-				$data['author_profile_url'] = 'http://ibc.lynxeds.com/' . preg_replace('#<a href="(.+)"#isU', '$1', $info);
-				$data['author'] = preg_replace('#<a href=".+">(.+)</a>#isU', '$1', $info);
-			}
-			else if (preg_match("#location#", $info))
-			{
-				$locations = explode(',', $info);
-				$i = 0;
-				foreach ($locations as $location)
-				{
-					$location = preg_replace('#<a href="(.+)">(.+)</a>#isU', '$1 - $2', $location);
-					$location = explode('-', $location);
-					$data['location_' . $i] = $location[0];
-					$data['location_' . $i . '_link'] = 'http://ibc.lynxeds.com/' . $location[1];
-					$i++;
-				}
-			}
+		$data['scientific_name'] = \wlHtmlDom::getTagContent($name[1], "<i>", true);
+		$content2 = \wlHtmlDom::getTagContent($content, '<ul class="status">', true);
+		$data['status'] = \wlHtmlDom::getTagContent($content2, '<li', true);
+		$content2 = \wlHtmlDom::getTagContent($content, '<div class="photo-frame">', true);
+		$photo = \wlHtmlDom::getTagContent($content2, '<img', false);
+		$photo = preg_split("#[\"]#", $photo);
+		$data['photo_url'] = $photo[1];
+		$data['legend'] = \wlHtmlDom::getTagContent($content2, '<div class="caption-photo"', true);
+		$data['recorded'] = \wlHtmlDom::getTagContent($content, '<span class="date-display-single">', true);
+		$data['uploaded'] = \wlHtmlDom::getTagContent($content, '<em>', true) . ' ago';
+		$author = explode('<a href="/users/', $content);
+		$author = explode('</a>', $author[1]);
+		$author = explode('">', $author[0]);
+		$data['author'] = $author[1];
+		$data['author_profile_link'] = 'http://ibc.lynxeds.com/users/' . $author[0];
+		$locations = explode('<span class="location">Locality</span>', $content);
+		$locations = explode('</li>', $locations[1]);
+		$locations = explode(',', $locations[0]);
+		$i = 0;
+		while (isset($locations[$i])) {
+			$line = $locations[$i];
+			$line = explode('<a href="', $line);
+			$line = explode('</a>', $line[1]);
+			$tmp = explode('">', $line[0]);
+			if (!(empty($line[1])))
+				$plus = $line[1];
+			else
+				$plus = '';
+			$localised['Location_' . $i] = trim($tmp[1] . ' ' . $plus);
+			$localised['Location_link_' . $i] = trim('http://ibc.lynxeds.com' . $tmp[0]);
+			$i++;
 		}
-		$content2 = \wlHtmlDom::getTagContent($content, '<div id="borderMap"', true);
-		$data['longitude'] = preg_replace('#var coordX = \'(.+)\';#isU', '$1', $content2);
-		$data['latitude'] = preg_replace('#var coordY = \'(.+)\';#isU', '$1', $content2);
+		$data['locations'] = $localised;
+		$content2 = \wlHtmlDom::getTagContent($content, '<div id="gmaps">', true);
+		$content2 = \wlHtmlDom::getTagContent($content2, '<script>', true);
+		$coords = preg_replace('#.+var coordX = \'(.+)\';.+var coordY = \'(.+)\';.+#isU', '$1 ($2)', $content2);
+		$coords = preg_split('#[\(\)]#', $coords);
+		$data['longitude'] = $coords[0];
+		$data['latitude'] = $coords[1];
+		$data['ranking'] = \wlHtmlDom::getTagContent($content, '<div class="star star-1 star-odd star-first"><span class="on">', true);
 		return ($data);
 	}
 
 	static function get_video_and_infos($video_link) {
-		$url = "http://ibc.lynxeds.com/video/" . $picture_link;
+		$url = "http://ibc.lynxeds.com/video/" . $video_link;
 
 		$ch = curl_init();
 
@@ -200,52 +202,138 @@ class ibc {
 		curl_close($ch);
 
 		$data = array();
-		$content2 = \wlHtmlDom::getTagContent($content, "<h4><a", true);
+		$content2 = \wlHtmlDom::getTagContent($content, "<h4>", true);
+		$content2 = \wlHtmlDom::getTagContent($content2, "<a", true);
 		$family_name = preg_split("#[\(\)]+#", $content2);
 		$data['family_name'] = $family_name[0];
 		$data['family_english'] = $family_name[1];
 		$content2 = \wlHtmlDom::getTagContent($content, "<h3><a", true);
-		$content2 = preg_replace("#<li>(.+)</li>#", "$1", $content2);
 		$name = preg_split("#[\(\)]+#", $content2);
 		$data['name'] = $name[0];
-		$data['scientific_name'] = $name[1];
-		$content2 = \wlHtmlDom::getTagContent($content, '<ul class="status"><li', true);
-		$data['status'] = $content2;
-		$content2 = \wlHtmlDom::getTagContent($content, '<div class="video-frame"', true);
-		$content2 = preg_replace('#<script type="text/javascript>"(.+)</script> .+<div class="caption-video">(.+)#', "$1 ($2)", $content2);
-		$video_infos = preg_split("#[>]+#", $content2);
-		$data['video'] = $video_infos[0] . '>';
-		$data['legende'] = $video_infos[1];
-		$upload_info = \wlHtmlDom::getTagContents($content, '<ul class="details no-margin"', true);
-		foreach ($upload_info as $info)
-		{
-			$info = preg_replace('#.+<li><span class="(.+)".+</span>(.+)#isU', '$1 ($2)', $info);
-			if (preg_match("#photo_info#", $info))
-				$data['recorded'] = preg_replace('#.+ \(<span class=".+">(.+)</span>\)#isU', '$1', $info);
-			else if (preg_match("#uploaded#", $info))
-				$data['uploaded'] = preg_replace('#.+<em>(.+)</em>.+#isU', '$1', $info);
-			else if (preg_match("#author#", $info))
-			{
-				$data['author_profile_url'] = 'http://ibc.lynxeds.com/' . preg_replace('#<a href="(.+)"#isU', '$1', $info);
-				$data['author'] = preg_replace('#<a href=".+">(.+)</a>#isU', '$1', $info);
-			}
-			else if (preg_match("#location#", $info))
-			{
-				$locations = explode(',', $info);
-				$i = 0;
-				foreach ($locations as $location)
-				{
-					$location = preg_replace('#<a href="(.+)">(.+)</a>#isU', '$1 - $2', $location);
-					$location = explode('-', $location);
-					$data['location_' . $i] = $location[0];
-					$data['location_' . $i . '_link'] = 'http://ibc.lynxeds.com/' . $location[1];
-					$i++;
-				}
-			}
+		$data['scientific_name'] = \wlHtmlDom::getTagContent($name[1], "<i>", true);
+		$content2 = \wlHtmlDom::getTagContent($content, '<ul class="status">', true);
+		$data['status'] = \wlHtmlDom::getTagContent($content2, '<li', true);
+		$content2 = \wlHtmlDom::getTagContent($content, '<div class="video-frame">', true);
+		$video = \wlHtmlDom::getTagContent($content2, '<script', true);
+		$video = explode('"', $video);
+		$video = explode('\x', $video[19]);
+		$video = explode('=', $video[0]);
+		$data['video_url'] = 'http://ibc.lynxeds.com/files/videos/transcoded/' . $video[1] . '.mp4';
+		$data['legend'] = \wlHtmlDom::getTagContent($content2, '<div class="caption-video"', true);
+		$data['recorded'] = \wlHtmlDom::getTagContent($content, '<span class="date-display-single">', true);
+		$data['uploaded'] = \wlHtmlDom::getTagContent($content, '<em>', true) . ' ago';
+		$author = explode('<a href="/users/', $content);
+		$author = explode('</a>', $author[1]);
+		$author = explode('">', $author[0]);
+		$data['author'] = $author[1];
+		$data['author_profile_link'] = 'http://ibc.lynxeds.com/users/' . $author[0];
+		$duration = explode('<span class="duration">', $content);
+		$duration = explode('</span>', $duration[1]);
+		$duration = explode('</li>', $duration[1]);
+		$data['duration'] = trim($duration[0]);
+		$locations = explode('<span class="location">Location </span>', $content);
+		$locations = explode('</li>', $locations[1]);
+		$locations = explode(',', $locations[0]);
+		$i = 0;
+		while (isset($locations[$i])) {
+			$line = $locations[$i];
+			$line = explode('<a href="', $line);
+			$line = explode('</a>', $line[1]);
+			$tmp = explode('">', $line[0]);
+			if (!(empty($line[1])))
+				$plus = $line[1];
+			else
+				$plus = '';
+			$localised['Location_' . $i] = trim($tmp[1] . ' ' . $plus);
+			$localised['Location_link_' . $i] = trim('http://ibc.lynxeds.com' . $tmp[0]);
+			$i++;
 		}
-		$content2 = \wlHtmlDom::getTagContent($content, '<div id="borderMap"', true);
-		$data['longitude'] = preg_replace('#var coordX = \'(.+)\';#isU', '$1', $content2);
-		$data['latitude'] = preg_replace('#var coordY = \'(.+)\';#isU', '$1', $content2);
+		$data['locations'] = $localised;
+		$content2 = \wlHtmlDom::getTagContent($content, '<div id="gmaps">', true);
+		$content2 = \wlHtmlDom::getTagContent($content2, '<script>', true);
+		$coords = preg_replace('#.+var coordX = \'(.+)\';.+var coordY = \'(.+)\';.+#isU', '$1 ($2)', $content2);
+		$coords = preg_split('#[\(\)]#', $coords);
+		$data['longitude'] = $coords[0];
+		$data['latitude'] = $coords[1];
+		$data['ranking'] = \wlHtmlDom::getTagContent($content, '<div class="star star-1 star-odd star-first"><span class="on">', true);
+		return ($data);
+	}
+
+	static function get_sound_and_infos($sound_link) {
+		$url = "http://ibc.lynxeds.com/sound/" . $sound_link;
+
+		$ch = curl_init();
+
+		$user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.79 Safari/537.1'; // simule Firefox 4.
+		$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,";
+		$header[0] .= "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
+		$header[] = "Cache-Control: max-age=0";
+		$header[] = "Connection: keep-alive";
+		$header[] = "Keep-Alive: 300";
+		$header[] = "Accept-Charset: utf-8";
+		$header[] = "Accept-Language: en"; // langue fr. 
+		$header[] = "Pragma: "; // Simule un navigateur
+		//curl_setopt($ch, CURLOPT_PROXY, 'proxy.int.world.socgen:8080');
+		//curl_setopt($ch, CURLOPT_PROXYUSERPWD, "aurelien.lequoy:xxxxx");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+		curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+		$content = curl_exec($ch);
+		curl_close($ch);
+
+		$data = array();
+		$content2 = \wlHtmlDom::getTagContent($content, "<h4>", true);
+		$content2 = \wlHtmlDom::getTagContent($content2, "<a", true);
+		$family_name = preg_split("#[\(\)]+#", $content2);
+		$data['family_name'] = $family_name[0];
+		$data['family_english'] = $family_name[1];
+		$content2 = \wlHtmlDom::getTagContent($content, "<h3><a", true);
+		$name = preg_split("#[\(\)]+#", $content2);
+		$data['name'] = $name[0];
+		$data['scientific_name'] = \wlHtmlDom::getTagContent($name[1], "<i>", true);
+		$content2 = \wlHtmlDom::getTagContent($content, '<ul class="status">', true);
+		$data['status'] = \wlHtmlDom::getTagContent($content2, '<li', true);
+		$sound = explode('soundFile=http%3A%2F%2Fibc.lynxeds.com%2Faudio%2Fplay%2F', $content);
+		$sound = explode('" />', $sound[1]);
+		$data['sound_url'] = trim('http://ibc.lynxeds.com/audio/play/' . $sound[0]);
+		$data['legend'] = \wlHtmlDom::getTagContent($content, '<div class="caption-sound">', true);
+		$data['recorded'] = \wlHtmlDom::getTagContent($content, '<span class="date-display-single">', true);
+		$data['uploaded'] = \wlHtmlDom::getTagContent($content, '<em>', true) . ' ago';
+		$author = explode('<a href="/users/', $content);
+		$author = explode('</a>', $author[1]);
+		$author = explode('">', $author[0]);
+		$data['author'] = $author[1];
+		$data['author_profile_link'] = 'http://ibc.lynxeds.com/users/' . $author[0];
+		$duration = explode('<span class="duration">', $content);
+		$duration = explode('</span>', $duration[1]);
+		$duration = explode('</li>', $duration[1]);
+		$data['duration'] = trim($duration[0]);
+		$locations = explode('<span class="location">Location </span>', $content);
+		$locations = explode('</li>', $locations[1]);
+		$locations = explode(',', $locations[0]);
+		$i = 0;
+		while (isset($locations[$i])) {
+			$line = $locations[$i];
+			$line = explode('<a href="', $line);
+			$line = explode('</a>', $line[1]);
+			$tmp = explode('">', $line[0]);
+			if (!(empty($line[1])))
+				$plus = $line[1];
+			else
+				$plus = '';
+			$localised['Location_' . $i] = trim($tmp[1] . ' ' . $plus);
+			$localised['Location_link_' . $i] = trim('http://ibc.lynxeds.com' . $tmp[0]);
+			$i++;
+		}
+		$data['locations'] = $localised;
+		$content2 = \wlHtmlDom::getTagContent($content, '<div id="gmaps">', true);
+		$content2 = \wlHtmlDom::getTagContent($content2, '<script>', true);
+		$coords = preg_replace('#.+var coordX = \'(.+)\';.+var coordY = \'(.+)\';.+#isU', '$1 ($2)', $content2);
+		$coords = preg_split('#[\(\)]#', $coords);
+		$data['longitude'] = $coords[0];
+		$data['latitude'] = $coords[1];
+		$data['ranking'] = \wlHtmlDom::getTagContent($content, '<div class="star star-1 star-odd star-first"><span class="on">', true);
 		return ($data);
 	}
 
