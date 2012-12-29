@@ -524,4 +524,67 @@ class webex {
         
         return $site_name;
     }
+	
+	
+    static function get_cdrs($sitename, $login, $password, $date_start, $date_end) {
+		
+		$tab_date_start = explode("-",$date_start);
+		$sessionStartTimeStart = $tab_date_start[1].'/'.$tab_date_start[0].'/'.$tab_date_start[2].' 00:00:00';
+		$sessionStartTimeEnd = $tab_date_start[1].'/'.$tab_date_start[0].'/'.$tab_date_start[2].' 00:00:00';
+		
+		
+		$tab_date_end = explode("-",$date_end);
+		$sessionEndTimeStart = $tab_date_end[1].'/'.$tab_date_end[0].'/'.$tab_date_end[2].' 00:00:00';
+		$sessionEndTimeEnd = $tab_date_end[1].'/'.$tab_date_end[0].'/'.$tab_date_end[2].' 00:00:00';
+		
+		
+		
+		
+		
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>
+<serv:message xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:serv="http://www.webex.com/schemas/2002/06/service">
+<header>
+<securityContext>
+<siteName>' . $sitename . '</siteName>
+<webExID>' . $login . '</webExID>
+<password>' . $password . '</password>
+<partnerID></partnerID>
+<email></email>
+</securityContext>
+</header>
+<body>
+<bodyContent xsi:type="java:com.webex.service.binding.history.LsteventattendeeHistory">
+<startTimeScope>
+<sessionStartTimeStart>'.$sessionStartTimeStart.'</sessionStartTimeStart>
+<sessionStartTimeEnd>'.$sessionStartTimeEnd.'</sessionStartTimeEnd>
+</startTimeScope>
+<endTimeScope>
+<sessionEndTimeStart>'.$sessionEndTimeStart.'</sessionEndTimeStart>
+<sessionEndTimeEnd>'.$sessionEndTimeEnd.'</sessionEndTimeEnd>
+</endTimeScope>
+<listControl>
+<startFrom>1</startFrom>
+<maximumNum>10</maximumNum>
+<listMethod>AND</listMethod>
+</listControl>
+<order>
+<orderBy>ATTENDEENAME</orderBy>
+<orderAD>ASC</orderAD>
+<orderBy>STARTTIME</orderBy>
+<orderAD>ASC</orderAD>
+<orderBy>CONFID</orderBy>
+<orderAD>ASC</orderAD>
+</order>
+</bodyContent>
+</body>
+</serv:message>';
+
+        $url = self::generate_url($sitename);
+        return self::xml_post($xml, $url, 443);
+    }
+	
+	
+	
+	
+	
 }
