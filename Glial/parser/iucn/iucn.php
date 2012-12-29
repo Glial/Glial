@@ -13,7 +13,7 @@ class iucn {
 
 	static function get_all_species($i) {
 
-		//version 1 => Flickr get tout les йlйments
+		//version 1 => Flickr get tout les Ð¹lÐ¹ments
 		$data = array();
 
 		//for ($i = 1; $i < 1278; $i++) // 1277 pages is a max of IUCN
@@ -466,5 +466,5 @@ class iucn {
 		return $data;
 	}
 
-	//' ⇡'' ⇣'
+	//' â‡¡'' â‡£'
 }
