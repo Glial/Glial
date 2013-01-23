@@ -22,7 +22,7 @@ class csv
 		if ( isset($GLOBALS['csv_columns']) )
 		{
 			$schema_insert = '';
-
+			
 			for ( $i = 0; $i < $fields_cnt; $i++ )
 			{
 				if ( $csv_enclosed == '' )
