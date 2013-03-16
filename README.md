@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 glial
 =====
 
@@ -38,4 +37,4 @@ synapse
 =======
 
 synapse instance for glial framework php
->>>>>>> branch 'master' of https://github.com/Esysteme/synapse.git
+
