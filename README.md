@@ -1,7 +1,6 @@
 glial
 =====
 
-glial framework php
 http://www.glial-framework-php.org/
 
 
