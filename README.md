@@ -30,11 +30,6 @@ This is an OOP framework that is extremely DRY. Everything is built using strict
 <h3>WRITE YOUR OWN CODE</h3>
 There are no code generators and endless configuration files, so setting up is fast and easy.
 
-<h3>COMMUNITY SUPPORT</h3>
-A very active community forum and IRC channel means that most questions are answered very quickly.
-=======
-synapse
-=======
 
-synapse instance for glial framework php
+
 
