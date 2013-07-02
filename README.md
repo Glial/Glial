@@ -2,7 +2,7 @@ glial
 =====
 
 glial framework php
-www.glial-framework-php.com
+http://www.glial-framework-php.org/
 
 <h2>Why use Glial?</h2>
 
