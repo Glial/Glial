@@ -4,6 +4,20 @@ glial
 glial framework php
 http://www.glial-framework-php.org/
 
+
+<h2>How to install?</h2>
+
+A new application in current directory:
+curl -sS http://www.glial-framework-php.org/installer | php --
+
+
+A new application in selected directory:
+curl -sS http://www.glial-framework-php.org/installer | php -- --install-dir="/home/www/DIR"
+
+An existing application :  (example with Esysteme/Estrildidae)
+curl -sS http://www.glial-framework-php.org/installer | php -- --install-dir="/home/www/DIR" --application="Esysteme/Estrildidae"
+
+
 <h2>Why use Glial?</h2>
 
 <h3>BUILD APPLICATIONS QUICKLY</h3>
