@@ -9,44 +9,37 @@
  */
 //namespace gliale\flickr;
 
+
+
 class flickr {
-	/*
-	  function looking_for($param) {
 
-	  $q = str_replace(" ", "+", $param);
+	 	 
+	static function curl($url)
+	{
+		$ch = curl_init();
 
-	  fopen("http://www.flickr.com/search/?q=" . urlencode($q) . "&f=hp", "r");
 
-	  //looking for
-	  //<div class="ResultsThumbs"
-	  }
-
-	  static function get_resultat() {
-	  $url = "http://www.flickr.com/photos/maholyoak/5847734660/";
-
-	  $ch = curl_init();
-	  curl_setopt($ch, CURLOPT_PROXY, 'proxy.int.world.socgen:8080');
-	  curl_setopt($ch, CURLOPT_PROXYUSERPWD, "aurelien.lequoy:Zeb33tln1$");
-
-	  // configuration des options
-	  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	  curl_setopt($ch, CURLOPT_URL, $url);
-	  //curl_setopt($ch, CURLOPT_HEADER, 0);
-	  // exйcution de la session
-	  $gg = curl_exec($ch);
-
-	  // fermeture des ressources
-	  curl_close($ch);
-
-	  if (!preg_match("/^http:\/\/www.flickr.com\/photos\/([a-zA-Z0-9@]*)\/([0-9]*)\/$/i", $url))
-	  {
-	  die("$url did not match with REGEX : /^http:\/\/www.flickr.com\/photos\/([a-zA-Z0-9]*)\/([0-9]*)\/$/i");
-	  }
-
-	  //fopen($url, "r");
-	  //http://www.flickr.com/photos/maholyoak/5847734660/
-	  }
-	 */
+		$user_agent = 'Mozilla/5.0 (Windows NT 5.1; rv:22.0) Gecko/20100101 Firefox/22.0';
+		$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,";
+		$header[0] .= "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
+		$header[] = "Cache-Control: max-age=0";
+		$header[] = "Connection: keep-alive";
+		$header[] = "Keep-Alive: 300";
+		$header[] = "Accept-Charset: utf-8";
+		$header[] = "Accept-Language: en"; // langue fr. 
+		$header[] = "Pragma: "; // Simule un navigateur
+		//curl_setopt($ch, CURLOPT_PROXY, 'proxy.int.world.socgen:8080');
+		//curl_setopt($ch, CURLOPT_PROXYUSERPWD, "aurelien.lequoy:xxxxx");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+		curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+		$content = curl_exec($ch);
+		curl_close($ch);
+		
+		return $content;
+	
+	}
 
 	static function get_links_to_photos($query) {
 
@@ -62,74 +55,34 @@ class flickr {
 			$url = "http://www.flickr.com/search/?q=" . $q . "&s=rec&page=" . $i;
 
 			//echo $url ."\n";
+			$content = self::curl($url);
+			$contents = wlHtmlDom::getTagContents($content, '<div class="photo-display-item"', true);
 
-			$ch = curl_init();
-
-
-			$user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.79 Safari/537.1'; // simule Firefox 4.
-			$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,";
-			$header[0] .= "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
-			$header[] = "Cache-Control: max-age=0";
-			$header[] = "Connection: keep-alive";
-			$header[] = "Keep-Alive: 300";
-			$header[] = "Accept-Charset: utf-8";
-			$header[] = "Accept-Language: en"; // langue fr. 
-			$header[] = "Pragma: "; // Simule un navigateur
-			//curl_setopt($ch, CURLOPT_PROXY, 'proxy.int.world.socgen:8080');
-			//curl_setopt($ch, CURLOPT_PROXYUSERPWD, "aurelien.lequoy:xxxxx");
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-			curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
-			$content = curl_exec($ch);
-			curl_close($ch);
-
-			$content = wlHtmlDom::getTagContent($content, '<div class="ResultsThumbs"', true);
-			if (false === $content)
+			if (! $contents) //if no any photo we stop here !
 			{
 				break;
 			}
-
-			$contents = wlHtmlDom::getTagContents($content, '<div class="ResultsThumbsChild"', true);
-
+			
 			foreach ($contents as $var)
 			{
-				$author = wlHtmlDom::getTagContent($var, '<a data-track="user"', false);
+				$author = wlHtmlDom::getTagContent($var, '<a data-track="owner"', true);
+				$brut_img = wlHtmlDom::getTagContent($var, '<a data-track="photo-click"', true);
+				$img = wlHtmlDom::getTagAttributeValue($brut_img,"data-defer-src");
+				$url = wlHtmlDom::getTagAttributeValue($var,"href");
+				$width = wlHtmlDom::getTagAttributeValue($var,"width");
+				$height = wlHtmlDom::getTagAttributeValue($var,"height");
+				$title = wlHtmlDom::getTagAttributeValue($var,"title");
+				
+				$ret = array();
+				$ret['author'] = trim($author);
+				$ret['img']['url'] = trim($img);
+				$ret['img']['width'] = trim($width);
+				$ret['img']['height'] = trim($height);
+				$ret['url'] = "http://www.flickr.com" . trim($url);
+				$ret['title'] = trim($title);
+				
+				$data[] = $ret;
 
-				$tab3 = explode('title="', $author);
-				$tab3 = explode('"', $tab3[1]);
-
-				$var = wlHtmlDom::getTagContent($var, '<a data-track="thumb" href="/photos/');
-
-
-				$tab2 = explode('src="', $var);
-				$tab2 = explode('"', $tab2[1]);
-
-
-
-
-				$tab = explode('"', trim($var));
-
-				$rank = 3;
-
-				if (!empty($tab[$rank]))
-				{
-					$ret = array();
-					$ret['url'] = "http://www.flickr.com" . trim($tab[$rank]);
-					$ret['img']['url'] = trim($tab2[0]);
-					$ret['img']['width'] = trim($tab2[2]);
-					$ret['img']['height'] = trim($tab2[4]);
-					$ret['author'] = trim($tab3[0]);
-					//print_r($ret);
-					//die();
-
-					$data[] = $ret;
-					//echo "New img on : " . "http://www.flickr.com" . $tab[$rank] . "\n";
-				}
-				else
-				{
-					echo "ERROR : URL not found ! have to update script !\n";
-				}
 			}
 
 			sleep(2);
@@ -154,61 +107,50 @@ class flickr {
 		$data = array();
 
 
-		$user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.79 Safari/537.1'; // simule Firefox 4.
-		$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,";
-		$header[0] .= "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
-		$header[] = "Cache-Control: max-age=0";
-		$header[] = "Connection: keep-alive";
-		$header[] = "Keep-Alive: 300";
-		$header[] = "Accept-Charset: utf-8";
-		$header[] = "Accept-Language: fr"; // langue fr. 
-		$header[] = "Pragma: "; // Simule un navigateur
+		$content = self::curl($url);
 
 
-
-		$ch = curl_init();
-		//curl_setopt($ch, CURLOPT_PROXY, 'proxy.int.world.socgen:8080');
-		//curl_setopt($ch, CURLOPT_PROXYUSERPWD, "aurelien.lequoy:xxxxx");
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-		curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
-		$content = curl_exec($ch);
-		curl_close($ch);
-
-
-		$tmp = wlHtmlDom::getTagContent($content, '<div id="photo', true);
-		if (false === $tmp)
+		$contents = wlHtmlDom::getTagContent($content, '<div id="photo', true);
+		if (false === $contents)
 		{
 			return false;
 		}
 
 		$tab_id_photo = explode("/", $url);
 		$data['id'] = "flickr_" . $tab_id_photo[5];
+		
+		
+		$brut_min = wlHtmlDom::getTagContent($content, '<div id="photo', true);
+		
+		$data['img_z'] = wlHtmlDom::getTagAttributeValue($brut_min,"src");
+		
 
-		$var = trim(htmlentities(wlHtmlDom::getTagContent($content, '<div class="photo-div', true)));
-		preg_match('/http[^\s]*jpg/i', $var, $match);
-		$data['photo'] = $match[0];
-		$data['photo_o'] = $data['photo'];
-		$part = substr($data['photo'], 0, -5);
-
-		if (self::fileExists($part . "b.jpg"))
+		$data['legend'] = trim(wlHtmlDom::getTagContent($content, '<div id="description_div" class="photo-desc"', true));
+		
+		
+		$brut_author = trim(wlHtmlDom::getTagContent($content, '<span class="photo-name-line-1"', true));
+		$data['author'] = trim(wlHtmlDom::getTagContent($brut_author, '<a', true));
+		
+		
+		$elems = trim(wlHtmlDom::getTagContent($content, '<div id="photo-story-story"', true));
+		
+		
+		$lis = wlHtmlDom::getTagContents($elems, '<li', true);
+		
+		
+		$i = 0;
+		foreach($lis as $li)
 		{
-			$data['photo'] = $part . "b.jpg";
+			$data[$i] = trim(wlHtmlDom::getTagContent($li, '<a', true));
+			$i++;
 		}
-		else
-		{
-			if (self::fileExists($part . "o.jpg"))
-			{
-				$data['photo'] = $part . "o.jpg";
-			}
-		}
+		
+		
+		
+		//$data['date-taken'] = trim(wlHtmlDom::getTagContent($date_taken, '<a', true));
+		
 
-		$data['title'] = wlHtmlDom::getTagContent($content, '<h1', true);
-		$tmp = wlHtmlDom::getTagContent($content, '<div id="description_div"', true);
-		$tmp = str_replace("\r\n", " ", $tmp);
-		$tmp = str_replace("\n", " ", $tmp);
-
+	/*
 		$data['legend'] = strip_tags($tmp);
 
 		$tmp1 = trim(wlHtmlDom::getTagContent($content, '<span class="realname"', true));
@@ -364,6 +306,7 @@ class flickr {
 			$data['gps']['latitude'] = (float) $tab[0];
 			$data['gps']['longitude'] = (float) $tab[1];
 		}
+		*/
 
 		return $data;
 	}
