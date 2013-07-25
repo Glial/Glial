@@ -13,6 +13,8 @@
 
 class flickr {
 
+
+	private static $url = "http://www.flickr.com";
 	 	 
 	static function curl($url)
 	{
@@ -52,7 +54,7 @@ class flickr {
 
 		for ($i = 1; $i < 67; $i++) // 67 pages is a max of Flickr
 		{
-			$url = "http://www.flickr.com/search/?q=" . $q . "&s=rec&page=" . $i;
+			$url = self::$url."/search/?q=" . $q . "&s=rec&page=" . $i;
 
 			//echo $url ."\n";
 			$content = self::curl($url);
@@ -78,7 +80,7 @@ class flickr {
 				$ret['img']['url'] = trim($img);
 				$ret['img']['width'] = trim($width);
 				$ret['img']['height'] = trim($height);
-				$ret['url'] = "http://www.flickr.com" . trim($url);
+				$ret['url'] = self::$url . trim($url);
 				$ret['title'] = trim($title);
 				
 				$data[] = $ret;
@@ -98,18 +100,16 @@ class flickr {
 	static function get_photo_info($url) {
 
 
-		/*
-		  if (!preg_match("/^http:\/\/www.flickr.com\/photos\/([a-zA-Z0-9]*)\/([0-9]*)\/$/i", $url))
-		  {
-		  die("$url did not match with REGEX : /^http:\/\/www.flickr.com\/photos\/([a-zA-Z0-9]*)\/([0-9]*)\/$/i");
-		  } */
+		$pattern = "#^http://www.flickr.com/photos/([a-zA-Z0-9@]+)/([0-9]*)\/$#i";
+		
+		if (!preg_match($pattern, $url))
+		{
+			die($url." did not match with REGEX : ".$pattern);
+		}
 
 		$data = array();
-
-
 		$content = self::curl($url);
-
-
+		
 		$contents = wlHtmlDom::getTagContent($content, '<div id="photo', true);
 		if (false === $contents)
 		{
@@ -118,37 +118,78 @@ class flickr {
 
 		$tab_id_photo = explode("/", $url);
 		$data['id'] = "flickr_" . $tab_id_photo[5];
+		$data['id_photo'] = $tab_id_photo[5];
+		$data['url']['main'] = $url;
 		
+		$brut_canonical = wlHtmlDom::getTagContent($content, '<link id="canonicalurl" rel="canonical"');
+		if ($brut_canonical)
+		{
+			$tmp = wlHtmlDom::getTagAttributeValue($brut_canonical,"href");
+			if (preg_match('#photos/([a-z0-9]+)/[0-9]+/#i',$tmp, $out))
+			{
+				$data['id_author'] = $out[1];
+			}
+		}
 		
 		$brut_min = wlHtmlDom::getTagContent($content, '<div id="photo', true);
 		
-		$data['img_z'] = wlHtmlDom::getTagAttributeValue($brut_min,"src");
-		
-
+		$data['url']['img_z'] = wlHtmlDom::getTagAttributeValue($brut_min,"src");
 		$data['legend'] = trim(wlHtmlDom::getTagContent($content, '<div id="description_div" class="photo-desc"', true));
-		
+		$data['legend'] = preg_replace('!\s+!', ' ', $data['legend']);
 		
 		$brut_author = trim(wlHtmlDom::getTagContent($content, '<span class="photo-name-line-1"', true));
 		$data['author'] = trim(wlHtmlDom::getTagContent($brut_author, '<a', true));
 		
-		
 		$elems = trim(wlHtmlDom::getTagContent($content, '<div id="photo-story-story"', true));
 		
-		
 		$lis = wlHtmlDom::getTagContents($elems, '<li', true);
-		
-		
-		$i = 0;
 		foreach($lis as $li)
 		{
-			$data[$i] = trim(wlHtmlDom::getTagContent($li, '<a', true));
-			$i++;
+			$tmp = trim(wlHtmlDom::getTagContent($li, '<a', true));
+			echo $tmp.PHP_EOL;
+			
+			if (preg_match('/[A-Z]{1}[a-z]+ [0-9]{1,2}, [12]{1}[0-9]{3}$/i', $tmp))
+			{
+				$data['date-taken'] = $tmp;
+			}
+			
+			if (preg_match('/[a-zA-Z ]+,&nbsp;[a-zA-Z ]+,&nbsp;[a-zA-Z ]+$/i', $tmp))
+			{
+				$data['location'] = trim(str_replace("&nbsp;", " ", $tmp));
+				$data['url']['location'] = self::$url.wlHtmlDom::getTagAttributeValue($li,"href");
+			}
+			$tmp2 = wlHtmlDom::getTagAttributeValue($li,"href");
+			if (preg_match('#^/cameras/#i', $tmp))
+			{
+				$data['camera'] = $tmp;
+			}
 		}
 		
+		$tag_brut = wlHtmlDom::getTagContent($content, '<ul id="thetags"', true);
+		
+		if ($tag_brut)
+		{
+			$tags = wlHtmlDom::getTagContents($tag_brut, '<li', true);
+			
+			$data['tag'] = array();
+			
+			foreach($tags as $tag)
+			{
+				$data['tag'][] = wlHtmlDom::getTagContent($tag, '<a', true);
+			}
+		}
+		
+		$brut_license = wlHtmlDom::getTagContent($content, '<span class="license-highlight"', true);
+		$data['license']['text'] = wlHtmlDom::getTagContent($brut_license, '<a', true);
+		
+		$brut_exif = wlHtmlDom::getTagContent($content, '<a id="exif-details"');
+		$data['url']['exif'] = self::$url.wlHtmlDom::getTagAttributeValue($brut_exif,"href");
 		
 		
-		//$data['date-taken'] = trim(wlHtmlDom::getTagContent($date_taken, '<a', true));
 		
+		//$data['exif_url'] =
+		
+	
 
 	/*
 		$data['legend'] = strip_tags($tmp);
