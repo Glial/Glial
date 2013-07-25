@@ -146,7 +146,7 @@ class flickr {
 		foreach($lis as $li)
 		{
 			$tmp = trim(wlHtmlDom::getTagContent($li, '<a', true));
-			echo $tmp.PHP_EOL;
+			//echo $tmp.PHP_EOL;
 			
 			if (preg_match('/[A-Z]{1}[a-z]+ [0-9]{1,2}, [12]{1}[0-9]{3}$/i', $tmp))
 			{
@@ -186,9 +186,19 @@ class flickr {
 		$data['url']['exif'] = self::$url.wlHtmlDom::getTagAttributeValue($brut_exif,"href");
 		
 		
+		$data['url']['all_size'] = self::$url."/photos/".$data['id_author']."/".$data['id_photo']."/sizes/sq/";
 		
-		//$data['exif_url'] =
+		$brut_latitude = wlHtmlDom::getTagContent($content, '<meta property="flickr_photos:location:latitude"', false);
+		if ($brut_latitude)
+		{
+			$data['gps']['latitude'] = wlHtmlDom::getTagAttributeValue($brut_latitude,"content");
+		}	
 		
+		$brut_latitude = wlHtmlDom::getTagContent($content, '<meta property="flickr_photos:location:longitude"', false);
+		if ($brut_latitude)
+		{
+			$data['gps']['longitude'] = wlHtmlDom::getTagAttributeValue($brut_latitude,"content");
+		}
 	
 
 	/*
@@ -352,17 +362,13 @@ class flickr {
 		return $data;
 	}
 
+	
+	
 	function get_photo_exif($url) {
 
 		$data = array();
 
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_PROXY, 'proxy.int.world.socgen:8080');
-		curl_setopt($ch, CURLOPT_PROXYUSERPWD, "aurelien.lequoy:Zeb33tln1$");
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_URL, $url);
-		$content = curl_exec($ch);
-		curl_close($ch);
+		$content = self::curl($url);
 
 		$content = wlHtmlDom::getTagContent($content, '<div class="photo-data"', true);
 		$tab = wlHtmlDom::getTagContents($content, '<h2', true);
@@ -383,6 +389,8 @@ class flickr {
 		}
 	}
 
+	
+	
 	static function fileExists($path) {
 		return (fopen($path, "r") == true);
 	}
@@ -398,5 +406,15 @@ class flickr {
 
 		return "flickr_" . $tab[5];
 	}
+	
+	static function get_all_size($url)
+	{
+		$content = self::curl($url);
+		
+		echo $content;
+	
+	}
+	
+
 
 }
