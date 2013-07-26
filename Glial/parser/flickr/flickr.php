@@ -8,14 +8,30 @@
  * 
  */
 //namespace gliale\flickr;
-
-
+//http://farm8.staticflickr.com/7253/8161959793_a81037254c.jpg
+//http://farm8.staticflickr.com/7253/8161959793_a81037254c_s.jpg
 
 class flickr {
 
 
 	private static $url = "http://www.flickr.com";
-	 	 
+	
+	private static $size = array("sq" => "_s", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_s.jpg 75*75
+	"q" => "_q", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_q.jpg 150*150
+	"t" => "_t", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_t.jpg ~100
+	"s" => "_m", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_m.jpg ~240
+	"n" => "_n", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_n.jpg ~320
+	"m" => "", //http://farm8.staticflickr.com/7022/9304372638_c137834ec8.jpg ~500
+	"z" => "_z", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_z.jpg ~640
+	"c" => "_c", //http://farm6.staticflickr.com/5449/9304372638_c137834ec8_c.jpg ~800
+	"l" => "_b", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_b.jpg ~1024 //same
+	"h" => "_h", //http://farm6.staticflickr.com/5449/9304372638_6f41482d98_h.jpg ~1600
+	"k" => "_k", //http://farm6.staticflickr.com/5449/9304372638_7f59c80340_k.jpg ~2048
+	"o" => "_o"); //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_b.jpg ~Originale
+	
+	private static $allowed = array("m","n","c","l");
+	
+	
 	static function curl($url)
 	{
 		$ch = curl_init();
@@ -76,8 +92,22 @@ class flickr {
 				$title = wlHtmlDom::getTagAttributeValue($var,"title");
 				
 				$ret = array();
+				$ret['img2']['url'] = trim($img);
+				
+				$pattern = "#(http://farm[0-9]+\.staticflickr\.com/[0-9]+/[0-9]+_[a-f0-9]+)(_[a-z]{1,2})?\.jpg#i";
+				
+				if (preg_match($pattern,trim($img), $mathes ))
+				{
+					$ret['img']['url'] = $mathes[1].".jpg";
+				}
+				else
+				{
+					print_r($mathes);
+					die("error url img");
+				}
+				
+				
 				$ret['author'] = trim($author);
-				$ret['img']['url'] = trim($img);
 				$ret['img']['width'] = trim($width);
 				$ret['img']['height'] = trim($height);
 				$ret['url'] = self::$url . trim($url);
@@ -90,7 +120,9 @@ class flickr {
 			sleep(2);
 		}
 		sleep(1);
-		echo "[" . date("Y-m-d H:i:s") . "] [" . $query . "] (result : " . count($data) . ")\n";
+		
+		$repeat = 50 - mb_strlen($query);
+		echo "[" . date("Y-m-d H:i:s") . "] (result : " . count($data) . ") [" . $query . "] \n";
 
 		return $data;
 
@@ -100,7 +132,7 @@ class flickr {
 	static function get_photo_info($url) {
 
 
-		$pattern = "#^http://www.flickr.com/photos/([a-zA-Z0-9@]+)/([0-9]*)\/$#i";
+		$pattern = "#^".self::$url."/photos/([a-zA-Z0-9@]+)/([0-9]*)\/#i";
 		
 		if (!preg_match($pattern, $url))
 		{
@@ -121,13 +153,19 @@ class flickr {
 		$data['id_photo'] = $tab_id_photo[5];
 		$data['url']['main'] = $url;
 		
-		$brut_canonical = wlHtmlDom::getTagContent($content, '<link id="canonicalurl" rel="canonical"');
+		$brut_canonical = wlHtmlDom::getTagContent($content, '<span class="photo-name-line-1"');
 		if ($brut_canonical)
 		{
 			$tmp = wlHtmlDom::getTagAttributeValue($brut_canonical,"href");
-			if (preg_match('#photos/([a-z0-9]+)/[0-9]+/#i',$tmp, $out))
+			if (preg_match('#photos/([a-z0-9@]+)/#i',$tmp, $out))
 			{
 				$data['id_author'] = $out[1];
+			}
+			else
+			{
+				
+				die("Error : Impossible to get id_author\n");
+				//return false;
 			}
 		}
 		
@@ -135,7 +173,7 @@ class flickr {
 		
 		$data['url']['img_z'] = wlHtmlDom::getTagAttributeValue($brut_min,"src");
 		$data['legend'] = trim(wlHtmlDom::getTagContent($content, '<div id="description_div" class="photo-desc"', true));
-		$data['legend'] = preg_replace('!\s+!', ' ', $data['legend']);
+		$data['legend'] = strip_tags(preg_replace('!\s+!', ' ', $data['legend']));
 		
 		$brut_author = trim(wlHtmlDom::getTagContent($content, '<span class="photo-name-line-1"', true));
 		$data['author'] = trim(wlHtmlDom::getTagContent($brut_author, '<a', true));
@@ -158,8 +196,9 @@ class flickr {
 				$data['location'] = trim(str_replace("&nbsp;", " ", $tmp));
 				$data['url']['location'] = self::$url.wlHtmlDom::getTagAttributeValue($li,"href");
 			}
+			
 			$tmp2 = wlHtmlDom::getTagAttributeValue($li,"href");
-			if (preg_match('#^/cameras/#i', $tmp))
+			if (preg_match('#^/cameras/#i', $tmp2))
 			{
 				$data['camera'] = $tmp;
 			}
@@ -179,8 +218,12 @@ class flickr {
 			}
 		}
 		
-		$brut_license = wlHtmlDom::getTagContent($content, '<span class="license-highlight"', true);
-		$data['license']['text'] = wlHtmlDom::getTagContent($brut_license, '<a', true);
+		$brut_license = wlHtmlDom::getTagContent($content, '<ul class="icon-inline sidecar-list', true);
+		
+		$data['license']['text'] = wlHtmlDom::getTagContents($brut_license, '<a', true)[1];
+		$data['license']['url'] = wlHtmlDom::getTagAttributeValue(wlHtmlDom::getTagContents($brut_license, '<a', false)[1],"href");
+		
+		//print_r($brut_license);
 		
 		$brut_exif = wlHtmlDom::getTagContent($content, '<a id="exif-details"');
 		$data['url']['exif'] = self::$url.wlHtmlDom::getTagAttributeValue($brut_exif,"href");
@@ -199,8 +242,13 @@ class flickr {
 		{
 			$data['gps']['longitude'] = wlHtmlDom::getTagAttributeValue($brut_latitude,"content");
 		}
+		
+		$data['img'] = self::get_all_size($data['url']['all_size']);
 	
-
+		if (! empty($data['url']['exif']))
+		{
+			$data['exif'] = self::get_photo_exif($data['url']['exif']);
+		}
 	/*
 		$data['legend'] = strip_tags($tmp);
 
@@ -364,7 +412,7 @@ class flickr {
 
 	
 	
-	function get_photo_exif($url) {
+	static function get_photo_exif($url) {
 
 		$data = array();
 
@@ -387,6 +435,8 @@ class flickr {
 			}
 			$i++;
 		}
+		
+		return $data;
 	}
 
 	
@@ -410,11 +460,41 @@ class flickr {
 	static function get_all_size($url)
 	{
 		$content = self::curl($url);
+		$keys = explode('/',$url);
 		
-		echo $content;
-	
+		$lis = wlHtmlDom::getTagContent($content, '<ol class="sizes-list"', true);
+		if ($lis)
+		{
+			$pattern = '#/'.$keys[3].'/'.$keys[4].'/'.$keys[5].'/'.$keys[6].'/([a-z]{1,2})/#i';
+			preg_match_all($pattern, $lis, $matches);
+			
+			
+			$tmp['size_available'] = $matches[1];
+			
+			foreach($tmp['size_available'] as $size)
+			{
+				if (in_array($size, self::$allowed))
+				{
+					$tmp['best'] = $size;
+				}
+			}
+			
+			if (empty($tmp['best']))
+			{
+				return false;
+			}
+			
+			$brut_url = wlHtmlDom::getTagContent($content, '<div id="allsizes-photo"', true);
+			$img = wlHtmlDom::getTagAttributeValue($brut_url,"src");
+			
+			$tmp['url']['img'] = str_replace("_s.jpg",  self::$size[$tmp['best']].".jpg",$img);
+			
+		}
+		else
+		{
+			return false;
+		}
+		
+		return $tmp;
 	}
-	
-
-
 }
