@@ -7,11 +7,15 @@
  *
  * 
  */
-//namespace gliale\flickr;
+namespace glial\parser\flickr;
+
+
+use \glial\extract\HtmlDom;
+
 //http://farm8.staticflickr.com/7253/8161959793_a81037254c.jpg
 //http://farm8.staticflickr.com/7253/8161959793_a81037254c_s.jpg
 
-class flickr {
+class Flickr {
 
 
 	private static $url = "http://www.flickr.com";
@@ -61,9 +65,9 @@ class flickr {
 
 	static function get_links_to_photos($query) {
 
-		$q = str_replace(" ", "+", $query);
+		//$q = str_replace(" ", "+", $query);
 
-		$q = urlencode($q);
+		$q = urlencode($query);
 
 		//version 1 => Flickr get tout les йlйments
 		$data = array();
@@ -74,7 +78,7 @@ class flickr {
 
 			//echo $url ."\n";
 			$content = self::curl($url);
-			$contents = wlHtmlDom::getTagContents($content, '<div class="photo-display-item"', true);
+			$contents = HtmlDom::getTagContents($content, '<div class="photo-display-item"', true);
 
 			if (! $contents) //if no any photo we stop here !
 			{
@@ -83,13 +87,13 @@ class flickr {
 			
 			foreach ($contents as $var)
 			{
-				$author = wlHtmlDom::getTagContent($var, '<a data-track="owner"', true);
-				$brut_img = wlHtmlDom::getTagContent($var, '<a data-track="photo-click"', true);
-				$img = wlHtmlDom::getTagAttributeValue($brut_img,"data-defer-src");
-				$url = wlHtmlDom::getTagAttributeValue($var,"href");
-				$width = wlHtmlDom::getTagAttributeValue($var,"width");
-				$height = wlHtmlDom::getTagAttributeValue($var,"height");
-				$title = wlHtmlDom::getTagAttributeValue($var,"title");
+				$author = HtmlDom::getTagContent($var, '<a data-track="owner"', true);
+				$brut_img = HtmlDom::getTagContent($var, '<a data-track="photo-click"', true);
+				$img = HtmlDom::getTagAttributeValue($brut_img,"data-defer-src");
+				$url = HtmlDom::getTagAttributeValue($var,"href");
+				$width = HtmlDom::getTagAttributeValue($var,"width");
+				$height = HtmlDom::getTagAttributeValue($var,"height");
+				$title = HtmlDom::getTagAttributeValue($var,"title");
 				
 				$ret = array();
 				$ret['img2']['url'] = trim($img);
@@ -98,7 +102,7 @@ class flickr {
 				
 				if (preg_match($pattern,trim($img), $mathes ))
 				{
-					$ret['img']['url'] = $mathes[1].".jpg";
+					$ret['img']['url'] = $mathes[1]."_s.jpg";
 				}
 				else
 				{
@@ -142,7 +146,7 @@ class flickr {
 		$data = array();
 		$content = self::curl($url);
 		
-		$contents = wlHtmlDom::getTagContent($content, '<div id="photo', true);
+		$contents = HtmlDom::getTagContent($content, '<div id="photo', true);
 		if (false === $contents)
 		{
 			return false;
@@ -153,10 +157,10 @@ class flickr {
 		$data['id_photo'] = $tab_id_photo[5];
 		$data['url']['main'] = $url;
 		
-		$brut_canonical = wlHtmlDom::getTagContent($content, '<span class="photo-name-line-1"');
+		$brut_canonical = HtmlDom::getTagContent($content, '<span class="photo-name-line-1"');
 		if ($brut_canonical)
 		{
-			$tmp = wlHtmlDom::getTagAttributeValue($brut_canonical,"href");
+			$tmp = HtmlDom::getTagAttributeValue($brut_canonical,"href");
 			if (preg_match('#photos/([a-z0-9@]+)/#i',$tmp, $out))
 			{
 				$data['id_author'] = $out[1];
@@ -169,21 +173,21 @@ class flickr {
 			}
 		}
 		
-		$brut_min = wlHtmlDom::getTagContent($content, '<div id="photo', true);
+		$brut_min = HtmlDom::getTagContent($content, '<div id="photo', true);
 		
-		$data['url']['img_z'] = wlHtmlDom::getTagAttributeValue($brut_min,"src");
-		$data['legend'] = trim(wlHtmlDom::getTagContent($content, '<div id="description_div" class="photo-desc"', true));
+		$data['url']['img_z'] = HtmlDom::getTagAttributeValue($brut_min,"src");
+		$data['legend'] = trim(HtmlDom::getTagContent($content, '<div id="description_div" class="photo-desc"', true));
 		$data['legend'] = strip_tags(preg_replace('!\s+!', ' ', $data['legend']));
 		
-		$brut_author = trim(wlHtmlDom::getTagContent($content, '<span class="photo-name-line-1"', true));
-		$data['author'] = trim(wlHtmlDom::getTagContent($brut_author, '<a', true));
+		$brut_author = trim(HtmlDom::getTagContent($content, '<span class="photo-name-line-1"', true));
+		$data['author'] = trim(HtmlDom::getTagContent($brut_author, '<a', true));
 		
-		$elems = trim(wlHtmlDom::getTagContent($content, '<div id="photo-story-story"', true));
+		$elems = trim(HtmlDom::getTagContent($content, '<div id="photo-story-story"', true));
 		
-		$lis = wlHtmlDom::getTagContents($elems, '<li', true);
+		$lis = HtmlDom::getTagContents($elems, '<li', true);
 		foreach($lis as $li)
 		{
-			$tmp = trim(wlHtmlDom::getTagContent($li, '<a', true));
+			$tmp = trim(HtmlDom::getTagContent($li, '<a', true));
 			//echo $tmp.PHP_EOL;
 			
 			if (preg_match('/[A-Z]{1}[a-z]+ [0-9]{1,2}, [12]{1}[0-9]{3}$/i', $tmp))
@@ -194,53 +198,53 @@ class flickr {
 			if (preg_match('/[a-zA-Z ]+,&nbsp;[a-zA-Z ]+,&nbsp;[a-zA-Z ]+$/i', $tmp))
 			{
 				$data['location'] = trim(str_replace("&nbsp;", " ", $tmp));
-				$data['url']['location'] = self::$url.wlHtmlDom::getTagAttributeValue($li,"href");
+				$data['url']['location'] = self::$url.HtmlDom::getTagAttributeValue($li,"href");
 			}
 			
-			$tmp2 = wlHtmlDom::getTagAttributeValue($li,"href");
+			$tmp2 = HtmlDom::getTagAttributeValue($li,"href");
 			if (preg_match('#^/cameras/#i', $tmp2))
 			{
 				$data['camera'] = $tmp;
 			}
 		}
 		
-		$tag_brut = wlHtmlDom::getTagContent($content, '<ul id="thetags"', true);
+		$tag_brut = HtmlDom::getTagContent($content, '<ul id="thetags"', true);
 		
 		if ($tag_brut)
 		{
-			$tags = wlHtmlDom::getTagContents($tag_brut, '<li', true);
+			$tags = HtmlDom::getTagContents($tag_brut, '<li', true);
 			
 			$data['tag'] = array();
 			
 			foreach($tags as $tag)
 			{
-				$data['tag'][] = wlHtmlDom::getTagContent($tag, '<a', true);
+				$data['tag'][] = HtmlDom::getTagContent($tag, '<a', true);
 			}
 		}
 		
-		$brut_license = wlHtmlDom::getTagContent($content, '<ul class="icon-inline sidecar-list', true);
+		$brut_license = HtmlDom::getTagContent($content, '<ul class="icon-inline sidecar-list', true);
 		
-		$data['license']['text'] = wlHtmlDom::getTagContents($brut_license, '<a', true)[1];
-		$data['license']['url'] = wlHtmlDom::getTagAttributeValue(wlHtmlDom::getTagContents($brut_license, '<a', false)[1],"href");
+		$data['license']['text'] = HtmlDom::getTagContents($brut_license, '<a', true)[1];
+		$data['license']['url'] = HtmlDom::getTagAttributeValue(HtmlDom::getTagContents($brut_license, '<a', false)[1],"href");
 		
 		//print_r($brut_license);
 		
-		$brut_exif = wlHtmlDom::getTagContent($content, '<a id="exif-details"');
-		$data['url']['exif'] = self::$url.wlHtmlDom::getTagAttributeValue($brut_exif,"href");
+		$brut_exif = HtmlDom::getTagContent($content, '<a id="exif-details"');
+		$data['url']['exif'] = self::$url.HtmlDom::getTagAttributeValue($brut_exif,"href");
 		
 		
 		$data['url']['all_size'] = self::$url."/photos/".$data['id_author']."/".$data['id_photo']."/sizes/sq/";
 		
-		$brut_latitude = wlHtmlDom::getTagContent($content, '<meta property="flickr_photos:location:latitude"', false);
+		$brut_latitude = HtmlDom::getTagContent($content, '<meta property="flickr_photos:location:latitude"', false);
 		if ($brut_latitude)
 		{
-			$data['gps']['latitude'] = wlHtmlDom::getTagAttributeValue($brut_latitude,"content");
+			$data['gps']['latitude'] = HtmlDom::getTagAttributeValue($brut_latitude,"content");
 		}	
 		
-		$brut_latitude = wlHtmlDom::getTagContent($content, '<meta property="flickr_photos:location:longitude"', false);
+		$brut_latitude = HtmlDom::getTagContent($content, '<meta property="flickr_photos:location:longitude"', false);
 		if ($brut_latitude)
 		{
-			$data['gps']['longitude'] = wlHtmlDom::getTagAttributeValue($brut_latitude,"content");
+			$data['gps']['longitude'] = HtmlDom::getTagAttributeValue($brut_latitude,"content");
 		}
 		
 		$data['img'] = self::get_all_size($data['url']['all_size']);
@@ -252,18 +256,18 @@ class flickr {
 	/*
 		$data['legend'] = strip_tags($tmp);
 
-		$tmp1 = trim(wlHtmlDom::getTagContent($content, '<span class="realname"', true));
-		$data['author'] = trim(wlHtmlDom::getTagContent($tmp1, '<a href="/people/', true));
+		$tmp1 = trim(HtmlDom::getTagContent($content, '<span class="realname"', true));
+		$data['author'] = trim(HtmlDom::getTagContent($tmp1, '<a href="/people/', true));
 
 		if (empty($data['author']))
 		{
-			$tmp9 = trim(wlHtmlDom::getTagContent($content, '<div id="photo-story-attribution"', true));
-			$tab9 = wlHtmlDom::getTagContents($tmp9, '<a', true);
+			$tmp9 = trim(HtmlDom::getTagContent($content, '<div id="photo-story-attribution"', true));
+			$tab9 = HtmlDom::getTagContents($tmp9, '<a', true);
 			$data['author'] = $tab9[1];
 		}
 
-		$tmp2 = wlHtmlDom::getTagContent($content, '<p id="photo-story-story"', true);
-		$tab2 = wlHtmlDom::getTagContents($tmp2, '<a', false);
+		$tmp2 = HtmlDom::getTagContent($content, '<p id="photo-story-story"', true);
+		$tab2 = HtmlDom::getTagContents($tmp2, '<a', false);
 
 		$col = array("date-taken", "country", "camera", "location");
 
@@ -275,7 +279,7 @@ class flickr {
 			{
 				if (stristr($a_url, $param))
 				{
-					$tmp3 = wlHtmlDom::getTagContent($a_url, '<a', true);
+					$tmp3 = HtmlDom::getTagContent($a_url, '<a', true);
 					$data[$param] = trim($tmp3);
 				}
 			}
@@ -337,12 +341,12 @@ class flickr {
 
 		$data['url'] = $url;
 
-		$tmp3 = trim(wlHtmlDom::getTagContent($content, '<ul id="thetags"', true));
-		$data['tag'] = wlHtmlDom::getTagContents($tmp3, '<a', true);
+		$tmp3 = trim(HtmlDom::getTagContent($content, '<ul id="thetags"', true));
+		$data['tag'] = HtmlDom::getTagContents($tmp3, '<a', true);
 
-		$tmp4 = trim(wlHtmlDom::getTagContent($content, '<li class="Stats license">', true));
+		$tmp4 = trim(HtmlDom::getTagContent($content, '<li class="Stats license">', true));
 		$tmp4 = strip_tags($tmp4, "<a>");
-		$gg = wlHtmlDom::getTagContents($tmp4, '<a', true);
+		$gg = HtmlDom::getTagContents($tmp4, '<a', true);
 		$tab = explode('"', $tmp4);
 		$data['license']['url'] = $tab[1];
 		$data['license']['text'] = $gg[1];
@@ -390,7 +394,7 @@ class flickr {
 		$data['image']['md5'] = md5_file(TMP . "photos_in_wait/" . $data['name']);
 
 		//matitude & longitude
-		$gps = trim(wlHtmlDom::getTagContent($content, '<div id="photo-story-map"', true));
+		$gps = trim(HtmlDom::getTagContent($content, '<div id="photo-story-map"', true));
 
 
 		$data['gps']['latitude'] = '0';
@@ -418,18 +422,18 @@ class flickr {
 
 		$content = self::curl($url);
 
-		$content = wlHtmlDom::getTagContent($content, '<div class="photo-data"', true);
-		$tab = wlHtmlDom::getTagContents($content, '<h2', true);
-		$tab2 = wlHtmlDom::getTagContents($content, '<table cellspacing="0" cellpadding="0" width="100%">', false);
+		$content = HtmlDom::getTagContent($content, '<div class="photo-data"', true);
+		$tab = HtmlDom::getTagContents($content, '<h2', true);
+		$tab2 = HtmlDom::getTagContents($content, '<table cellspacing="0" cellpadding="0" width="100%">', false);
 
 		$i = 0;
 		foreach ($tab as $elem)
 		{
-			$tr = wlHtmlDom::getTagContents($tab2[$i], '<tr', true);
+			$tr = HtmlDom::getTagContents($tab2[$i], '<tr', true);
 			foreach ($tr as $var)
 			{
-				$th = trim(strip_tags(wlHtmlDom::getTagContent($var, '<th', true)));
-				$td = wlHtmlDom::getTagContent($var, '<td', true);
+				$th = trim(strip_tags(HtmlDom::getTagContent($var, '<th', true)));
+				$td = HtmlDom::getTagContent($var, '<td', true);
 
 				$data[$tab[$i]][$th] = trim(strip_tags(str_replace("<br />", " - ", str_replace("\n", "", $td))));
 			}
@@ -462,7 +466,7 @@ class flickr {
 		$content = self::curl($url);
 		$keys = explode('/',$url);
 		
-		$lis = wlHtmlDom::getTagContent($content, '<ol class="sizes-list"', true);
+		$lis = HtmlDom::getTagContent($content, '<ol class="sizes-list"', true);
 		if ($lis)
 		{
 			$pattern = '#/'.$keys[3].'/'.$keys[4].'/'.$keys[5].'/'.$keys[6].'/([a-z]{1,2})/#i';
@@ -484,8 +488,8 @@ class flickr {
 				return false;
 			}
 			
-			$brut_url = wlHtmlDom::getTagContent($content, '<div id="allsizes-photo"', true);
-			$img = wlHtmlDom::getTagAttributeValue($brut_url,"src");
+			$brut_url = HtmlDom::getTagContent($content, '<div id="allsizes-photo"', true);
+			$img = HtmlDom::getTagAttributeValue($brut_url,"src");
 			
 			$tmp['url']['img'] = str_replace("_s.jpg",  self::$size[$tmp['best']].".jpg",$img);
 			

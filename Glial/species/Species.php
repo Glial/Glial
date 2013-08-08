@@ -1,6 +1,14 @@
 <?php
 
-class species_tree {
+
+
+
+namespace glial\species;
+
+
+use \glial\synapse\Singleton;
+
+class Species {
 
 	static function add_species($kingdom, $phylum, $class, $order, $family, $genus, $species) {
 
@@ -449,6 +457,23 @@ class species_tree {
 </div>';
 
 		echo '</a></div></span>';
+	}
+	
+	static function get($id)
+	{
+		
+		$sql = "select *, (select count(1) as cpt from link__species_picture_id__species_picture_search f where  c.photo_id = f.id_species_picture_id) as gg from species_picture_search a
+	inner join link__species_picture_id__species_picture_search b ON a.id = b.id_species_picture_search
+	inner join  species_picture_id c ON c.id = b.id_species_picture_id
+	where id_species_main = ".$id."
+	order by  id_species_main, c.id_species_author, a.tag_search, c.photo_id limit 1000";
+		
+		$_SQL = Singleton::getInstance(SQL_DRIVER);
+		$res = $_SQL->sql_query($sql);
+		
+		$data = $_SQL->sql_to_array($res);
+		
+		return $data;
 	}
 
 }
