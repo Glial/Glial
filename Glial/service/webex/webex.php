@@ -1,6 +1,6 @@
 <?php
 
-class webex {
+class Webex {
 
     var $data = array();
     var $id_group = 0;

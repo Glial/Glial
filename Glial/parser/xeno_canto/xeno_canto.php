@@ -1,8 +1,10 @@
 <?php
 
-class xeno_canto {
+namespace xeno_canto;
 
-	static function get_all_link() {
+class XenoCanto {
+
+	static function getAllLink() {
 		$url = "http://www.xeno-canto.org/all_species.php";
 
 		$file = file_get_contents("/var/www/xc/all_species.php.htm");
@@ -57,7 +59,7 @@ class xeno_canto {
 	}
 	
 	
-	static function get_kmz()
+	static function getKmz()
 	{
 		
 		$sql = "SELECT * FROM species_tree_nominal where class='Aves'";

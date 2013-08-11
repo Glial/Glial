@@ -1,8 +1,8 @@
 <?php
 
-include_once LIBRARY . 'Glial/export/export.php';
+namespace glial\export;
 
-class csv
+class Csv
 {
 	static function export_csv($sql_query, $what = '', $csv_terminated = "\n", $csv_separator = ";", $csv_enclosed = "\"", $csv_escaped = "\\")
 	{

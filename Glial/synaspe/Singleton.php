@@ -29,7 +29,7 @@ class Singleton
 		return self::$instances[$class];
 	}
 	
-	static function get_defined()
+	static function getDefined()
 	{
 		echo "<pre>";
 		print_r(array_keys (self::$instances));

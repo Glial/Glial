@@ -7,11 +7,11 @@
  *
  * 
  */
-//namespace gliale\flickr;
+namespace gliale\parser\iucn;
 
-class iucn {
+class Iucn {
 
-	static function get_all_species($i) {
+	static function getAllSpecies($i) {
 
 		//version 1 => Flickr get tout les Ð¹lÐ¹ments
 		$data = array();
@@ -90,7 +90,7 @@ class iucn {
 		//grab and draw the contents
 	}
 
-	static function get_species_summary($id) {
+	static function getSpeciesSummary($id) {
 		$data = array();
 
 		$url = "http://www.iucnredlist.org/details/" . $id . "/0";
@@ -240,11 +240,7 @@ class iucn {
 		}
 
 
-
-
 		//geographique range
-
-
 		$tr = wlHtmlDom::getTagContents($table[3], '<tr>', true);
 
 		foreach ($tr as $line_td)
@@ -360,7 +356,7 @@ class iucn {
 	 * 
 	 */
 
-	static function get_species_classification($id) {
+	static function getSpeciesClassification($id) {
 		$data = array();
 
 		$url = "http://www.iucnredlist.org/details/classify/" . $id . "/0";
@@ -426,7 +422,7 @@ class iucn {
 		return $data;
 	}
 
-	static function get_species_bibliography($id) {
+	static function getSpeciesBibliography($id) {
 		$data = array();
 
 		$url = "http://www.iucnredlist.org/details/biblio/" . $id . "/0";

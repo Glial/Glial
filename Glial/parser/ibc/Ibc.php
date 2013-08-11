@@ -2,10 +2,10 @@
 
 namespace glial\parser\ibc;
 
-class ibc
+class Ibc
 {
 
-	static function get_species_from_family($famliy = "waxbills-estrildidae")
+	static function getSpeciesFromFamily($famliy = "waxbills-estrildidae")
 	{
 		$url = "http://ibc.lynxeds.com/family/" . $famliy;
 
@@ -60,7 +60,7 @@ class ibc
 		return $data;
 	}
 
-	static function get_order_and_family()
+	static function getOrderAndFamily()
 	{
 
 		$url = "http://ibc.lynxeds.com/";
@@ -106,7 +106,7 @@ class ibc
 		return $data;
 	}
 
-	static function get_photo_and_infos($picture_link)
+	static function getPhotoAndInfos($picture_link)
 	{
 		$url = "http://ibc.lynxeds.com/photo/" . $picture_link;
 
@@ -183,7 +183,7 @@ class ibc
 		return ($data);
 	}
 
-	static function get_video_and_infos($video_link)
+	static function getVideoAndInfos($video_link)
 	{
 		$url = "http://ibc.lynxeds.com/video/" . $video_link;
 
@@ -266,7 +266,7 @@ class ibc
 		return ($data);
 	}
 
-	static function get_sound_and_infos($sound_link)
+	static function getSoundAndInfos($sound_link)
 	{
 		$url = "http://ibc.lynxeds.com/sound/" . $sound_link;
 
@@ -346,7 +346,7 @@ class ibc
 		return ($data);
 	}
 
-	static function get_species_infos_and_links($link)
+	static function getSpeciesInfosAndLinks($link)
 	{
 		$url = "http://ibc.lynxeds.com/species/" . $link;
 
@@ -402,7 +402,7 @@ class ibc
 		return ($data);
 	}
 
-	static function get_user_infos($link)
+	static function getUserInfos($link)
 	{
 		$url = "http://ibc.lynxeds.com/users/" . $link;
 

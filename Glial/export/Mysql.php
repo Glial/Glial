@@ -1,6 +1,8 @@
 <?php
 
-class mysql {
+namespace glial\export;
+
+class Mysql {
 	/* backup the db OR just a table */
 
 	//example backup_tables('localhost', 'username', 'password', 'blog');

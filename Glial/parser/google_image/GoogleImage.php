@@ -8,11 +8,13 @@
  * 
  */
 
-namespace gliale\google_image;
+namespace gliale\parser\google_image;
 
-class google_image {
+class GoogleImage
+{
 
-	function get_image() {
+	function get_image()
+	{
 
 		$var = "White headed munia";
 
@@ -51,7 +53,7 @@ class google_image {
 		echo "</pre>";
 
 
-		foreach ($grid as $img)
+		foreach ( $grid as $img )
 		{
 			preg_match('/http[^\s]*&amp;/i', $img, $match);
 			$res = explode("&amp;", $match[0]);
@@ -79,7 +81,7 @@ class google_image {
 
 			//if (stristr($img, $var))	continue;
 
-			if ($elem['width'] < 250 || $elem['height'] < 250)
+			if ( $elem['width'] < 250 || $elem['height'] < 250 )
 			{
 				$error[] = $elem;
 				continue;
@@ -92,13 +94,13 @@ class google_image {
 
 			$exclude = array("flickr.com", "lonchuramyworld.monempire.net", "hofmann-photography.de", "ibc.lynxeds.com", "flickriver.com", "photozoo.org");
 
-			if (in_array($elem['site'], $exclude))
+			if ( in_array($elem['site'], $exclude) )
 			{
 				$error[] = $elem;
 				continue;
 			}
 
-			if (stristr($elem['legend'], $var) === false)
+			if ( stristr($elem['legend'], $var) === false )
 			{
 				$error[] = $elem;
 				continue;

@@ -9,6 +9,8 @@
  */
 //namespace gliale\flickr;
 
+namespace glial\ldap;
+
 class ldap {
     /*
      * This function searchs in LDAP tree ($ad -LDAP link identifier)

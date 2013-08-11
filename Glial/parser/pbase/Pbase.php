@@ -10,9 +10,11 @@
 
 namespace gliale\parser\pbase;
 
-class pbase {
+class Pbase
+{
 
-	function get_all_results($url) {
+	function getAllResults($url)
+	{
 
 		$url = "http://www.pbase.com/wongtsushi/whiteeyes_munias_buntings";
 		$url = "http://www.pbase.com/ingotkfr/chestnut_munia";
@@ -36,7 +38,7 @@ class pbase {
 		$tab = wlHtmlDom::getTagContents($tab, '<TD', true);
 
 
-		foreach ($tab as $line)
+		foreach ( $tab as $line )
 		{
 			$elem = explode('"', $line);
 			$data[]['url'] = $elem[1];
@@ -47,7 +49,8 @@ class pbase {
 		echo "</pre>";
 	}
 
-	function get_image($url, $fullpath) {
+	function getImage($url, $fullpath)
+	{
 
 		$ci = curl_init();
 		curl_setopt($ci, CURLOPT_URL, $url);
@@ -61,7 +64,7 @@ class pbase {
 		curl_close($ci);
 
 
-		if (file_exists($fullpath))
+		if ( file_exists($fullpath) )
 		{
 			unlink($fullpath);
 		}
@@ -71,7 +74,8 @@ class pbase {
 		fclose($fp);
 	}
 
-	function get_info() {
+	function getInfo()
+	{
 
 
 		$link = "http://www.pbase.com/wongtsushi/image/80484674&exif=Y";
@@ -141,12 +145,12 @@ class pbase {
 
 
 		$hh = array();
-		foreach ($data_exif as $line)
+		foreach ( $data_exif as $line )
 		{
 
 			$dd = wlHtmlDom::getTagContents($line, '<td class=lid', true);
 
-			if ($dd == false)
+			if ( $dd == false )
 			{
 				continue;
 			}

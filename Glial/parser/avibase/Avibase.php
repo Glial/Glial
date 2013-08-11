@@ -12,7 +12,7 @@
 namespace glial\parser\avibase;
 
 
-class avibase
+class Avibase
 {
 
 	static function get_species_by_reference($id_avibase = "01A3BE3CBE9C7B39")

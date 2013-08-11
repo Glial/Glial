@@ -10,7 +10,7 @@ use \glial\synapse\Singleton;
 
 class Species {
 
-	static function add_species($kingdom, $phylum, $class, $order, $family, $genus, $species) {
+	static function addSpecies($kingdom, $phylum, $class, $order, $family, $genus, $species) {
 
 		$_SQL = Singleton::getInstance(SQL_DRIVER);
 

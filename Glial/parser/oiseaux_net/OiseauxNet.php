@@ -2,7 +2,7 @@
 
 namespace glial\parser\oiseaux_net;
 
-class oiseaux_net {
+class OiseauxNet {
 
 	static function get_species_from_family($famliy = "estrildides") {
 		$url = "http://www.oiseaux.net/oiseaux/" . $famliy . ".html";

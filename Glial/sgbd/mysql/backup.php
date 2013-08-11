@@ -3,9 +3,9 @@
 
 namespace glial\sgbd\mysql;
 
-class backup
+class Backup
 {
-	function generate_backup()
+	function generateBackup()
 	{
 		$_SQL = Singleton::getInstance(SQL_DRIVER);
 		
@@ -27,6 +27,6 @@ class backup
 		}
 
 	}
-	
+	e
 	
 }

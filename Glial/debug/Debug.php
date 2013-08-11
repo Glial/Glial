@@ -1,6 +1,9 @@
 <?php
 
-class debug {
+namespace glial\debug;
+
+
+class Debug {
 
 	var $timer = "";
 	var $timerdiff = "";

@@ -1,6 +1,8 @@
 <?php
 
-class export {
+namespace glial\export;
+
+class Export {
 
 	/**
 	 * Output handler for all exports, if needed buffering, it stores data into

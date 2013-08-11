@@ -8,9 +8,9 @@
  * 
  */
 
-namespace gliale\hofmann;
+namespace glial\parser\hofmann;
 
-class hofmann {
+class Hofmann {
 	/*
 	 * $url = "http://www.flickr.com/photos/maholyoak/5847734660/meta/";
 	  $url = "http://www.hofmann-photography.de/index/02_estrild/index_estrild/asia/";

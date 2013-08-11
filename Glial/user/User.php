@@ -3,9 +3,9 @@
 namespace glial;
 
 
-class user {
+class User {
 
-	static function get_user_not_confirmed() {
+	static function getUserNotConfirmed() {
 		$_SQL = \Singleton::getInstance(SQL_DRIVER);
 
 		$sql = "SELECT * FROM user_main WHERE (id_group = 1 and key_auth != '') OR id =3";

@@ -9,9 +9,9 @@
  */
 //namespace gliale\flickr;
 
-class url {
+class Url {
 
-    static function get_sub_domain() {
+    static function getSubDomain() {
         return substr_count($_SERVER['HTTP_HOST'], '.') > 1 ?
                 substr($_SERVER['HTTP_HOST'], 0, strpos($_SERVER['HTTP_HOST'], '.')) : '';
     }
