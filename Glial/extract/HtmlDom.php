@@ -9,7 +9,7 @@ namespace glial\extract;
  * @author WiseLoop & Aurélien LEQUOY
  */
 
-class htmlDom {
+class HtmlDom {
     /**
      * Cleans a tag by removing accidental leading and trailing unwanted strings.
      * @param string $tagSlice

@@ -2,8 +2,8 @@
 
 namespace glial\debug;
 
-
-class Debug {
+class Debug
+{
 
 	var $timer = "";
 	var $timerdiff = "";
