@@ -1,11 +1,11 @@
 <?php
 /*------------------------------------------------------------------------------
 ** File:        polyExample.php
-** Description: Demo's the capability of the polygon class. 
+** Description: Demo's the capability of the polygon class.
 ** Version:     1.6
 ** Author:      Brenor Brophy
 ** Email:       brenor dot brophy at gmail dot com
-** Homepage:    www.brenorbrophy.com 
+** Homepage:    www.brenorbrophy.com
 **------------------------------------------------------------------------------
 ** COPYRIGHT (c) 2005-2010 BRENOR BROPHY
 **
@@ -16,9 +16,9 @@
 **
 ** http://www.opensource.org/licenses/gpl-license.php
 **
-** This program is distributed in the hope that it will be useful, but WITHOUT 
-** ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-** FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+** This program is distributed in the hope that it will be useful, but WITHOUT
+** ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+** FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 **------------------------------------------------------------------------------
 **
 ** Based on the paper "Efficient Clipping of Arbitary Polygons" by Gunther
@@ -26,7 +26,7 @@
 ** (hormann at informatik dot tu-clausthal dot de), ACM Transactions on Graphics
 ** 1998;17(2):71-83.
 **
-** Available at: 
+** Available at:
 **
 **      http://www2.in.tu-clausthal.de/~hormann/papers/Greiner.1998.ECO.pdf
 **
@@ -59,7 +59,7 @@
 **						Added new examples for scale & translate methods and
 **						new examples showing the degenerate vertex issue
 */
-require('polygon.php');         // Where all the good stuff is
+require 'polygon.php';         // Where all the good stuff is
 
 /*
 ** A simple function that draws the polygons onto an image to demo the class
@@ -90,18 +90,13 @@ function drawPolyAt($x, $y, &$i, &$p, &$col, $c)
         if ($i) $sy = imagesy($i);      // Determine the height of the image in pixels
                                                                 // All $y coords will be subtracted from this
         if ($p) // If a polygon exists
-        do              // For all polygons in the list
-        {
+        do {              // For all polygons in the list
                 $v =& $p->getFirst();           // get the first vertex of the first polygon
-                do                                                      // For all vertices in this polygon
-                {
+                do {                                                      // For all vertices in this polygon
                         $n =& $v->Next();               // Get the next vertex
-                        if ($v->d() == 0)               // Check is this is an ARc segment
-                        { // It is a line
+                        if ($v->d() == 0) {               // Check is this is an ARc segment // It is a line
                                 imageLine ($i,round($x+$v->X()),round($sy-($y+$v->Y())),round($x+$n->X()),round($sy-($y+$n->Y())),$col[$c]);        // Draw a line vertex to vertex
-                        }
-                        else
-                        { // It is an Arc
+                        } else { // It is an Arc
                                 $s = 360 - rad2deg ($p->angle($v->Xc(), $v->Yc(), $v->X(), $v->Y()));   // Calc start angle
                                 $e = 360 - rad2deg ($p->angle($v->Xc(), $v->Yc(), $n->X(), $n->Y()));   // Calc end angle
                                 $dia = round(2*$p->dist($v->X(), $v->Y(), $v->Xc(), $v->Yc()));
@@ -111,11 +106,9 @@ function drawPolyAt($x, $y, &$i, &$p, &$col, $c)
                                         imagearc($i, round($x+$v->Xc()), round($sy-($y+$v->Yc())),$dia,$dia,$e,$s,$col[$c]);
                         }
                         $v =& $n;                       // Move to next vertex
-                }
-                while ($v->id() != $p->first->id());    // Keep drawing until the last vertex
+                } while ($v->id() != $p->first->id());    // Keep drawing until the last vertex
                 $p =& $p->NextPoly();                   // Get the next polygon in the list
-        }
-        while ($p);     // Keep drawing polygons as long as they exist
+        } while ($p);     // Keep drawing polygons as long as they exist
 }
 
 /*
@@ -255,7 +248,7 @@ function newImage($width, $height, &$i, &$col)
         imageGif($im,"poly_ex3.gif");
 
 //------------------------------------------------------------------------------
-// This example shows how polygon the move, rotate and bRect methods work 
+// This example shows how polygon the move, rotate and bRect methods work
 //
         $poly1 =& new polygon();
         $poly1->addv(25,35);
@@ -267,8 +260,7 @@ function newImage($width, $height, &$i, &$col)
         newImage (600,120, $im, $colors);               // Create a new image to draw our polygons
         drawPolyAt(0, 0, $im, $poly1, $colors, "red");  // The starting polygon
                                                                                                         // Polygon center is at 50,60
-        for ($i=0; $i<5; $i++)
-        {
+        for ($i=0; $i<5; $i++) {
                 $poly1->move(100,0);                                                    // Move it 100 right
                 $poly1->rotate(150+($i*100),60,deg2rad(-30));   // Rotate 30 degrees clockwise around its center
                 drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw it again
@@ -604,20 +596,20 @@ function newImage($width, $height, &$i, &$col)
         $polyA->addv(50,0);
 
         drawPolyAt(0, 20, $im, $polyA, $colors, "red");
-		$polyA->scale(1.2,1.2);			// Increase size by 20%
+        $polyA->scale(1.2,1.2);			// Increase size by 20%
         drawPolyAt(0, 20, $im, $polyA, $colors, "blu");
 
-		$polyA->translate(150,0,250,50);
+        $polyA->translate(150,0,250,50);
         drawPolyAt(0, 20, $im, $polyA, $colors, "blu");
 
-		$polyA->translate(300,50,350,100);
+        $polyA->translate(300,50,350,100);
         drawPolyAt(0, 20, $im, $polyA, $colors, "blu");
 
         imageGif($im,"poly_ex8.gif");
 
 //------------------------------------------------------------------------------
 // This example checks the degenerate case when the vertex of one polygon lies
-// exactly one the edge of the other polygon. 
+// exactly one the edge of the other polygon.
 //
         $polyA =& new polygon();        // Create a new polygon and add some vertices to it
         $polyA->addv(0,0);
@@ -695,7 +687,7 @@ function newImage($width, $height, &$i, &$col)
         imagestring ($im, 1, 275, 110, "A|B", $colors["blu"]);
         imagestring ($im, 1, 395, 110, "A\B", $colors["blu"]);
         imagestring ($im, 1, 515, 110, "B\A", $colors["blu"]);
-        imageGif($im,"poly_ex10.gif");  
+        imageGif($im,"poly_ex10.gif");
 
 //------------------------------------------------------------------------------
 // A third degenerate vertex example re-creates the example in Figure 15 of the
@@ -735,7 +727,7 @@ function newImage($width, $height, &$i, &$col)
 //
 // Output the results
 //
-        newImage (750,150, $im, $colors);               // Create a new image to draw our polygons       
+        newImage (750,150, $im, $colors);               // Create a new image to draw our polygons
         drawPolyAt(1, 20, $im, $polyA, $colors, "red");
         drawPolyAt(1, 20, $im, $polyB, $colors, "grn");
         drawPolyAt(151, 20, $im, $poly1, $colors, "blu");
@@ -752,7 +744,7 @@ function newImage($width, $height, &$i, &$col)
 
 
 //------------------------------------------------------------------------------
-// This example checks the isPolySelfIntersect method 
+// This example checks the isPolySelfIntersect method
 //
 
 //
@@ -769,4 +761,3 @@ echo '<p><div align="center"><strong>EXAMPLE 8 - Scale and Translate Methods</st
 echo '<p><div align="center"><strong>EXAMPLE 9 - Degenerate Vertices</strong><br><img src="poly_ex9.gif" width="600" height="150"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 10 - Degenerate Vertices</strong><br><img src="poly_ex10.gif" width="600" height="120"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 11 - Degenerate Vertices</strong><br><img src="poly_ex11.gif" width="750" height="150"><br></div></p>';
-?>
