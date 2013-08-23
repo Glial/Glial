@@ -9,7 +9,7 @@
  */
 namespace glial\acl;
 
-class acl
+class Acl
 {
     public $data = array();
     public $id_group = 0;
