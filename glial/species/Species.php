@@ -394,11 +394,22 @@ class Species
     public static function get($id)
     {
 
-        $sql = "select *, (select count(1) as cpt from link__species_picture_id__species_picture_search f where  c.photo_id = f.id_species_picture_id) as gg from species_picture_search a
+        $sql = "select *, b.id as id_link,
+			(select count(1) as cpt from link__species_picture_id__species_picture_search f where  c.id = f.id_species_picture_id) as gg,
+		
+			(select count(1) as cpt from link__species_picture_id__species_picture_search i
+			inner join species_picture_search j ON j.id = i.id_species_picture_search
+			where  c.id = i.id_species_picture_id AND j.id_species_main = a.id_species_main) as gg2
+			
+    from species_picture_search a
     inner join link__species_picture_id__species_picture_search b ON a.id = b.id_species_picture_search
     inner join  species_picture_id c ON c.id = b.id_species_picture_id
-    where id_species_main = ".$id."
-    order by  id_species_main, c.id_species_author, a.tag_search, c.photo_id limit 1000";
+	inner join species_main z ON z.id = a.id_species_main
+	inner join species_author x ON x.id = c.id_species_author
+	
+    where z.scientific_name = '".str_replace('_', ' ',$id)."'
+    order by  a.id_species_main, c.id_species_author, a.tag_search, c.photo_id limit 1000";
+	
 
         $_SQL = Singleton::getInstance(SQL_DRIVER);
         $res = $_SQL->sql_query($sql);

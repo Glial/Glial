@@ -657,8 +657,7 @@ class Polygon
                     $winding_number += $n;  // Add number of intersections found
             }
             $q = & $q->Next();
-        }
-        while ($q->id() != $this->first->id());
+        } while ($q->id() != $this->first->id());
         $point_at_infinity = NULL;  // Free the memory for neatness
         if ($winding_number % 2 == 0) // Check even or odd
             return FALSE;	// even == outside
@@ -708,12 +707,10 @@ class Polygon
                         }
                     } // end if $c is not an intersect point
                     $c = & $c->Next();
-                }
-                while ($c->id() != $polyB->first->id());
+                } while ($c->id() != $polyB->first->id());
             } // end if $s not an intersect point
             $s = & $s->Next();
-        }
-        while ($s->id() != $this->first->id());
+        } while ($s->id() != $this->first->id());
         /*
          * * Phase 2 of the algorithm is to identify every intersection point as an
          * * entry or exit point to the other polygon. This will set the entry bits
@@ -761,8 +758,7 @@ class Polygon
                 $entry = !$entry;
             }
             $s = & $s->Next();
-        }
-        while ($s->id() != $this->first->id());
+        } while ($s->id() != $this->first->id());
         /*
          * * Repeat for other polygon
          */
@@ -777,8 +773,7 @@ class Polygon
                 $entry = !$entry;
             }
             $c = & $c->Next();
-        }
-        while ($c->id() != $polyB->first->id());
+        } while ($c->id() != $polyB->first->id());
         /*
          * * Phase 3 of the algorithm is to scan the linked lists of the
          * * two input polygons an construct a linked list of result
