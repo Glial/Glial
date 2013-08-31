@@ -5,10 +5,9 @@ http://www.glial-framework-php.org/
 
 <h2>Requirement ?</h2>
 
-modrewrite of Apache
-
-PHP 5.5.*
-
+1. modrewrite of Apache
+1. PHP 5.5.*
+1. curl
 
 <h2>How to install?</h2>
 
