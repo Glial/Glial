@@ -6,6 +6,7 @@ http://www.glial-framework-php.org/
 <h2>Requirement ?</h2>
 
 modrewrite of Apache
+
 PHP 5.5.*
 
 
