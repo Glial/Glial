@@ -391,26 +391,40 @@ class Species
         echo '</a></div></span>';
     }
 
-    public static function get($id)
+    public static function get($id, $source)
     {
 
-        $sql = "select *, b.id as id_link,
+        $sql = "select c.id_species_author, x.surname, b.id as id_link,b.id,c.miniature ,
 			(select count(1) as cpt from link__species_picture_id__species_picture_search f where  c.id = f.id_species_picture_id) as gg,
 		
 			(select count(1) as cpt from link__species_picture_id__species_picture_search i
 			inner join species_picture_search j ON j.id = i.id_species_picture_search
-			where  c.id = i.id_species_picture_id AND j.id_species_main = a.id_species_main) as gg2
+			where  c.id = i.id_species_picture_id AND j.id_species_main = a.id_species_main) as gg2,
+			GROUP_CONCAT(DISTINCT a.tag_search ORDER BY a.tag_search DESC SEPARATOR '\n') as tag_search,
+			
+			(SELECT GROUP_CONCAT(DISTINCT t.scientific_name ORDER BY t.scientific_name DESC SEPARATOR '\n')
+			FROM link__species_picture_id__species_picture_search r
+			INNER JOIN species_picture_id s ON s.id = r.id_species_picture_id
+			INNER JOIN species_picture_search u ON u.id = r.id_species_picture_search
+			INNER JOIN species_main t ON t.id = u.id_species_main
+			WHERE b.id_species_picture_id = s.id) as species
+			
 			
     from species_picture_search a
     inner join link__species_picture_id__species_picture_search b ON a.id = b.id_species_picture_search
     inner join  species_picture_id c ON c.id = b.id_species_picture_id
 	inner join species_main z ON z.id = a.id_species_main
 	inner join species_author x ON x.id = c.id_species_author
+    inner JOIN species_source_main n ON n.id = a.id_species_source_main
+
 	
     where z.scientific_name = '".str_replace('_', ' ',$id)."'
-    order by  a.id_species_main, c.id_species_author, a.tag_search, c.photo_id limit 1000";
+        AND n.name ='".$source."'
+	group by x.id, b.id_species_picture_id
+    order by  c.id_species_author, c.photo_id limit 50";
 	
 
+		//echo $sql;
         $_SQL = Singleton::getInstance(SQL_DRIVER);
         $res = $_SQL->sql_query($sql);
 

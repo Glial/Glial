@@ -7,7 +7,7 @@
  *
  *
  */
-namespace \glial\parser\flickr;
+namespace glial\parser\flickr;
 
 use \glial\extract\HtmlDom;
 
@@ -59,7 +59,7 @@ class Flickr
 
     }
 
-    public static function get_links_to_photos($query)
+    public static function getLinksToPhotos($query)
     {
         //$q = str_replace(" ", "+", $query);
 
@@ -211,7 +211,8 @@ class Flickr
         $data['url']['all_size'] = self::$url."/photos/".$data['id_author']."/".$data['id_photo']."/sizes/sq/";
 
         $brut_latitude = HtmlDom::getTagContent($content, '<meta property="flickr_photos:location:latitude"', false);
-        if ($brut_latitude) {
+		
+		if ($brut_latitude) {
             $data['gps']['latitude'] = HtmlDom::getTagAttributeValue($brut_latitude,"content");
         }
 
