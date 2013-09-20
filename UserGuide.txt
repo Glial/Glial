@@ -4,8 +4,9 @@ Glial don't work as most of framework worked actually.
 I think it's the first framework to work in a navigator and in CLI in same time.
 When I developed Glial, the goal was to make some stuff usable and worked fine, it's possibly that it's not nice by moment.
 
-First you have to know if you miss somethings about spelling and stuff, All in Glial are in lower case and in singular.
+First you have to know if you miss somethings about spelling and stuff, All in Glial was in lower case and in singular.
 Why ? Like that we don't have transform any string and waste time of execution.
+Since we decided to follow the SPR-X, all class name and directory are now in StudyCaps
 
 
 
