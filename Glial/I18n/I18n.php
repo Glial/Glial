@@ -23,63 +23,63 @@ class I18n
      * 
      * @var string
      */
-    private $_defaultlanguage = "en";
+    private static $_defaultlanguage = "en";
 
     /**
      * The path where to save the translation files
      * 
      * @var string
      */
-    private $_path;
+    private static $_path;
 
     /**
      * Array with all translations
      * 
      * @var array
      */
-    private $_translations = array();
+    private static $_translations = array();
 
     /**
      * Array storage with all words / senteces to translate in one row at end
      * 
      * @var array
      */
-    public $_table_language = array();
+    public static $_table_language = array();
 
     /**
      * Array storage with all words / senteces to translate in one row at end
      * 
      * @var array
      */
-    public $_to_translate = array();
+    public static $_to_translate = array();
 
     /**
      * 
      * 
      * @var string
      */
-    private $file;
+    private static $file;
 
     /**
      * File where we get the string to translate
      * 
      * @var string
      */
-    private $line;
+    private static $line;
 
     /**
      * store the data before to translate all in one row
      *
      * @var array
      */
-    public $data = array();
+    public static $data = array();
 
     /**
      * Line where we get the string to translate
      *
      * @var int
      */
-    public $languages = array("auto" => "automatic",
+    public static $languages = array("auto" => "automatic",
         "af" => "afrikaans",
         "sq" => "albanian",
         "ar" => "arabic",
@@ -176,7 +176,7 @@ class I18n
      *
      * @var arrays
      */
-    public $charset = array(
+    public static $charset = array(
         "sq" => "albanian",
         "ar" => "arabic",
         "bg" => "bulgarian",
@@ -277,7 +277,7 @@ class I18n
      *
      * @var arrays
      */
-    public $languagesENGLISH = array(
+    public static $languagesENGLISH = array(
         "Czech" => "cs",
         "German" => "de",
         "Danish" => "dk",
@@ -303,9 +303,14 @@ class I18n
      * @access private
      * @return void
      */
-    public function __construct($db)
+    public static function injectDb($db)
     {
-        $this->_SQL = $db;
+        self::$_SQL = $db;
+    }
+    
+    public static function getDb()
+    {
+        return self::$_SQL;
     }
 
     /**
@@ -315,7 +320,7 @@ class I18n
      * @param string $string
      * @return string
      */
-    private function initiate($iso)
+    private static function initiate($iso)
     {
 
         $sql = "CREATE TABLE IF NOT EXISTS `translation_" . mb_strtolower($iso) . "` (
@@ -333,7 +338,7 @@ class I18n
 		UNIQUE KEY `key` (`key`),
 		INDEX `id_history_etat` (`id_history_etat`)
 		) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
-        $this->_SQL->sql_query($sql);
+        self::$_SQL->sql_query($sql);
     }
 
     private static $greeting = 'Hello';
@@ -357,46 +362,46 @@ class I18n
      * @param string $text
      * @return string
      */
-    public function Translate($from, $to, $text, $key)
+    public static function Translate($from, $to, $text, $key)
     {
 
-        $this->insert_db($from, $from, $text, $key, '0');
+        self::insert_db($from, $from, $text, $key, '0');
 
 
         $translate_auto = 1;
 
         $sql = "SELECT text,translate_auto from translation_main WHERE `key` ='" . $key . "' and `destination` = '" . $to . "'";
-        $res = $this->_SQL->sql_query($sql);
+        $res = self::$_SQL->sql_query($sql);
 
-        if ($this->_SQL->sql_num_rows($res) == 1) {
-            $ob = $this->_SQL->sql_fetch_object($res);
+        if (self::$_SQL->sql_num_rows($res) == 1) {
+            $ob = self::$_SQL->sql_fetch_object($res);
             $rep = $ob->text;
             $translate_auto = $ob->translate_auto;
-        } else if ($this->_SQL->sql_num_rows($res) == 0) {
-            $this->_to_translate[$from][$key] = $text;
+        } else if (self::$_SQL->sql_num_rows($res) == 0) {
+            self::$_to_translate[$from][$key] = $text;
 
             return false;
         } else {
             die("We have a problem !");
         }
 
-        $this->insert_db($to, $from, $rep, $key, $translate_auto);
+        self::insert_db($to, $from, $rep, $key, $translate_auto);
 
 
-        $this->_translations[$key] = $rep;
+        self::$_translations[$key] = $rep;
 
-        $this->save($to);
+        self::save($to);
         // Return translation
 
         return true;
     }
 
-    function getTranslation($html = '')
+    public static function getTranslation($html = '')
     {
 
-        // debug($this->_to_translate);
+        // debug(self::$_to_translate);
 
-        foreach ($this->_to_translate as $from => $tab) {
+        foreach (self::$_to_translate as $from => $tab) {
 
 
             $string_to_translate = '';
@@ -421,11 +426,11 @@ class I18n
 
             foreach ($extract as $result) {
 
-                if ($this->nb_google_call > 0) {
+                if (self::$nb_google_call > 0) {
                     sleep(2); // to prevent kick/ban from google or other system
                 }
 
-                $this->nb_google_call++;
+                self::$nb_google_call++;
 
                 $string = '';
 
@@ -438,7 +443,7 @@ class I18n
                     $string = $string . "\n" . $str;
                 }
 
-                $tab_out = $this->get_answer_from_google($string, $from);
+                $tab_out = self::get_answer_from_google($string, $from);
 
 
                 if ($tab_out) {
@@ -446,84 +451,84 @@ class I18n
 
                     $i = 0;
                     foreach ($result as $key => $str) {
-                        $this->_translations[$key] = $tab_out[$i];
+                        self::$_translations[$key] = $tab_out[$i];
 
-                        $this->save_db($this->_language, $from, $tab_out[$i], $key, '1');
+                        self::save_db(self::$_language, $from, $tab_out[$i], $key, '1');
                         $i++;
                     }
 
 
-                    $this->save($this->_language);
+                    self::save(self::$_language);
                 } else {
                     $html = str_replace($tab_key, $tab_string, $html);
                 }
             }
         }
 
-        $this->_to_translate = array();
+        self::$_to_translate = array();
 
         return ($html);
     }
 
-    private function save_db($iso, $source, $text, $key, $translate_auto)
+    private static function save_db($iso, $source, $text, $key, $translate_auto)
     {
         $data = array();
         $data["translation_" . mb_strtolower($iso)]['key'] = $key;
-        $data["translation_" . mb_strtolower($iso)]['source'] = $this->_SQL->sql_real_escape_string($source);
-        $data["translation_" . mb_strtolower($iso)]['text'] = $this->_SQL->sql_real_escape_string($text);
+        $data["translation_" . mb_strtolower($iso)]['source'] = self::$_SQL->sql_real_escape_string($source);
+        $data["translation_" . mb_strtolower($iso)]['text'] = self::$_SQL->sql_real_escape_string($text);
         $data["translation_" . mb_strtolower($iso)]['date_inserted'] = date("c");
         $data["translation_" . mb_strtolower($iso)]['date_updated'] = date("c");
         $data["translation_" . mb_strtolower($iso)]['translate_auto'] = intval($translate_auto);
-        $data["translation_" . mb_strtolower($iso)]['file_found'] = $this->file;
+        $data["translation_" . mb_strtolower($iso)]['file_found'] = self::$file;
         $data["translation_" . mb_strtolower($iso)]['id_history_etat'] = 1;
-        $data["translation_" . mb_strtolower($iso)]['line_found'] = intval($this->line);
+        $data["translation_" . mb_strtolower($iso)]['line_found'] = intval(self::$line);
 
-        $this->_SQL->set_history_type(6);
-        $this->_SQL->set_history_user(11);
+        self::$_SQL->set_history_type(6);
+        self::$_SQL->set_history_user(11);
 
-        if (!$this->_SQL->sql_save($data)) {
+        if (!self::$_SQL->sql_save($data)) {
             debug($data);
-            debug($this->_SQL->sql_error());
+            debug(self::$_SQL->sql_error());
             die("erreur enregistrement");
         }
     }
 
     //deprecated
-    private function insert_db($iso, $source, $text, $key, $translate_auto)
+    private static function insert_db($iso, $source, $text, $key, $translate_auto)
     {
 
         $sql = "INSERT IGNORE INTO `translation_" . mb_strtolower($iso) . "`
 		SET `key` ='" . $key . "',
-		`source` = '" . $this->_SQL->sql_real_escape_string($source) . "',
-		`text` = '" . $this->_SQL->sql_real_escape_string($text) . "',
+		`source` = '" . self::$_SQL->sql_real_escape_string($source) . "',
+		`text` = '" . self::$_SQL->sql_real_escape_string($text) . "',
 		`date_inserted` = now(),
 		`date_updated` = now(),
 		`translate_auto` = '" . $translate_auto . "',
-		`file_found` = '" . $this->file . "',
+		`file_found` = '" . self::$file . "',
 		`id_history_etat` = 1,
-		`line_found` ='" . $this->line . "'";
+		`line_found` ='" . self::$line . "'";
 
-        $this->_SQL->sql_query($sql);
+        self::$_SQL->sql_query($sql);
     }
 
-    public function testTable($iso)
+    public static function testTable($iso)
     {
 
         //$sql = "SHOW TABLES WHERE Tables_in_" . SQL_DATABASE . " = 'translation_" . strtolower($iso) . "'";
-        //$res = $this->_SQL->sql_query($sql);
+        //$res = self::$_SQL->sql_query($sql);
 
-        $ret = $this->_SQL->getListTable();
+        $ret = self::$_SQL->getListTable();
 
 
         if (in_array("translation_" . strtolower($iso), $ret['table'])) {
             true;
         } else {
-            $this->initiate($iso);
+            self::initiate($iso);
             return false;
         }
 
 
-        $this->_table_language[] = $iso;
+        self::$_table_language[] = $iso;
     }
 
     /**
@@ -533,32 +538,30 @@ class I18n
      * @param string $string
      * @return string
      */
-    public function _($string, $lgfrom, $file, $line)
+    public static function _($string, $lgfrom, $file, $line)
     {
 
 
-        if (!in_array($lgfrom, $this->_table_language)) {
-            $this->testTable($lgfrom);
+        if (!in_array($lgfrom, self::$_table_language)) {
+            self::testTable($lgfrom);
         }
 
 
-        if ($lgfrom != $this->_defaultlanguage) {
+        if ($lgfrom != self::$_defaultlanguage) {
             $default_lg = $lgfrom;
         } else {
-            $default_lg = $this->_defaultlanguage;
+            $default_lg = self::$_defaultlanguage;
         }
 
 
-        $this->file = $file;
-        $this->line = $line;
+        self::$file = $file;
+        self::$line = $line;
 
 
         $string = str_replace("\r\n", " ", $string);
         $string = str_replace("\n", " ", $string);
 
 
-
-        //$tab = explode("!", $string);
         $elem = $string;
 
         $res = array();
@@ -568,26 +571,26 @@ class I18n
 
         $key = sha1($elem);
 
-        if (isset($this->_translations[$key])) {
+        if (isset(self::$_translations[$key])) {
 
-            $res[] = $this->_translations[$key];
+            $res[] = self::$_translations[$key];
         } else {
             // Add string to translations
-            if ($this->_language != $default_lg) {
+            if (self::$_language != $default_lg) {
                 //cas ou une chaine est appellé plusieurs fois dans une même page
-                if (array_key_exists($key, $this->_to_translate)) {
+                if (array_key_exists($key, self::$_to_translate)) {
                     $out = false;
                 } else {
-                    $out = $this->translate($default_lg, $this->_language, $string, $key);
+                    $out = self::translate($default_lg, self::$_language, $string, $key);
                 }
             } else {
                 $out = true;
-                $this->_translations[$key] = $string;
+                self::$_translations[$key] = $string;
             }
 
             if ($out) {
-                $this->save($this->_language);
-                $res[] = $this->_translations[$key];
+                self::save(self::$_language);
+                $res[] = self::$_translations[$key];
             } else {
                 $res[] = $key;
             }
@@ -605,20 +608,20 @@ class I18n
      * @param string $language
      * @return void
      */
-    public function load($language)
+    public static function load($language)
     {
-        $this->_language = $language;
+        self::$_language = $language;
 
 
-        if (!in_array($this->_language, $this->_table_language)) {
-            $this->testTable($this->_language);
+        if (!in_array(self::$_language, self::$_table_language)) {
+            self::testTable(self::$_language);
         }
 
-        if (!in_array($this->_defaultlanguage, $this->_table_language)) {
-            $this->testTable($this->_defaultlanguage);
+        if (!in_array(self::$_defaultlanguage, self::$_table_language)) {
+            self::testTable(self::$_defaultlanguage);
         }
 
-        $path = $this->_path . "/" . $language . ".csv";
+        $path = self::$_path . "/" . $language . ".csv";
 
 
         if (file_exists($path)) {
@@ -634,20 +637,20 @@ class I18n
                 } else {
                     $value = "";
                 }
-                $this->_translations[$key] = $value;
+                self::$_translations[$key] = $value;
             }
         } else {
 
             //chargement du fichier de cache en fonction de la BDD
 
             $sql = "SELECT * FROM `translation_" . strtolower($language) . "`";
-            $res23 = $this->_SQL->sql_query($sql);
+            $res23 = self::$_SQL->sql_query($sql);
 
-            while ($ob = $this->_SQL->sql_fetch_object($res23)) {
-                $this->_translations[$ob->key] = $ob->text;
+            while ($ob = self::$_SQL->sql_fetch_object($res23)) {
+                self::$_translations[$ob->key] = $ob->text;
             }
 
-            $this->save($this->_language);
+            self::save(self::$_language);
         }
     }
 
@@ -657,13 +660,13 @@ class I18n
      * @access public
      * @return void
      */
-    private function save($LangageOutput)
+    private static function save($LangageOutput)
     {
         $array = "";
-        foreach ($this->_translations as $key => $value) {
+        foreach (self::$_translations as $key => $value) {
             $array[] = $key . "||" . $value;
         }
-        $path = $this->_path . "/" . $LangageOutput . ".csv";
+        $path = self::$_path . "/" . $LangageOutput . ".csv";
 
         if (!empty($array)) {
             file_put_contents($path, implode("\n", $array));
@@ -677,9 +680,9 @@ class I18n
      * @param string $path
      * @return void
      */
-    public function SetSavePath($path)
+    public static function SetSavePath($path)
     {
-        $this->_path = $path;
+        self::$_path = $path;
     }
 
     /**
@@ -689,10 +692,10 @@ class I18n
      * @param string $language
      * @return void
      */
-    public function SetDefault($language)
+    public static function SetDefault($language)
     {
-        $this->_defaultlanguage = $language;
-        $this->initiate($language);
+        self::$_defaultlanguage = $language;
+        self::initiate($language);
     }
 
     /**
@@ -702,9 +705,9 @@ class I18n
      * @param void
      * @return string $language
      */
-    public function GetDefault()
+    public static function GetDefault()
     {
-        return $this->_defaultlanguage;
+        return self::$_defaultlanguage;
     }
 
     /**
@@ -723,7 +726,7 @@ class I18n
 
         //debug("We calling google ...");
         //$url ="http://translate.google.fr/translate_t?text=Traduction%20automatique%20de%20pages%20web%0Aceci%20est%20un%20test&hl=fr&langpair=fr|en&tbb=1&ie=utf-8";
-        $url = 'http://translate.google.fr/translate_t?text=' . urlencode($string) . '&hl=fr&langpair=' . $from . '|' . $this->_language . '&tbb=1&ie=utf-8';
+        $url = 'http://translate.google.fr/translate_t?text=' . urlencode($string) . '&hl=fr&langpair=' . $from . '|' . self::$_language . '&tbb=1&ie=utf-8';
 
         $UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
 
@@ -736,7 +739,7 @@ class I18n
         curl_close($ch);
 
         // if we send no user_agent google send sentence translated in default charset we asked for the language
-        //$body = iconv($this->charset[$to], "UTF-8", $body);
+        //$body = iconv(self::charset[$to], "UTF-8", $body);
 
 
         $content = Grabber::getTagContent($body, '<body', true);

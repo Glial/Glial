@@ -21,6 +21,8 @@ class Singleton
 
     public static function getInstance($class)
     {
+       
+        
         if ( !array_key_exists($class, self::$instances) ) {
             self::$instances[$class] = new $class;
         }

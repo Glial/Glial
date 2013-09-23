@@ -25,6 +25,8 @@ class Acl
     {
         if (!empty($controller)) {
             if (!empty($action)) {
+
+                
                 if (!empty($this->data[$this->id_group][$controller][$action])) {
                     if ($this->data[$this->id_group][$controller][$action] == 1) {
                         return true;

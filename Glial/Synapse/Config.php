@@ -11,7 +11,7 @@ class Config
     /**
      * (Glial 2.1)<br/>
      * Load the directory's path and all subdirectory with files whitch match ".config.php" or "*.config.ini.php" in their name
-     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @author AurÃ©lien LEQUOY, <aurelien.lequoy@esysteme.com>
      * @license GPL
      * @license http://opensource.org/licenses/gpl-license.php GNU Public License
      * @link http://www.glial-framework-php.org/en/manual/config.load.php
@@ -53,7 +53,7 @@ class Config
     /**
      * (Glial 2.1)<br/>
      * get params of ini file set in argument
-     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @author AurÃ©lien LEQUOY, <aurelien.lequoy@esysteme.com>
      * @license GPL
      * @license http://opensource.org/licenses/gpl-license.php GNU Public License
      * @link http://www.glial-framework-php.org/en/manual/config.get.php

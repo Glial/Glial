@@ -1,8 +1,8 @@
 <?php
 
-namespace glial\parser\flickr\test;
+namespace Glial\Parser\Flickr\Test;
 
-use \glial\parser\flickr\Flickr;
+use \Glial\Parser\Flickr\Flickr;
 
 class TestFlickr extends \PHPUnit_Framework_TestCase
 {

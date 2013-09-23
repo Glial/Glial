@@ -18,7 +18,9 @@ abstract class Sql
     public $called_from;
     public $validate = array();
     public $res;
-    public $_history_type = HISTORY_TYPE; // default 4 made by system
+    public $_history_type = 4; // default 4 made by system
+    public $_history_active = true; // default 4 made by system
+    
     public $_history_user = null; // default 4 made by system
     public $_type_query = '';
     public $_table_to_history = '';
@@ -27,7 +29,7 @@ abstract class Sql
 
     public function get_table_to_history()
     {
-        if (HISTORY_ACTIVE) {
+        if ($this->$_history_active) {
             $this->_table_to_history = \history::get_table_with_history();
         }
     }
@@ -196,7 +198,7 @@ abstract class Sql
         }
 
         if ( count($this->error) == 0 ) {
-            if (HISTORY_ACTIVE) { //traitement specifique
+            if ($this->_history_active) { //traitement specifique
 
                 if ( strstr($this->_table_to_history, $table) ) {
 
@@ -270,7 +272,7 @@ abstract class Sql
                 }
             }
 
-            if (HISTORY_ACTIVE) { //traitement specifique
+            if ($this->_history_active) { //traitement specifique
                 if ( strstr($this->_table_to_history, $table) ) {
                     if ( !empty($before_update) ) {
                         $param = \history::compare($before_update[0], $data[$table]);

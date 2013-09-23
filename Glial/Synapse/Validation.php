@@ -28,7 +28,7 @@ class Validation
 	function is_unique($elem)
 	{
 		
-		//$_SQL = singleton::getInstance(SQL_DRIVER);
+		//'
 		$sql = "SELECT count(1) as cpt FROM ".$elem['table']." WHERE `".$elem['field']."` = '".$elem['value']."'";
 		
 		
@@ -220,7 +220,7 @@ class Validation
 	function reference_to($elem, $table, $field)
 	{
 		
-		$_SQL = singleton::getInstance(SQL_DRIVER);
+		
 		
 		$sql = "SELECT count(1) as cpt FROM ".$table." WHERE `".$field."` = '".$elem['value']."'";
 		
