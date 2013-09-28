@@ -6,6 +6,7 @@ use \glial\synapse\Singleton;
 
 class Species
 {
+
     public static function addSpecies($kingdom, $phylum, $class, $order, $family, $genus, $species)
     {
         $_SQL = Singleton::getInstance(SQL_DRIVER);
@@ -88,7 +89,7 @@ class Species
             $id_class = $_SQL->sql_save($data);
 
             if (!$id_class) {
-                /*				 * ***************** */
+                /*                 * ***************** */
 
                 $sql2 = "SELECT * FROM species_class WHERE scientific_name = '" . $_SQL->sql_real_escape_string($class) . "'";
                 $res2 = $_SQL->sql_query($sql2);
@@ -120,7 +121,7 @@ class Species
                     debug($data);
                     die();
                 }
-                /*				 * ***************** */
+                /*                 * ***************** */
 
                 /*
                   echo 'phylum : '.$phylum."\n";
@@ -418,19 +419,39 @@ class Species
     inner JOIN species_source_main n ON n.id = a.id_species_source_main
 
 	
-    where z.scientific_name = '".str_replace('_', ' ',$id)."'
-        AND n.name ='".$source."'
+    where z.scientific_name = '" . str_replace('_', ' ', $id) . "'
+        AND n.name ='" . $source . "'
 	group by x.id, b.id_species_picture_id
     order by  c.id_species_author, c.photo_id limit 50";
-	
 
-		//echo $sql;
+
+        //echo $sql;
         $_SQL = Singleton::getInstance(SQL_DRIVER);
         $res = $_SQL->sql_query($sql);
 
         $data = $_SQL->sql_to_array($res);
 
         return $data;
+    }
+
+    public static function miniature($data)
+    {
+        $data['class'] = (empty($data['class'])) ? "" : $data['class'];
+
+
+        echo '<li class="' . $data['class'] . '">';
+        echo '<a href="' . $data['url'] . '" data-target="' . $data['data-target'] . '" data-link="' . $data['data-link'] . '">';
+
+        echo '<div class="bigleaderpix">';
+
+
+        if (!empty($data['display-name'])) {
+            echo '<div class="caption"><p>' . $data['display-name'] . '</p></div>';
+        }
+        echo '<div class="bigleaderlien"></div>
+        <img width="158" height="158" alt="' . $data['name'] . '" title="' . $data['name'] . '" src="' . $data['photo'] . '">
+        </div>';
+        echo '</a></li>';
     }
 
 }

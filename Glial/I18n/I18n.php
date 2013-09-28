@@ -476,8 +476,8 @@ class I18n
         $data["translation_" . mb_strtolower($iso)]['key'] = $key;
         $data["translation_" . mb_strtolower($iso)]['source'] = self::$_SQL->sql_real_escape_string($source);
         $data["translation_" . mb_strtolower($iso)]['text'] = self::$_SQL->sql_real_escape_string($text);
-        $data["translation_" . mb_strtolower($iso)]['date_inserted'] = date("c");
-        $data["translation_" . mb_strtolower($iso)]['date_updated'] = date("c");
+        $data["translation_" . mb_strtolower($iso)]['date_inserted'] = date("Y-m-d H:i:s");
+        $data["translation_" . mb_strtolower($iso)]['date_updated'] = date("Y-m-d H:i:s");
         $data["translation_" . mb_strtolower($iso)]['translate_auto'] = intval($translate_auto);
         $data["translation_" . mb_strtolower($iso)]['file_found'] = self::$file;
         $data["translation_" . mb_strtolower($iso)]['id_history_etat'] = 1;
