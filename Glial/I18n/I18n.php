@@ -487,9 +487,9 @@ class I18n
         self::$_SQL->set_history_user(11);
 
         if (!self::$_SQL->sql_save($data)) {
-            debug($data);
-            debug(self::$_SQL->sql_error());
-            die("erreur enregistrement");
+
+            mail("aurelien.lequoy@gmail.com","Estrildidae : Bug with I18n", self::$_SQL->sql_error().json_encode($data));
+            
         }
     }
 
