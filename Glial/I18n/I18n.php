@@ -488,7 +488,7 @@ class I18n
 
         if (!self::$_SQL->sql_save($data)) {
 
-            mail("aurelien.lequoy@gmail.com","Estrildidae : Bug with I18n", self::$_SQL->sql_error().json_encode($data));
+            mail("aurelien.lequoy@gmail.com","Estrildidae : Bug with I18n", print_r($data));
             
         }
     }
