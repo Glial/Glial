@@ -354,7 +354,7 @@ class I18n
     }
 
     /**
-     * Translate a string
+     * translate a string
      *
      * @access public
      * @param string $from
@@ -362,7 +362,7 @@ class I18n
      * @param string $text
      * @return string
      */
-    public static function Translate($from, $to, $text, $key)
+    public static function translate($from, $to, $text, $key)
     {
 
         self::insert_db($from, $from, $text, $key, '0');
