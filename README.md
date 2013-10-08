@@ -12,14 +12,14 @@ http://www.glial-framework-php.org/
 <h2>How to install?</h2>
 
 A new application in current directory:
-`curl -sS http://www.glial-framework-php.org/installer | php --`
+`curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php --`
 
 
 A new application in selected directory:
-`curl -sS http://www.glial-framework-php.org/installer | php -- --install-dir="/home/www/DIR"`
+`curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php -- --install-dir="/home/www/DIR"`
 
 An existing application :  (example with Esysteme/Estrildidae)
-`curl -sS http://www.glial-framework-php.org/installer | php -- --install-dir="/home/www/DIR" --application="Esysteme/Estrildidae"`
+`curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php -- --install-dir="/home/www/DIR" --application="Esysteme/Estrildidae"`
 
 
 <h2>Why use Glial?</h2>
