@@ -35,7 +35,17 @@ class NeuronAdministration extends Controller
         $json = json_encode($list_index);
         
         
-        file_put_contents(TMP."keys/default_index_unique.txt", $json);
+        if (is_writable ( TMP."keys/" ))
+        {
+            file_put_contents(TMP."keys/default_index_unique.txt", $json);
+        }
+        else
+        {
+            trigger_error(__("This directory should be writable : "). TMP."keys/");
+        }
+        
+        
+        
         
 	}
     
