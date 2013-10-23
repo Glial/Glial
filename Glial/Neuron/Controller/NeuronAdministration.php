@@ -41,12 +41,9 @@ class NeuronAdministration extends Controller
         }
         else
         {
-            trigger_error(__("This directory should be writable : "). TMP."keys/");
+            trigger_error(__("This directory should be writable : "). TMP."keys/", E_USER_ERROR);
         }
-        
-        
-        
-        
+
 	}
     
     function all()
