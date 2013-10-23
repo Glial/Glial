@@ -14,11 +14,14 @@ class FactorySql
             self::connect($name, $param);
         }
 
+        return self::$db;
+        
+        /*
         if (count(self::$db) === 1) {
             return array_shift(array_values(self::$db));
         } else {
             return self::$db;
-        }
+        }*/
     }
 
     static function connect($name, $elem)
@@ -29,7 +32,7 @@ class FactorySql
 
         $driver = '\Glial\Sgbd\Sql\\'.ucwords(strtolower($elem['driver'])).'\\'.ucwords(strtolower($elem['driver']));
         
-        self::$db[$name] = new $driver;
+        self::$db[$name] = new $driver($name);
         self::$db[$name]->sql_connect($elem['hostname'], $elem['user'], $elem['password']);
         self::$db[$name]->sql_select_db($elem['database']);
     }

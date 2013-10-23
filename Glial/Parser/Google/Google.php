@@ -18,13 +18,21 @@ class Google
 
         $url = "https://www.google.fr/search?q=site:" . $website . "+" . $string . "&hl=en&hs=Dqa&filter=0";
 
+        
+        //echo $url;
         //for look page 2 => add &start=10
         //we can only have 10 result by 10
 
         $data = Curl::get($url);
 
-        $content = Grabber::getTagContent($data,'<div id="search"', true);
+        //echo htmlentities($data);
+       
+        $content = Grabber::getTagContent($data,'<div data-jibp="h" data-jiis="uc" id="search"', true);
 
+         //echo $content;
+        //echo htmlentities($content);
+        
+        
         if ($content) {
             $list_li = Grabber::getTagContents($data,'<li class="g">', true);
 

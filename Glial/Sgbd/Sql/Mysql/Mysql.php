@@ -7,6 +7,7 @@ use \Glial\Sgbd\Sql\Sql;
 class Mysql extends Sql
 {
 
+    public $db;
     public $link;
 
     public function sql_connect($host, $login, $password)
@@ -20,6 +21,7 @@ class Mysql extends Sql
 
     public function sql_select_db($db)
     {
+        $this->db = $db;
         return mysqli_select_db($this->link, $db) or die(mysqli_error($this->link));
     }
 
@@ -141,8 +143,30 @@ class Mysql extends Sql
         $ret['table'] = $table;
         $ret['view'] = $view;
 
-        
+
         return $ret;
+    }
+
+    public function getIndexUnique($table_name)
+    {
+        $sql = "show keys from `" . $table_name . "` in " . $this->db;
+
+        $res = $this->_query($sql);
+
+        $index = array();
+        while ($ob = $this->sql_fetch_object($res)) {
+            
+            if ($ob->Key_name === "PRIMARY")
+            {
+                continue;
+            }
+            if ($ob->Non_unique === "0")
+            {
+                $index[] = $ob->Column_name;
+            }
+            
+        }
+        return $index;
     }
 
 }

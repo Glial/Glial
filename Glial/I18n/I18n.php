@@ -252,6 +252,7 @@ class I18n
         "ja" => "日本語",
         "ko" => "한국어",
         "lv" => "Latviešu",
+        "la" => "Latin",
         "lt" => "Lietuviškai",
         "mk" => "Македонски",
         "mt" => "Malti",
@@ -626,6 +627,8 @@ class I18n
 
         if (file_exists($path)) {
 
+           self::$_translations = array();
+            
             $content = file_get_contents($path);
             $content = explode("\n", $content);
             foreach ($content as $line) {

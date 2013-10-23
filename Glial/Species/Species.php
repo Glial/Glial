@@ -7,9 +7,11 @@ use \glial\synapse\Singleton;
 class Species
 {
 
+    public static $_TaxoTree ="";
+    
     public static function addSpecies($kingdom, $phylum, $class, $order, $family, $genus, $species)
     {
-        $_SQL = Singleton::getInstance(SQL_DRIVER);
+        //$_SQL = Singleton::getInstance(SQL_DRIVER);
 
         $kingdom = ucwords(strtolower($kingdom));
         $phylum = ucwords(strtolower($phylum));
@@ -452,6 +454,34 @@ class Species
         <img width="158" height="158" alt="' . $data['name'] . '" title="' . $data['name'] . '" src="' . $data['photo'] . '">
         </div>';
         echo '</a></li>';
+    }
+    
+    public static function getTaxoTree()
+    {
+        
+        if (empty(self::$_TaxoTree))
+        {
+             switch ($_SERVER['SERVER_NAME'])
+             {
+                 case "www.gdol.eu":
+                     
+                     break;
+                 case "www.estrildidae.net":
+                     
+                     break;
+                 
+                 
+                 default:
+                     break;
+                 
+                 
+             }
+        }
+        else
+        {
+            return self::$_TaxoTree;
+        }
+       
     }
 
 }

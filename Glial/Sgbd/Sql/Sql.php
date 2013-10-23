@@ -20,12 +20,19 @@ abstract class Sql
     public $res;
     public $_history_type = 4; // default 4 made by system
     public $_history_active = true; // default 4 made by system
-    
     public $_history_user = null; // default 4 made by system
     public $_type_query = '';
     public $_table_to_history = '';
+    private $_table = '';
+    private $_name = '';
+    private $_keys = array();
 
     //to be surcharged
+
+    public function __contruct($name)
+    {
+        $this->$_name = $name;
+    }
 
     public function get_table_to_history()
     {
@@ -35,36 +42,54 @@ abstract class Sql
     }
 
     abstract protected function sql_connect($var1, $var2, $var3);
+
     abstract protected function sql_select_db($var1);
+
     abstract protected function sql_close();
+
     abstract protected function sql_real_escape_string($var1);
+
     abstract protected function sql_affected_rows();
+
     abstract protected function sql_num_rows($var1);
+
     abstract protected function sql_num_fields($res);
+
     abstract protected function sql_field_name($result, $i);
+
     abstract protected function sql_free_result($result);
+
     abstract protected function _insert_id();
+
     abstract protected function _error();
-    
+
     abstract protected function getListTable();
-    
-    
-    public function sql_fetch_field($res, $field_offset = 0){}
+
+    abstract protected function getIndexUnique($table_name);
+
+    public function sql_fetch_field($res, $field_offset = 0)
+    {
+        
+    }
 
     //function mutualised
 
     public function sql_query($sql, $table = "", $type = "")
     {
 
+        if (IS_CLI) { //to save memory with crawler & bot
+            $this->serializeQuery();
+        }
+
         $this->res = "";
 
         $this->called_from = debug_backtrace();
         $startmtime = microtime(true);
 
-        if ( !$res = $this->_query($sql) ) {
+        if (!$res = $this->_query($sql)) {
             //error
             die("<br />SQL : $sql<br /><b>" . $this->_error() . "</b>" .
-                "<br />FILE : " . $this->called_from[0]['file'] . " LINE : " . $this->called_from[0]['line']);
+                    "<br />FILE : " . $this->called_from[0]['file'] . " LINE : " . $this->called_from[0]['line']);
         }
 
         $this->res = $res;
@@ -105,16 +130,25 @@ abstract class Sql
         unset($this->error);
         $this->error = array();
 
-        $table = array_keys($data);
 
+        if (count($this->_keys) === 0) {
+            $this->unserializeKeys();
+        }
+
+
+        $table = array_keys($data);
         $table = $table[0];
         $keys = array_keys($data[$table]);
 
-        try {
-            $_TABLE = unserialize(file_get_contents(TMP . "database" . DS . $table . ".table.txt"));
-        } catch (Exception $e) {
-            throw new Exception( "This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
-            exit;
+
+        // to delete
+        if (empty($this->_table[$table])) {
+            try {
+                $this->_table[$table] = unserialize(file_get_contents(TMP . "database" . DS . $table . ".table.txt"));
+            } catch (Exception $e) {
+                throw new Exception("This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
+                exit;
+            }
         }
 
         //use \synapse\model;
@@ -122,11 +156,11 @@ abstract class Sql
         //{
 
         $validation = new Validation($this);
-        
+
         include_once APP_DIR . DS . "model" . DS . $table . ".php";
         //}
         // use simple quote to prevent problem with \n or sth else
-        
+
 
         $table2 = str_replace("-", "", $table);
 
@@ -137,26 +171,26 @@ abstract class Sql
         //debug($validate);
 
         foreach ($keys as $field) {
-            if ( !empty($validate[$field]) ) {
+            if (!empty($validate[$field])) {
                 foreach ($validate[$field] as $rule => $param) {
-                    if ( !empty($rule) ) {
+                    if (!empty($rule)) {
                         $elem['table'] = $table;
                         $elem['field'] = $field;
                         $elem['value'] = $data[$table][$field];
 
-                        if ( in_array("id", $keys, true) ) {
+                        if (in_array("id", $keys, true)) {
                             $elem['id'] = "AND id != " . $data[$table]['id'];
                         }
 
-                        if ( !empty($param[0]) ) {
+                        if (!empty($param[0])) {
                             $msg_error = $param[0];
                         } else {
                             $msg_error = NULL;
                         }
                         unset($param[0]);
 
-                        if ( !empty($param) ) {
-                            if ( is_array($param) ) {
+                        if (!empty($param)) {
+                            if (is_array($param)) {
                                 $nb_var = count($param);
 
                                 switch ($nb_var) {
@@ -185,11 +219,13 @@ abstract class Sql
             }
         }
 
+        unset($validation);
+
         $nb = count($keys);
 
         for ($i = 0; $i < $nb; $i++) {
 
-            if ( !in_array($keys[$i], $_TABLE['field']) ) {
+            if (!in_array($keys[$i], $this->_table[$table]['field'])) {
                 unset($data[$table][$keys[$i]]);
                 unset($keys[$i]);
             } else {
@@ -197,16 +233,15 @@ abstract class Sql
             }
         }
 
-        if ( count($this->error) == 0 ) {
+        if (count($this->error) == 0) {
             if ($this->_history_active) { //traitement specifique
+                if (strstr($this->_table_to_history, $table)) {
 
-                if ( strstr($this->_table_to_history, $table) ) {
-
-                    if ( in_array("id", $keys, true) ) {
+                    if (in_array("id", $keys, true)) {
                         $sql = "SELECT * FROM `" . $table . "` WHERE id ='" . $data[$table]['id'] . "'";
                         $res = $this->sql_query($sql);
 
-                        if ( $this->sql_num_rows($res) === 1 ) {
+                        if ($this->sql_num_rows($res) === 1) {
                             $before_update = $this->sql_to_array($res);
 
                             //\history::insert($table, $data[$table]['id'], $param, $this->_history_type);
@@ -215,14 +250,14 @@ abstract class Sql
                 }
             }
 
-            if ( in_array("id", $keys, true) ) {
+            if (in_array("id", $keys, true)) {
 
                 $id = $data[$table]['id'];
                 unset($data[$table]['id']);
 
                 $str = array();
                 foreach ($keys as $key) {
-                    if ( $key === 'id' )
+                    if ($key === 'id')
                         continue;
 
                     $str[] = "`" . $key . "` = '" . $data[$table][$key] . "'";
@@ -252,19 +287,19 @@ abstract class Sql
 
                 $sql = "SELECT id FROM `" . $table . "` WHERE 1=1 ";
 
-                foreach ($data[$table] as $key => $value) {
-                    if ( $key === "date" )
-                        continue;
 
-                    if ( $key === "column_default" )
-                        continue;
-                    $sql .= " AND `" . $key . "` = '" . $value . "' ";
+                foreach ($data[$table] as $key => $value) {
+
+                    //select only unique key
+                    if (in_array($key, $this->_keys[$table])) {
+                        $sql .= " AND `" . $key . "` = '" . $value . "' ";
+                    }
                 }
 
                 $res = $this->sql_query($sql, $table, "SELECT");
                 $tab = $this->sql_to_array($res);
 
-                if ( !empty($tab[0]['id']) ) {
+                if (!empty($tab[0]['id'])) {
                     $this->last_id = $tab[0]['id'];
                 } else {
                     $this->error[] = $sql;
@@ -273,8 +308,8 @@ abstract class Sql
             }
 
             if ($this->_history_active) { //traitement specifique
-                if ( strstr($this->_table_to_history, $table) ) {
-                    if ( !empty($before_update) ) {
+                if (strstr($this->_table_to_history, $table)) {
+                    if (!empty($before_update)) {
                         $param = \history::compare($before_update[0], $data[$table]);
                         $id_table = $id;
                         $type_query = 'UPDATE';
@@ -325,19 +360,22 @@ abstract class Sql
 
         $this->error = array();
 
+        if (count($this->_keys) === 0) {
+            $this->unserializeKeys();
+        }
         //TODO implement verification of child table before delete
 
         foreach ($data as $table => $field) {
-            if ( file_exists(TMP . "/database/" . $table . ".table.txt") ) {
-                if ( !empty($field['id']) ) {
+            if (file_exists(TMP . "/database/" . $table . ".table.txt")) {
+                if (!empty($field['id'])) {
 
                     if (HISTORY_ACTIVE) { //traitement specifique
-                        if ( strstr($this->_table_to_history, $table) ) {
+                        if (strstr($this->_table_to_history, $table)) {
 
                             $sql = "SELECT * FROM `" . $table . "` WHERE id ='" . $data[$table]['id'] . "'";
                             $res = $this->sql_query($sql);
 
-                            if ( $this->sql_num_rows($res) === 1 ) {
+                            if ($this->sql_num_rows($res) === 1) {
                                 $before_update = $this->sql_to_array($res);
                             } else {
                                 return false;
@@ -356,6 +394,38 @@ abstract class Sql
                     $this->sql_query($sql, $table, "UPDATE");
                 }
             }
+        }
+    }
+
+    private function serializeQuery()
+    {
+        if (count($this->query) > 500) {
+            array_splice($this->query, 0, -10);
+        }
+    }
+
+    private function unserializeKeys()
+    {
+        //set
+        $filename = TMP . "keys/" . $this->_name . "_index_unique.txt";
+
+        if (file_exists($filename)) {
+            $this->_keys = file_get_contents($filename);
+        } else {
+            $listTable = $this->getListTable();
+
+            $list_index = array();
+            foreach ($listTable['table'] as $table_name) {
+                $list_index[$table_name] = $this->getIndexUnique($table_name);
+            }
+
+            $this->_keys = $list_index;
+            $json = json_encode($list_index);
+            if (!file_put_contents(TMP . "keys/default_index_unique.txt", $json)) {
+                trigger_error("make sure is writable : " . $filename, E_USER_NOTICE);
+            }
+
+            //
         }
     }
 
