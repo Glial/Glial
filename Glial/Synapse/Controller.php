@@ -81,10 +81,11 @@ class Controller
         $this->layout_name = false;
         $this->view = false;
 
-        if (empty($this->controller))
+        if (empty(trim($this->controller)))
         {
-            trigger_error(__("The controller is empty"), E_USER_ERROR);
+            trigger_error(__("The controller is empty :")." $name", E_USER_ERROR);
         }
+        
         
         
         $class_name = "\Glial\Neuron\Controller\Neuron" . $this->controller;
