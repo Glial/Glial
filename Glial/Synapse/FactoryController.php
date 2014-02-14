@@ -35,7 +35,7 @@ class FactoryController
 	 * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
 	 * @param string construct of controller
 	 * @return boolean Success
-	 * @description should be called 1 time by request. It create the root MVC used in boot and display the output in standard flux. it's this controller witch will determine the layout.
+	 * @description should be called 1 time by request. This factory create the (main) root MVC used in boot and display the output in standard flux. it's this controller witch will determine the layout.
 	 * @access public
 	 * @example \Glial\Synapse\FactoryController::rootNode("class", "function", array('param1','param2'));
 	 * @package Controller
