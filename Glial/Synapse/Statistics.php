@@ -17,19 +17,24 @@ class Statistics
 
 		if ( !filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE) )
 		{
-			$data = array();
+			
 
-			$data['id_user_main'] = $iduser;
-			$data['query_string'] = $_SERVER["QUERY_STRING"];
-			$data['referer'] = $_SERVER["HTTP_REFERER"];
-			$data['date_created'] = date("Y-m-d H:i:s");
-			$data['ip'] = $_SERVER['REMOTE_ADDR'];
-			$data['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-			$data['accept_language'] = @$_SERVER['HTTP_ACCEPT_LANGUAGE'];
-
+			$this->data['id_user_main'] = $iduser;
+			$this->data['query_string'] = $_SERVER["QUERY_STRING"];
+			$this->data['referer'] = $_SERVER["HTTP_REFERER"];
+			$this->data['date_created'] = date("Y-m-d H:i:s");
+			$this->data['ip'] = $_SERVER['REMOTE_ADDR'];
+			$this->data['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+			
+			if (!IS_CLI) {
+				$this->data['accept_language'] = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+			}
+			else {
+				$this->data['accept_language'] = "cli mode";
+			}
 			$this->serializeCompressEncode64();
 
-			return $data;
+			return $this->data;
 		}
 	}
 
