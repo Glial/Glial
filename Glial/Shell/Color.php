@@ -38,6 +38,15 @@ class Color
         "magenta" => '45',
         "cyan" => '46',
         "light_gray" => '47');
+        
+        
+        /* @since Glial 1.1
+         * @description put text in color on CLI mode (16 colors foreground & 8 colors background)
+         * @param $string string text to put in color
+         * @param $foreground_color string the color of foreground to know witch color available have a look on $foreground_colors
+         * @param $background_colors string the color of foreground to know witch color available have a look on $background_colors
+         * @return return the string with Ansi code, if one color is not found generate a trow exception
+         */
 
     public static function getColoredString($string, $foreground_color = null, $background_color = null)
     {
@@ -58,17 +67,35 @@ class Color
         return $colored_string;
     }
 
-// Returns all foreground color names
+
+        /* @since Glial 1.1
+         * @description Returns all foreground color names
+         * @param void void This function has no parameters.
+         * @return Returns all colors available for the foreground
+         */ 
     public static function getForegroundColor()
     {
         return array_keys(self::$foreground_colors);
     }
 
-// Returns all background color names
+
+
+        /* @since Glial 1.1
+         * @description Returns all foreground color names
+         * @param void void This function has no parameters.
+         * @return Returns all background color names
+         */ 
     public static function getBackgroundColor()
     {
         return array_keys(self::$background_colors);
     }
+
+        /* @since Glial 1.1
+         * @description Make a preview of all combinaison between foreground and background color
+         * @param void void This function has no parameters.
+         * @return Returns a string sample with all combinaison available
+         */ 
+
 
     public static function printAll()
     {
