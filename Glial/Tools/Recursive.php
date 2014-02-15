@@ -17,6 +17,13 @@ class Recursive
         return $array;
     }
 
+
+/*
+ * @author soywiz at gmail dot com 
+ * @since Glial 2.0
+ * @description The globRecursive() function searches for all the pathnames matching pattern according to the rules used by the libc glob() function, which is similar to the rules used by common shells.
+ *
+ */
     static function globRecursive($path, $find, $flags = FNM_PATHNAME)
     {
         $dh   = opendir($path);
