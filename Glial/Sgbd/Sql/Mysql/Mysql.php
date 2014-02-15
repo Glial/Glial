@@ -10,6 +10,14 @@ class Mysql extends Sql
     public $db;
     public $link;
 
+
+    /*
+     * @since Glial 1.0
+     * @return Returns an object which represents the connection to a MySQL Server.
+     * @parameters dbname The database name.
+     * @alias make the same as mysqli::select_db and init charset connection in utf-8
+     */
+
     public function sql_connect($host, $login, $password)
     {
         $this->link = mysqli_connect($host, $login, $password);
@@ -17,13 +25,29 @@ class Mysql extends Sql
         mysqli_set_charset($this->link, 'utf8');
         $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
         $this->_query("SET NAMES 'utf8'");
+        
+        return $this->link;
     }
 
-    public function sql_select_db($db)
+    /*
+     * @since Glial 1.0
+     * @return Returns TRUE on success or FALSE on failure.
+     * @param string $dbname The database name.
+     * @alias make the same as mysqli::select_db
+     */
+    public function sql_select_db($dbname)
     {
-        $this->db = $db;
-        return mysqli_select_db($this->link, $db) or die(mysqli_error($this->link));
+        $this->db = $dbname;
+        return mysqli_select_db($this->link, $dbname);
     }
+    /*
+     * @since Glial 1.0
+     * @return Returns FALSE on failure. For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries _query() will return a mysqli_result object. For other successful queries _query() will return TRUE.
+     * @param string $dbname The database name.
+     * @description Performs a query against the database. 
+     * @alias make the same as mysqli_query
+     * @see mysqli_query http://php.net/manual/en/mysqli.query.php
+     */
 
     public function _query($sql)
     {
