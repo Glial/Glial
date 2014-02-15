@@ -2,6 +2,16 @@
 
 namespace Glial\Sgbd\Sql;
 
+
+/*
+ * @since Glial 2.1
+ * @description connect to each database present in db.config.php
+ * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+ */
+
+
+
+
 class FactorySql
 {
     private static $driver = array("mysql", "mysqli", "pdo", "oracle", "sybase");
@@ -23,7 +33,12 @@ class FactorySql
             return self::$db;
         }*/
     }
-
+/*
+ * @since Glial 2.1
+ * @description connect to each database present in db.config.php
+ * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+ * 
+ */
     static function connect($name, $elem)
     {
         if (!in_array($elem['driver'], self::$driver)) {
