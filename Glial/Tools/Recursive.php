@@ -48,6 +48,7 @@ class Recursive
  * Remove the directory and its content (all files and subdirectories).
  * @param string $dir the directory name
  * @author wang yun
+ * @since Glial 2.2
  */
 function rmrf($dir) {
     foreach (glob($dir) as $file) {
