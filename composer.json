@@ -1,7 +1,10 @@
 {
     "name": "glial/glial",
-    "description": "A light PHP framework (include CLI mode)",
+    "description": "A light HMVC PHP framework (include CLI mode)",
     "require": {
         "php": ">=5.5.0"
+    },
+        "autoload": {
+        "psr-4": {"Glial\\": "Glial/"}
     }
 }
