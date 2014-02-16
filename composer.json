@@ -3,7 +3,7 @@
     "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
     "require": {
         "php": ">=5.5.0",
-		"phpunit/phpunit": "3.7.24",
+		"phpunit/phpunit": "3.7.24"
     },
         "autoload": {
         "psr-4": {"Glial\\": "Glial/"}
