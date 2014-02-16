@@ -1,22 +1,22 @@
 {
     "name": "glial/glial",
     "version": "2.1.0",
-	"authors":     {
+	"license": "GPL-3.0",
+	"description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
+    "authors": [
+        {
             "name": "Aurélien LEQUOY",
-            "email": "aurelien.lequoy@gmail.com"
-        },
-		{
-    "license": [
-       "GPL-3.0"
-    ]
-},
-    "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
+            "email": "aurelien.lequoy@gmail.com",
+            "homepage": "www.estrildidae.net",
+            "role": "Developer"
+        }
+    ],
     "require": {
         "php": ">=5.5.0",
 		"phpunit/phpunit": "3.7.24"
     },
         "autoload": {
-        "psr-4": {"Glial\\": "Glial/"}
+        "psr-0": {"Glial\\": "Glial/"}
     }
 	
 }
