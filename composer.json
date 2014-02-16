@@ -1,6 +1,6 @@
 {
     "name": "glial/glial",
-    "description": "A HMVC PHP framework (include CLI mode) made for high volumeetry / batch process",
+    "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
     "require": {
         "php": ">=5.5.0"
     },
