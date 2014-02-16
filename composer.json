@@ -1,6 +1,15 @@
 {
     "name": "glial/glial",
     "version": "2.1.0",
+	"authors":     {
+            "name": "Aurélien LEQUOY",
+            "email": "aurelien.lequoy@gmail.com"
+        },
+		{
+    "license": [
+       "GPL-3.0"
+    ]
+},
     "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
     "require": {
         "php": ">=5.5.0",
@@ -9,4 +18,5 @@
         "autoload": {
         "psr-4": {"Glial\\": "Glial/"}
     }
+	
 }
