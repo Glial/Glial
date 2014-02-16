@@ -1,8 +1,8 @@
 {
     "name": "glial/glial",
     "version": "2.1.0",
-	"license": "GPL-3.0",
-	"description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
+        "license": "GPL-3.0",
+        "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
     "authors": [
         {
             "name": "Aurélien LEQUOY",
@@ -13,10 +13,12 @@
     ],
     "require": {
         "php": ">=5.5.0",
-		"phpunit/phpunit": "3.7.24"
+                "phpunit/phpunit": "3.7.24",
+                "fabpot/php-cs-fixer" : "*",
+                "phpdocumentor/phpdocumentor": "*"
     },
         "autoload": {
-        "psr-0": {"Glial\\": "Glial/"}
+        "psr-4": {"Glial\\": "Glial/"}
     }
-	
+
 }
