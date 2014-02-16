@@ -73,8 +73,7 @@ use \Glial\Geometry\Polygon\Vertex; // A polygon consists of vertices. So the po
 
 // class is just a reference to a linked list of vertices
 
-class Polygon
-{
+class Polygon {
     /* ------------------------------------------------------------------------------
      * * This class manages a doubly linked list of vertex objects that represents
      * * a polygon. The class consists of basic methods to manage the list
@@ -91,8 +90,7 @@ class Polygon
      * * Construct a new shiny polygon
      */
 
-    public function polygon($first = NULL)
-    {
+    public function polygon($first = NULL) {
         $this->first = $first;
         $this->cnt = 0;
     }
@@ -101,7 +99,7 @@ class Polygon
      * * Get the first vertex
      */
 
-    function &getFirst() {
+    function getFirst() {
         return $this->first;
     }
 
@@ -109,7 +107,7 @@ class Polygon
      * * Return the next polygon
      */
 
-    function &NextPoly() {
+    function NextPoly() {
         return $this->first->NextPoly();
     }
 
@@ -117,15 +115,13 @@ class Polygon
      * * Print out main variables of the polygon for debugging
      */
 
-    public function print_poly()
-    {
+    public function print_poly() {
         print("Polygon:<br>");
         $c = & $this->first;
         do {
             $c->print_vertex();
             $c = & $c->Next();
-        }
-        while ($c->id() != $this->first->id());
+        } while ($c->id() != $this->first->id());
         if ($this->first->nextPoly) {
             print("Next Polygon:<br>");
             $this->first->nextPoly->print_poly();
@@ -138,39 +134,37 @@ class Polygon
      * * vertex.
      */
 
-    public function add(&$nv)
-    {
-        if ($this->cnt == 0) {	// If this is the first vertex in the polygon
-            $this->first = & $nv;   // Save a reference to it in the polygon
+    public function add($nv) {
+        if ($this->cnt == 0) { // If this is the first vertex in the polygon
+            $this->first = $nv;   // Save a reference to it in the polygon
             $this->first->setNext($nv);  // Set its pointer to point to itself
             $this->first->setPrev($nv);  // because it is the only vertex in the list
             $ps = & $this->first->Nseg(); // Get ref to the Next segment object
             $this->first->setPseg($ps);  // and save it as Prev segment as well
-        } else {		// At least one other vertex already exists
+        } else {  // At least one other vertex already exists
             // $p <-> $nv <-> $n
             //    $ps     $ns
-            $n = & $this->first;	// Get a ref to the first vertex in the list
-            $p = & $n->Prev();	// Get ref to previous vertex
-            $n->setPrev($nv);	// Add at end of list (just before first)
-            $nv->setNext($n);	// link the new vertex to it
-            $nv->setPrev($p);	// link to the pervious EOL vertex
-            $p->setNext($nv);	// And finally link the previous EOL vertex
+            $n = & $this->first; // Get a ref to the first vertex in the list
+            $p = & $n->Prev(); // Get ref to previous vertex
+            $n->setPrev($nv); // Add at end of list (just before first)
+            $nv->setNext($n); // link the new vertex to it
+            $nv->setPrev($p); // link to the pervious EOL vertex
+            $p->setNext($nv); // And finally link the previous EOL vertex
             // Segments
-            $ns = & $nv->Nseg();	// Get ref to the new next segment
-            $ps = & $p->Nseg();	// Get ref to the previous segment
-            $n->setPseg($ns);	// Set new previous seg for $this->first
-            $nv->setPseg($ps);	// Set previous seg of the new vertex
+            $ns = $nv->Nseg(); // Get ref to the new next segment
+            $ps = $p->Nseg(); // Get ref to the previous segment
+            $n->setPseg($ns); // Set new previous seg for $this->first
+            $nv->setPseg($ps); // Set previous seg of the new vertex
         }
-        $this->cnt++;	  // Increment the count of vertices
+        $this->cnt++;   // Increment the count of vertices
     }
 
     /*
      * * Create a vertex and then add it to the polygon
      */
 
-    public function addv($x, $y, $xc = 0, $yc = 0, $d = 0)
-    {
-        $nv = & new Vertex($x, $y, $xc, $yc, $d);
+    public function addv($x, $y, $xc = 0, $yc = 0, $d = 0) {
+        $nv = new Vertex($x, $y, $xc, $yc, $d);
         $this->add($nv);
     }
 
@@ -180,22 +174,22 @@ class Polygon
      * * be performed.
      */
 
-    function &del(&$v) {
+    function del($v) {
         // $p <-> $v <-> $n				   Will delete $v and $ns
         //    $ps    $ns
-        $p = & $v->Prev();	// Get ref to previous vertex
-        $n = & $v->Next();	// Get ref to next vertex
-        $p->setNext($n);	// Link previous forward to next
-        $n->setPrev($p);	// Link next back to previous
+        $p = $v->Prev(); // Get ref to previous vertex
+        $n = $v->Next(); // Get ref to next vertex
+        $p->setNext($n); // Link previous forward to next
+        $n->setPrev($p); // Link next back to previous
         // Segments
-        $ps = & $p->Nseg();	// Get ref to previous segment
-        $ns = & $v->Nseg();	// Get ref to next segment
-        $n->setPseg($ps);	// Link next back to previous segment
+        $ps = $p->Nseg(); // Get ref to previous segment
+        $ns = $v->Nseg(); // Get ref to next segment
+        $n->setPseg($ps); // Link next back to previous segment
         $ns = NULL;
         $v = NULL;   // Free the memory
-        $this->cnt--;	 // One less vertex
+        $this->cnt--;  // One less vertex
 
-        return $n;	  // Return a ref to the next valid vertex
+        return $n;   // Return a ref to the next valid vertex
     }
 
     /*
@@ -204,15 +198,13 @@ class Polygon
      * * so that it can be processed again.
      */
 
-    public function res()
-    {
-        $v = & $this->getFirst();  // Get the first vertex
+    public function res() {
+        $v = $this->getFirst();  // Get the first vertex
         do {
-            $v = & $v->Next();  // Get the next vertex in the polygon
+            $v = $v->Next();  // Get the next vertex in the polygon
             while ($v->isIntersect()) // Delete all intersection vertices
-                $v = & $this->del($v);
-        }
-        while ($v->id() != $this->first->id());
+                $v = $this->del($v);
+        } while ($v->id() != $this->first->id());
     }
 
     /*
@@ -220,16 +212,15 @@ class Polygon
      * * including all its vertices & their segments
      */
 
-    function &copy_poly() {
+    function copy_poly() {
         $this_class = get_class($this);   // Findout the class I'm in
-        $n = & new $this_class;
+        $n = new $this_class;
         ;  // Create a new instance of this class
-        $v = & $this->getFirst();
+        $v = $this->getFirst();
         do {
             $n->addv($v->X(), $v->Y(), $v->Xc(), $v->Yc(), $v->d());
             $v = & $v->Next();
-        }
-        while ($v->id() != $this->first->id());
+        } while ($v->id() != $this->first->id());
 
         return $n;
     }
@@ -244,38 +235,38 @@ class Polygon
      * * alpha value.
      */
 
-    public function insertSort(&$nv, &$s, &$e)
-    {
-        $c = & $s;	  // Set current to the sarting vertex
+    public function insertSort($nv, $s, $e) {
+        $c = & $s;   // Set current to the sarting vertex
         while ($c->id() != $e->id() && $c->Alpha() < $nv->Alpha())
-            $c = & $c->Next();  // Move current past any intersections
+            $c = $c->Next();  // Move current past any intersections
 
+            
 // whose alpha is lower but don't go past
         // the end vertex
         // $p <-> $nv <-> $c
-        $nv->setNext($c);	// Link new vertex forward to curent one
-        $p = & $c->Prev();	// Get a link to the previous vertex
-        $nv->setPrev($p);	// Link the new vertex back to the previous one
-        $p->setNext($nv);	// Link previous vertex forward to new vertex
-        $c->setPrev($nv);	// Link current vertex back to the new vertex
+        $nv->setNext($c); // Link new vertex forward to curent one
+        $p = & $c->Prev(); // Get a link to the previous vertex
+        $nv->setPrev($p); // Link the new vertex back to the previous one
+        $p->setNext($nv); // Link previous vertex forward to new vertex
+        $c->setPrev($nv); // Link current vertex back to the new vertex
         // Segments
         $ps = & $p->Nseg();
         $nv->setPseg($ps);
         $ns = & $nv->Nseg();
         $c->setPseg($ns);
-        $this->cnt++;	 // Just added a new vertex
+        $this->cnt++;  // Just added a new vertex
     }
 
     /*
      * * return the next non intersecting vertex after the one specified
      */
 
-    function &nxt(&$v) {
-        $c = & $v;	  // Initialize current vertex
+    function nxt($v) {
+        $c = $v;   // Initialize current vertex
         while ($c && $c->isIntersect()) // Move until a non-intersection
             $c = & $c->Next();  // vertex if found
 
-        return $c;	  // return that vertex
+        return $c;   // return that vertex
     }
 
     /*
@@ -283,14 +274,13 @@ class Polygon
      * * method is complete when all intersections have been checked.
      */
 
-    public function unckd_remain()
-    {
+    public function unckd_remain() {
         $remain = FALSE;
-        $v = & $this->first;
+        $v = $this->first;
         do {
             if ($v->isIntersect() && !$v->isChecked())
                 $remain = TRUE;  // Set if an unchecked intersection is found
-            $v = & $v->Next();
+            $v = $v->Next();
         }
         while ($v->id() != $this->first->id());
 
@@ -303,10 +293,10 @@ class Polygon
      */
 
     function &first_unckd_intersect() {
-        $v = & $this->first;
-        do		 // Do-While {		 // Not yet reached end of the polygon
-            $v = & $v->Next();   // AND the vertex if NOT an intersection
-        }		 // OR it IS an intersection, but has been checked already
+        $v = $this->first;
+        do {   // Do-While {		 // Not yet reached end of the polygon
+            $v = $v->Next();   // AND the vertex if NOT an intersection
+        }   // OR it IS an intersection, but has been checked already
         while ($v->id() != $this->first->id() && (!$v->isIntersect() || ( $v->isIntersect() && $v->isChecked() ) ));
 
         return $v;
@@ -316,8 +306,7 @@ class Polygon
      * * Return the distance between two points
      */
 
-    public function dist($x1, $y1, $x2, $y2)
-    {
+    public function dist($x1, $y1, $x2, $y2) {
         return sqrt(($x1 - $x2) * ($x1 - $x2) + ($y1 - $y2) * ($y1 - $y2));
     }
 
@@ -327,8 +316,7 @@ class Polygon
      * * the 3 O'Clock position. Result returned in radians
      */
 
-    public function angle($xc, $yc, $x1, $y1)
-    {
+    public function angle($xc, $yc, $x1, $y1) {
         $d = $this->dist($xc, $yc, $x1, $y1); // calc distance between two points
         if ($d != 0)
             if (asin(($y1 - $yc) / $d) >= 0)
@@ -348,8 +336,7 @@ class Polygon
      * * the intersection point on the arc. $d is the direction of the arc
      */
 
-    public function aAlpha($x1, $y1, $x2, $y2, $xc, $yc, $xi, $yi, $d)
-    {
+    public function aAlpha($x1, $y1, $x2, $y2, $xc, $yc, $xi, $yi, $d) {
         $sa = $this->angle($xc, $yc, $x1, $y1); // Start Angle
         $ea = $this->angle($xc, $yc, $x2, $y2); // End Angle
         $ia = $this->angle($xc, $yc, $xi, $yi); // Intersection Angle
@@ -380,10 +367,9 @@ class Polygon
      * * simply wrong, I'm amazed it took so long to show up as a problem.
      */
 
-    public function perturb(&$p1, &$p2, &$q1, &$q2, $aP, $aQ)
-    {
-        $PT = 0.00001;	  // Perturbation factor
-        if ($aP == 0) {	   // q1,q2 intersects p1 exactly, move vertex p1 closer to p2
+    public function perturb(&$p1, &$p2, &$q1, &$q2, $aP, $aQ) {
+        $PT = 0.00001;   // Perturbation factor
+        if ($aP == 0) {    // q1,q2 intersects p1 exactly, move vertex p1 closer to p2
             $h = $this->dist($p1->X(), $p1->Y(), $p2->X(), $p2->Y());
             $a = ($PT * $this->dist($p1->X(), $p1->Y(), $p2->X(), $p1->Y())) / $h;
             $b = ($PT * $this->dist($p2->X(), $p2->Y(), $p2->X(), $p1->Y())) / $h;
@@ -426,10 +412,9 @@ class Polygon
      * * and their associated alpha values.
      */
 
-    public function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ)
-    {
+    public function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ) {
         $found = FALSE;
-        $n = 0;	   // No intersections found yet
+        $n = 0;    // No intersections found yet
         $pt = $p1->d();
         $qt = $q1->d(); // Do we have Arcs or Lines?
 
@@ -497,7 +482,7 @@ class Polygon
                 $found = FALSE;
             } elseif ($d > ($r0 + $r1)) {  // Check for solvability.		// no solution. circles do not intersect.
                 $found = FALSE;
-            } elseif ($d < abs($r0 - $r1)) {	   // no solution. one circle inside the other
+            } elseif ($d < abs($r0 - $r1)) {    // no solution. one circle inside the other
                 $found = FALSE;
             } else {
                 /*
@@ -509,14 +494,13 @@ class Polygon
                 $y2 = $y0 + ($dy * $a / $d);
                 if ($d == ($r0 + $r1)) // Arcs touch at xy2 exactly (unlikely) {
                     $alphaP[0] = $this->aAlpha($p1->X(), $p1->Y(), $p2->X(), $p2->Y(), $x0, $y0, $x2, $y2, $pt);
-                    $alphaQ[0] = $this->aAlpha($q1->X(), $q1->Y(), $q2->X(), $q2->Y(), $x1, $y1, $x2, $y2, $qt);
-                    if (($alphaP[0] > 0 && $alphaP[0] < 1) && ($alphaQ[0] > 0 && $alphaQ[0] < 1)) {
-                        $ix[0] = $x2;
-                        $iy[0] = $y2;
-                        $n = 1;
-                        $found = TRUE;
-                    }
-                } else {	 // Arcs intersect at two points
+                $alphaQ[0] = $this->aAlpha($q1->X(), $q1->Y(), $q2->X(), $q2->Y(), $x1, $y1, $x2, $y2, $qt);
+                if (($alphaP[0] > 0 && $alphaP[0] < 1) && ($alphaQ[0] > 0 && $alphaQ[0] < 1)) {
+                    $ix[0] = $x2;
+                    $iy[0] = $y2;
+                    $n = 1;
+                    $found = TRUE;
+                } else {  // Arcs intersect at two points
                     $h = sqrt(($r0 * $r0) - ($a * $a)); // Calc the distance from xy2 to either
                     // of the intersection points.
                     $rx = -$dy * ($h / $d); // Now determine the offsets of the
@@ -572,11 +556,10 @@ class Polygon
             }
             $r = $this->dist($xc, $yc, $xs, $ys);
             $a = pow(($x2 - $x1), 2) + pow(($y2 - $y1), 2);
-            $b = 2 * ( ($x2 - $x1) * ($x1 - $xc)
-                + ($y2 - $y1) * ($y1 - $yc) );
+            $b = 2 * ( ($x2 - $x1) * ($x1 - $xc) + ($y2 - $y1) * ($y1 - $yc) );
             $c = pow($xc, 2) + pow($yc, 2) +
-                pow($x1, 2) + pow($y1, 2) -
-                2 * ( $xc * $x1 + $yc * $y1) - pow($r, 2);
+                    pow($x1, 2) + pow($y1, 2) -
+                    2 * ( $xc * $x1 + $yc * $y1) - pow($r, 2);
             $i = $b * $b - 4 * $a * $c;
             if ($i < 0.0) { // no intersection
                 $found = FALSE;
@@ -646,8 +629,7 @@ class Polygon
      * * actually is a bit bigger. Those people have no lives.
      */
 
-    public function isInside(&$v)
-    {
+    public function isInside(&$v) {
         $winding_number = 0;
         $point_at_infinity = & new vertex(-10000000, $v->Y()); // Create point at infinity
         $q = & $this->first;  // End vertex of a line segment in polygon
@@ -660,9 +642,9 @@ class Polygon
         } while ($q->id() != $this->first->id());
         $point_at_infinity = NULL;  // Free the memory for neatness
         if ($winding_number % 2 == 0) // Check even or odd
-            return FALSE;	// even == outside
+            return FALSE; // even == outside
         else
-            return TRUE;	// odd == inside
+            return TRUE; // odd == inside
     }
 
     /*
@@ -681,10 +663,10 @@ class Polygon
      * * A is the object and B is the polygon passed to the method.
      */
 
-    function &boolean(&$polyB, $oper) {
+    function boolean($polyB, $oper) {
         $last = NULL;
-        $s = & $this->first;   // First vertex of the subject polygon
-        $c = & $polyB->getFirst(); // First vertex of the "clip" polygon
+        $s = $this->first;   // First vertex of the subject polygon
+        $c = $polyB->getFirst(); // First vertex of the "clip" polygon
         /*
          * * Phase 1 of the algoritm is to find all intersection points between the two
          * * polygons. A new vertex is created for each intersection and it is added to
@@ -750,7 +732,7 @@ class Polygon
         $s = & $this->first;
         if ($polyB->isInside($s)) // if we are already inside
             $entry = !$A;  // next intersection must be an exit
-        else	 // otherwise
+        else  // otherwise
             $entry = $A;  // next intersection must be an entry
         do {
             if ($s->isIntersect()) {
@@ -765,14 +747,14 @@ class Polygon
         $c = & $polyB->first;
         if ($this->isInside($c)) // if we are already inside
             $entry = !$B; // next intersection must be an exit
-        else	// otherwise
+        else // otherwise
             $entry = $B; // next intersection must be an entry
         do {
             if ($c->isIntersect()) {
                 $c->setEntry($entry);
                 $entry = !$entry;
             }
-            $c = & $c->Next();
+            $c = $c->Next();
         } while ($c->id() != $polyB->first->id());
         /*
          * * Phase 3 of the algorithm is to scan the linked lists of the
@@ -782,12 +764,12 @@ class Polygon
          * * our result polygon by following the source or clip polygon
          * * either forwards or backwards.
          */
-        while ($this->unckd_remain()) {	// Loop while unchecked intersections remain
-            $v = & $this->first_unckd_intersect(); // Get the first unchecked intersect point
+        while ($this->unckd_remain()) { // Loop while unchecked intersections remain
+            $v = $this->first_unckd_intersect(); // Get the first unchecked intersect point
             $this_class = get_class($this);   // Findout the class I'm in
-            $r = & new $this_class;	 // Create a new instance of that class
+            $r = new $this_class;  // Create a new instance of that class
             do {
-                $v->setChecked();	 // Set checked flag true for this intersection
+                $v->setChecked();  // Set checked flag true for this intersection
                 if ($v->isEntry()) {
                     do {
                         $v = & $v->Next();
@@ -801,13 +783,14 @@ class Polygon
                         $r->add($nv);
                     } while (!$v->isIntersect());
                 }
-                $v = & $v->Neighbor();
+                $v = $v->Neighbor();
             } while (!$v->isChecked()); // until polygon closed
-            if ($last)	   // Check in case first time thru the loop
+            if ($last)    // Check in case first time thru the loop
                 $r->first->setNextPoly($last); // Save ref to the last poly in the first vertex
 
+                
 // of this poly
-            $last = & $r;	  // Save this polygon
+            $last = & $r;   // Save this polygon
         } // end of while there is another intersection to check
         /*
          * * Clean up the input polygons by deleting the intersection points
@@ -826,17 +809,17 @@ class Polygon
          */
         if (!$last) {
             switch ($oper) {
-                case "A|B": $last = & $this->copy_poly();
+                case "A|B": $last =  $this->copy_poly();
                     $p = & $polyB->copy_poly();
                     $last->first->setNextPoly($p);
                     break;
-                case "A&B": $last = & $this->copy_poly();
+                case "A&B": $last =  $this->copy_poly();
                     break;
-                case "A\B": $last = & $this->copy_poly();
+                case "A\B": $last = $this->copy_poly();
                     break;
-                case "B\A": $last = & $polyB->copy_poly();
+                case "B\A": $last =  $polyB->copy_poly();
                     break;
-                default: $last = & $this->copy_poly();
+                default: $last =  $this->copy_poly();
                     break;
             }
         } elseif ($this->first->nextPoly) {
@@ -857,25 +840,24 @@ class Polygon
      * * must be completely enclosed by this polygon.
      */
 
-    public function isPolyInside(&$p)
-    {
+    public function isPolyInside($p) {
         $inside = TRUE;
-        $c = & $p->getFirst(); // Get the first vertex in polygon $p
+        $c =  $p->getFirst(); // Get the first vertex in polygon $p
         do {
             if (!$this->isInside($c)) // If vertex is NOT inside this polygon
                 $inside = FALSE;  // then set flag to false
             $c = & $c->Next();   // Get the next vertex in polygon $p
         } while ($c->id() != $p->first->id());
         if ($inside) {
-            $c = & $p->getFirst();  // Get the first vertex in polygon $p
-            $s = & $this->getFirst(); // Get the first vertex in this polygon
+            $c =  $p->getFirst();  // Get the first vertex in polygon $p
+            $s =  $this->getFirst(); // Get the first vertex in this polygon
             do {
                 do {
                     if ($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC))
                         $inside = FALSE;
-                    $c = & $c->Next();
+                    $c =  $c->Next();
                 } while ($c->id() != $p->first->id());
-                $s = & $s->Next();
+                $s =  $s->Next();
             } while ($s->id() != $this->first->id());
         }
 
@@ -893,25 +875,24 @@ class Polygon
      * * must be completely outside this polygon.
      */
 
-    public function isPolyOutside(&$p)
-    {
+    public function isPolyOutside(&$p) {
         $outside = TRUE;
-        $c = & $p->getFirst(); // Get the first vertex in polygon $p
+        $c =  $p->getFirst(); // Get the first vertex in polygon $p
         do {
             if ($this->isInside($c)) // If vertex is inside this polygon
                 $outside = FALSE;  // then set flag to false
-            $c = & $c->Next();   // Get the next vertex in polygon $p
+            $c =  $c->Next();   // Get the next vertex in polygon $p
         } while ($c->id() != $p->first->id());
         if ($outside) {
-            $c = & $p->getFirst();  // Get the first vertex in polygon $p
-            $s = & $this->getFirst(); // Get the first vertex in this polygon
+            $c =  $p->getFirst();  // Get the first vertex in polygon $p
+            $s =  $this->getFirst(); // Get the first vertex in this polygon
             do {
                 do {
                     if ($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC))
                         $outside = FALSE;
-                    $c = & $c->Next();
+                    $c =  $c->Next();
                 } while ($c->id() != $p->first->id());
-                $s = & $s->Next();
+                $s =  $s->Next();
             } while ($s->id() != $this->first->id());
         }
 
@@ -927,18 +908,17 @@ class Polygon
      * * completely inside the other.
      */
 
-    public function isPolyIntersect(&$p)
-    {
+    public function isPolyIntersect(&$p) {
         $intersect = FALSE;
-        $c = & $p->getFirst();		// Get the first vertex in polygon $p
-        $s = & $this->getFirst();	// Get the first vertex in this polygon
+        $c =  $p->getFirst();  // Get the first vertex in polygon $p
+        $s =  $this->getFirst(); // Get the first vertex in this polygon
         do {
             do {
                 if ($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC))
                     $intersect = TRUE;
-                $c = & $c->Next();
+                $c =  $c->Next();
             } while ($c->id() != $p->first->id());
-            $s = & $s->Next();
+            $s =  $s->Next();
         } while ($s->id() != $this->first->id());
 
         return $intersect;
@@ -952,11 +932,10 @@ class Polygon
      * * the polygon does not self intersect.
      */
 
-    public function isPolySelfIntersect()
-    {
+    public function isPolySelfIntersect() {
         $intersect = FALSE;
-        $s = & $this->getFirst();	// Get the first vertex in this polygon
-        $c = & $s->Next();			// Get the next vertex
+        $s =  $this->getFirst(); // Get the first vertex in this polygon
+        $c =  $s->Next();   // Get the next vertex
         do {
             do {
                 if ($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) // If the segments intersect
@@ -978,9 +957,8 @@ class Polygon
      * * Translates polygon by delta X and delta Y
      */
 
-    public function move($dx, $dy)
-    {
-        $p = & $this;
+    public function move($dx, $dy) {
+        $p =  $this;
         if ($p) // For a valid polygon
             do {
                 $v = & $p->getFirst();
@@ -991,10 +969,10 @@ class Polygon
                         $v->setXc($v->Xc() + $dx);
                         $v->setYc($v->Yc() + $dy);
                     }
-                    $v = & $v->Next();
+                    $v =  $v->Next();
                 } while ($v->id() != $p->first->id());
-                $p = & $p->NextPoly();   // Get the next polygon in the list
-            } while ($p);	 // Keep checking polygons as long as they exist
+                $p =  $p->NextPoly();   // Get the next polygon in the list
+            } while ($p);  // Keep checking polygons as long as they exist
     }
 
 // end of move polygon
@@ -1004,17 +982,16 @@ class Polygon
      * * Rotates a polgon about point $xr/$yr by $a radians
      */
 
-    public function rotate($xr, $yr, $a)
-    {
+    public function rotate($xr, $yr, $a) {
         $this->move(-$xr, -$yr);  // Move the polygon so that the point of
         // rotation is at the origin (0,0)
-        if ($a < 0)	 // We might be passed a negitive angle
+        if ($a < 0)  // We might be passed a negitive angle
             $a += 2 * pi();   // make it positive
 
         $p = & $this;
         if ($p) // For a valid polygon
             do {
-                $v = & $p->first;
+                $v =  $p->first;
                 do {
                     $x = $v->X();
                     $y = $v->Y();
@@ -1026,10 +1003,10 @@ class Polygon
                         $v->setXc($x * cos($a) - $y * sin($a));
                         $v->setYc($x * sin($a) + $y * cos($a));
                     }
-                    $v = & $v->Next();
+                    $v =  $v->Next();
                 } while ($v->id() != $p->first->id());
-                $p = & $p->NextPoly();   // Get the next polygon in the list
-            } while ($p);	 // Keep checking polygons as long as they exist
+                $p =  $p->NextPoly();   // Get the next polygon in the list
+            } while ($p);  // Keep checking polygons as long as they exist
         $this->move($xr, $yr);  // Move the rotated polygon back
     }
 
@@ -1051,15 +1028,15 @@ class Polygon
         $minY = INF;
         $maxX = -INF;
         $maxY = -INF;
-        $p = & $this;
+        $p =  $this;
         if ($p) // For a valid polygon
             do {
-                $v = & $p->first; // Get the first vertex
+                $v =  $p->first; // Get the first vertex
                 do {
                     if ($v->d() != 0) { // Is it an arc segment
-                        $vn = & $v->Next();	 // end vertex of the arc segment
-                        $v1 = & new vertex($v->Xc(), -infinity); // bottom point of vertical line thru arc center
-                        $v2 = & new vertex($v->Xc(), +infinity); // top point of vertical line thru arc center
+                        $vn =  $v->Next();  // end vertex of the arc segment
+                        $v1 =  new vertex($v->Xc(), -infinity); // bottom point of vertical line thru arc center
+                        $v2 =  new vertex($v->Xc(), +infinity); // top point of vertical line thru arc center
                         if ($p->ints($v, $vn, $v1, $v2, $n, $x, $y, $aS, $aC)) { // Does line intersect the arc ?
                             for ($i = 0; $i < $n; $i++) {   // check y portion of all intersections
                                 $minY = min($minY, $y[$i], $v->Y());
@@ -1092,13 +1069,13 @@ class Polygon
                     }
                     $v = & $v->Next();
                 } while ($v->id() != $p->first->id());
-                $p = & $p->NextPoly();				   // Get the next polygon in the list
-            } while ($p);	 // Keep checking polygons as long as they exist
+                $p = & $p->NextPoly();       // Get the next polygon in the list
+            } while ($p);  // Keep checking polygons as long as they exist
             //
         // Now create an return a polygon with the bounding rectangle
         //
         $this_class = get_class($this);   // Findout the class I'm in (might be an extension of polygon)
-        $p = & new $this_class;	 // Create a new instance of that class
+        $p =  new $this_class;  // Create a new instance of that class
         $p->addv($minX, $minY);
         $p->addv($minX, $maxY);
         $p->addv($maxX, $maxY);
@@ -1114,12 +1091,11 @@ class Polygon
      * * Resize a polygon by scale X & scale Y
      */
 
-    public function scale($sx, $sy)
-    {
-        $p = & $this;
+    public function scale($sx, $sy) {
+        $p =  $this;
         if ($p) // For a valid polygon
             do {
-                $v = & $p->getFirst();
+                $v =  $p->getFirst();
                 do {
                     $v->setX($v->X() * $sx);
                     $v->setY($v->Y() * $sy);
@@ -1129,8 +1105,8 @@ class Polygon
                     }
                     $v = & $v->Next();
                 } while ($v->id() != $p->first->id());
-                $p = & $p->NextPoly();				   // Get the next polygon in the list
-            } while ($p);	 // Keep checking polygons as long as they exist
+                $p =  $p->NextPoly();       // Get the next polygon in the list
+            } while ($p);  // Keep checking polygons as long as they exist
     }
 
 // end of scale polygon
@@ -1142,18 +1118,17 @@ class Polygon
      * * (xmax,ymax).
      */
 
-    public function translate($xmin, $ymin, $xmax, $ymax)
-    {
+    public function translate($xmin, $ymin, $xmax, $ymax) {
         $nXsize = $xmax - $xmin;
         $nYsize = $ymax - $ymin;
 
-        $o_br = & $this->bRect(); // Get the min/max corners of the original polygon bounding rect
-        $v = & $o_br->getFirst(); // First vertex of bRect is xmin & ymin of the polygon
+        $o_br =  $this->bRect(); // Get the min/max corners of the original polygon bounding rect
+        $v =  $o_br->getFirst(); // First vertex of bRect is xmin & ymin of the polygon
         $o_xmin = $v->X();
         $o_ymin = $v->Y();
-        $v = & $v->Next(); // Next vertex has ymax
+        $v =  $v->Next(); // Next vertex has ymax
         $o_ymax = $v->Y();
-        $v = & $v->Next(); // Next vertex has xmax
+        $v =  $v->Next(); // Next vertex has xmax
         $o_xmax = $v->X();
 
         $oXsize = $o_xmax - $o_xmin;

@@ -45,7 +45,6 @@ class User
             mail($ob->email, $subject, $msg, $headers) or die("error mail");
         }
     }
-
 }
 
 echo "namespace : ".__NAMESPACE__."\n";
