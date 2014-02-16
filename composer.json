@@ -2,6 +2,6 @@
     "name": "glial/glial",
     "description": "A light PHP framework (include CLI mode)",
     "require": {
-        "php": ">=5.5.0",
+        "php": ">=5.5.0"
     }
 }
