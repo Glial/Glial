@@ -207,10 +207,12 @@ class NeuronAdministration extends Controller
             $this->db['mysql_write']->sql_query($sql);
             // &#2157;etre dans un fichier de config ?
             $this->add_acl("Super administrator", "*");
-
+ 	
+ 	$this->add_acl("Visitor", "home/");
+/*
             $this->add_acl("Visitor", "author/");
             $this->add_acl("Visitor", "species/");
-            $this->add_acl("Visitor", "home/");
+           
             $this->add_acl("Visitor", "who_we_are/");
             $this->add_acl("Visitor", "media/");
             $this->add_acl("Visitor", "download/");
@@ -262,7 +264,8 @@ class NeuronAdministration extends Controller
             //$this->rem_acl("Member", "species/breeder");
 
             $this->add_acl("Member", "species/sort");
-
+*/
+	$this->add_acl("Member", "home/");
 
             $sql = "SELECT id_group, b.name as id_action, c.name as id_controller FROM acl_action_group a
 		INNER JOIN acl_action b ON a.id_acl_action = b.id
