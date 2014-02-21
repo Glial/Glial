@@ -4,10 +4,6 @@ namespace Glial\Neuron\Controller;
 
 use \Glial\Synapse\Controller;
 
-//curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php -- --install-dir="/home/www/test" --application="Esysteme/Estrildidae"
-
-
-
 class NeuronAdministration extends Controller
 {
 
