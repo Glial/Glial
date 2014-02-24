@@ -45,7 +45,7 @@ class Controller
      * @return boolean Success
      * @access public
      */
-    function __construct($controller, $action, $param)
+    final function __construct($controller, $action, $param)
     {
 
         $controller = Inflector::camelize($controller);
@@ -57,12 +57,7 @@ class Controller
                     $this->error = __("Acess denied") . " : $controller/$action";
                     return;
 
-                    /*
-                      $calledFrom = debug_backtrace();
-                      echo '<strong>' . substr(str_replace(ROOT, '', $calledFrom[0]['file']), 1) . '</strong>';
-                      echo ' (line <strong>' . $calledFrom[0]['line'] . '</strong>)<br />';
-                      die("ACCESS DENIED in : $controller/$action");
-                     */
+
                 }
             }
         }
@@ -102,7 +97,7 @@ class Controller
         //echo "$class_name,  $name, $arguments \n";
     }
 
-    function get_controller()
+    final function get_controller()
     {
         if (empty($this->controller)) { // certainement un meilleur maniere de procÃƒÂ©der
             return;
@@ -110,6 +105,8 @@ class Controller
 
 
         $filename = APP_DIR . DS . "controller" . DS . $this->controller . ".controller.php";
+		
+		
         if (file_exists($filename)) {
             include_once $filename;
         } else {
@@ -118,7 +115,7 @@ class Controller
 		$this->controller = "\Glial\Neuron\Controller\Neuron". $this->controller;
                 include_once $filename;
             } else {
-                trigger_error("impossible to get the class file : " . $filename, E_USER_NOTICE);
+                trigger_error("impossible to get the class file : " . $filename. ":".__FILE__ .":". __LINE__, E_USER_NOTICE);
                 exit;
                 //throw new Exception("Impossible to load :".$filename);
             }
@@ -128,8 +125,8 @@ class Controller
         $page = new $this->controller($this->controller, $this->action, $this->param);
 
 
-	$this->db = $GLOBALS['_DB'];
-	$page->db = $GLOBALS['_DB'];
+		$this->db = $GLOBALS['_DB'];
+		$page->db = $GLOBALS['_DB'];
         $this->param = json_decode($this->param);
 
         $this->title = $this->controller;
@@ -183,7 +180,7 @@ class Controller
         (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save($this->controller . "/" . $this->action) : "";
     }
 
-    function display()
+    final function display()
     {
         if (empty($this->controller)) { // certainement une meilleur maniere de procÃƒÂ©der
             return;
@@ -191,46 +188,53 @@ class Controller
         echo $this->html;
     }
 
-    function set_layout()
+    final function set_layout()
     {
         Variable::$_open = false;
 
-        if (empty($this->html)) { // certainement une meilleur maniere de procÃƒÂ©der
+		
+		
+		if (! IS_CLI)
+		{
+			if (empty($this->html)) { // certainement une meilleur maniere de procÃƒÂ©der
 
-            set_flash("error", "Access denied", $this->error);
-            header("location :" . LINK . "user/register/");
-            return;
-            die();
-        }
+				set_flash("error", "Access denied", $this->error);
+				header("location :" . LINK . "user/register/");
+				return;
+				die();
+			}
+		
+			
+			global $_LG, $_SITE;
 
-        global $_LG, $_SITE;
+			//$this->html = $_LG->getTranslation($this->html);
 
-        //$this->html = $_LG->getTranslation($this->html);
-
-        $GLIALE_CONTENT = $this->html;
-        $GLIALE_TITLE = $this->title;
-        $GLIALE_ARIANE = $this->ariane;
-
-
-
-        ob_implicit_flush(false);
-        ob_start();
-
-        Variable::$_open = true;
-        include APP_DIR . DS . "layout" . DS . $this->layout_name . ".layout.php";
-
-        if (!$this->ajax) {
-            echo $this->js;
-        }
-        echo "</html>\n"; //TODO a mettre ailleurs
+			$GLIALE_CONTENT = $this->html;
+			$GLIALE_TITLE = $this->title;
+			$GLIALE_ARIANE = $this->ariane;
 
 
-        Variable::$_html = ob_get_clean();
 
-        echo I18n::getTranslation(Variable::$_html);
+			ob_implicit_flush(false);
+			ob_start();
+
+			Variable::$_open = true;
+			include APP_DIR . DS . "layout" . DS . $this->layout_name . ".layout.php";
+
+			if (!$this->ajax) {
+				echo $this->js;
+			}
+			echo "</html>\n"; //TODO a mettre ailleurs
+
+
+			Variable::$_html = ob_get_clean();
+
+			echo I18n::getTranslation(Variable::$_html);
+		
+		}
     }
 
-    function get_javascript()
+    final function get_javascript()
     {
         $js = "\n<!-- start library javascript -->\n";
 
@@ -257,17 +261,17 @@ class Controller
         return $js;
     }
 
-    function set($var, $valeur)
+    final function set($var, $valeur)
     {
         $this->value[$var] = $valeur;
     }
 
-    function get()
+    final function get()
     {
         return $this->value;
     }
 
-    function add_javascript($js)
+    final function add_javascript($js)
     {
         if (is_array($js)) {
             $this->javascript = array_merge($js, $this->javascript);

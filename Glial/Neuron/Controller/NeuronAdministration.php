@@ -163,8 +163,6 @@ class NeuronAdministration extends Controller
                             $tab3 = get_class_methods($name);
                             $tab2 = get_class_methods("Controller");
 
-                            //debug($tab2);
-                            //$tab3 = array_diff($tab, $tab2);
 
                             $acl_controller = array();
                             $acl_controller['acl_controller']['name'] = $name;
