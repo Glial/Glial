@@ -9,61 +9,85 @@
  */
 namespace Glial\Acl;
 
-
-use \Glial\Synapse\Controller;
-use \Glial\Shell\Color;
-
 class Acl
 {
-    public $data = array();
-    public $id_group = 0;
-	
-	/****/
-	
 	protected $roles = array(); 
     protected $resources = array(); 
-    public $access = array(); 
+    protected $access = array(); 
 	
-
-    public function __construct($id_group)
-    {
-        $dir = TMP . "acl/acl.txt";
-        $this->data = unserialize(file_get_contents($dir));
-        $this->id_group = $id_group;
-    }
-
-    public function isAllowed3($controller = NULL, $action = NULL)
-    {
-        if (!empty($controller)) {
-            if (!empty($action)) {
-                if (!empty($this->data[$this->id_group][$controller][$action])) {
-
-                    if ($this->data[$this->id_group][$controller][$action] == 1) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-	/***********/
 	
-	function setRessource()
+	/*
+	 * if acl/acl.txt is undefined parse the right in CONFIG ."acl.config.ini.php" and serialize it in acl/acl.txt
+	 * if acl/acl.txt is defined just unserialize acl/acl.txt and setup the object
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @return array contain the data to be serialized
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description return an array to be serialized in a flat file
+	 * @access public
+	 */
+	
+	
+    public function __construct()
+    {
+		$path_to_acl_tmp = TMP . "acl/acl.txt";
+
+	    if (file_exists ($path_to_acl_tmp))
+		{
+			if (is_file($path_to_acl_tmp))
+			{
+				$s = implode('', file($path_to_acl_tmp));
+				$tmp = unserialize($s);
+				$this->roles = $tmp->roles;
+				$this->resources = $tmp->resources;
+				$this->access = $tmp->access;
+
+				return true;
+			}
+		}
+		
+		$this->setResource();	
+		$this->loadIniFile( CONFIG ."acl.config.ini.php");
+
+		file_put_contents($path_to_acl_tmp,serialize($this));
+
+    }
+	
+	/*
+	 * return an array with data to serialize
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @return array contain the data to be serialized
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description return an array to be serialized in a flat file
+	 * @access public
+	 */
+
+	public function __sleep()
 	{
+		return array('roles', 'resources', 'access');
+	}
 	
+
+	/*
+	 * parse application/controller/*.controller.php and define all the resources
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  string $filename full path where to find the ini file (usually configuration/acl.config.ini.php)
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description load ini file and setup the roles and access
+	 * @access public
+	 */
+	
+	function setResource()
+	{
 		$class = new \ReflectionClass("\Glial\Synapse\Controller");
 		$methods = $class->getMethods();
-	
-		$data = unserialize(serialize($methods));
-		
 		$class_controller_method = array();
-		
-		
-		foreach($data as $tab)
+
+		foreach($methods as $method)
 		{
-			$class_controller_method[] = $tab->name;
+			$class_controller_method[] = $method->name;
 		}
 		
 		$dir = APP_DIR . DS . "controller" . DS;
@@ -86,17 +110,11 @@ class Acl
 						}
 
 						$tab3 = get_class_methods($controller);
-						
-
-						
-
+						//substract methods from class parent (\Glial\Synapse\Controller)
 						$tab3 = array_diff($tab3, $class_controller_method);
 						
 						foreach ($tab3 as $action) {
-							
-							//echo $controller."/".$action . PHP_EOL;
 							$this->addResource($controller."/".$action); 
-							
 						}
 					}
 				}
@@ -106,6 +124,17 @@ class Acl
 		}
 	
 	}
+	
+	
+	/*
+	 * load an ini file and setup the roles and access
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  string $filename full path where to find the ini file (usually configuration/acl.config.ini.php)
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description load ini file and setup the roles and access
+	 * @access public
+	 */
 	
 	function loadIniFile($filename)
 	{
@@ -154,6 +183,16 @@ class Acl
 
 	}
 	
+	/*
+	 * Add a resource
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  mixed $resources should validate this regex /[\w]+\/[\w]+/i => example : "controller/action"
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description Add a role and put it in array $this->roles
+	 * @access public
+	 */
+	
 	function addResource($resources)
 	{
 		if(is_string($resources))
@@ -168,6 +207,17 @@ class Acl
 			}
 		}
 	}
+	
+	/*
+	 * Add a role or add a parent to a role
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  mixed $role the roles are defined in acl.config.ini.php
+	 * @param  mixed $parents optionally set a parent of a role to allow recursive rights
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description Add a role and put it in array $this->roles
+	 * @access public
+	 */
 	
 	function addRole($role,$parents = '')
 	{
@@ -192,10 +242,22 @@ class Acl
 		}
 		else
 		{
-			throw new Exception('El recurso no se trata ni de un string ni de un array de strings');
+			throw new Exception('Not an array or a string');
 		}
 	}
 	
+	
+	/*
+	 * deny an access between a role and a resource
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  string $role the roles are defined in acl.config.ini.php
+	 * @param  string $resource should validate this regex /[\w]+\/[\w]+/i => example : "controller/action"
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description Deny an access between a role and a resource
+	 * @access public
+	 */
+	 
 	function deny($role,$resources)
 	{
 		if(is_string($resources))
@@ -210,6 +272,17 @@ class Acl
 			}
 		}
 	}
+	
+	/*
+	 * allow an access between a role and a resource
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  string $role the roles are defined in acl.config.ini.php
+	 * @param  string $resource should validate this regex /[\w]+\/[\w]+/i => example : "controller/action"
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description Allow an access between a role and a resource
+	 * @access public
+	 */
 	
 	function allow($role,$resources)
 	{
@@ -226,6 +299,19 @@ class Acl
 		}
 	}
 	
+	
+	/*
+	 * set the access in function of roles and resources
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  string $role the roles are defined in acl.config.ini.php
+	 * @param  string $resource should validate this regex /[\w]+\/[\w]+/i => example : "controller/action"
+	 * @param  string $access can be allow or deny, by default deny
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description Return true if match between role and resource is allowed
+	 * @access public
+	 */
+	
 	private function setAccess($role,$resource,$access = 'deny')
 	{
 		if($this->checkIfRoleExist($role) || $this->checkIfResourceExist($resource))
@@ -234,13 +320,19 @@ class Acl
 		}
 	}	
 	
-	/**
-	 * Este metodo permite conocer si este 'Rol' tiene derecho a acceder
-	 * un recurso.
-	 * 
-	 * @param $role (String), $resource (String)
-	 * @return BOOL 
+	 
+	/*
+	 * Return true if match between role and resource is allowed
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  string $role the roles are defined in acl.config.ini.php
+	 * @param  string $resource should validate this regex /[\w]+\/[\w]+/i => example : "controller/action"
+	 * @return boolean Return true if role and resource match
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description Return true if match between role and resource is allowed
+	 * @access public
 	 */
+	 
 	function isAllowed($role,$resource)
 	{
 		//We first check that the resource & role exist
@@ -253,16 +345,16 @@ class Acl
 				if(array_key_exists($resource,$this->access[$role]))
 				{
 					//Is he allowed
-					if($this->access[$role][$resource] == 'allow')
+					if($this->access[$role][$resource] === 'allow')
 					{	
 						return true;
 					}
 					
 					//If he is not allowe we return false
-					if($this->access[$role][$resource] == 'deny')
+					if($this->access[$role][$resource] === 'deny')
 					{	
 						return false;
-					}			
+					}	
 				}			
 			}
 			
@@ -284,34 +376,39 @@ class Acl
 		return false;
 	}
 	
-	/********************************************/
-	/*              METODOS PRIVATE             */
-	/********************************************/
-	
+
 	/*
-		Comprueba que existe el rol
-	*/
+	 * Return true if role exist else false
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  string $role the roles are defined in acl.config.ini.php
+	 * @return boolean Return true if role exist else false
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description check if resource  exist or not
+	 * @access public
+	 */
 	private function checkIfRoleExist($role)
 	{
 		return array_key_exists($role,$this->roles);
 	}
 	
 	/*
-		Comprueba que existe el recurso
-	*/
-	private function checkIfResourceExist($resource)
+	 * Return true if resource exist else false
+	 * @since Glial 2.1.1
+	 * @version 2.1.1
+	 * @param  string $resource should validate this regex /[\w]+\/[\w]+/i => example : "controller/action"
+	 * @return boolean Return true if resource exist else false
+	 * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+	 * @description check if resource  exist or not
+	 * @access public
+	 */
+	public function checkIfResourceExist($resource)
 	{
 		return array_key_exists($resource,$this->resources);
 	}
 	
-	/*private function getResource($role,$resource)
-	{
-		if(array_key_exist($role,$this->access)
-	}*/
-	
-
 	/*
-	 * List all roles & ressources defined
+	 * Return the string representation of the current element (List all roles, ressources and access defined)
 	 * @since Glial 2.1.1
 	 * @version 2.1.1
 	 * @return String or display in standard output when asked in CLI mode
@@ -319,38 +416,40 @@ class Acl
 	 * @description Display avaiable roles & ressources and the combinaisons allowed and denied 
 	 * @access public
 	 */
-	function __toString()
+	public function __toString()
 	{
 		if (IS_CLI)
 		{
-			echo Color::getColoredString("Available Roles", "black", "yellow") . "\n";
+			$cli = \Glial\Shell\Color::getColoredString("Available Roles", "black", "yellow") . "\n";
 			foreach($this->roles as $role => $parents)
 			{
-				echo "\t".$role."\n";
+				$cli .= "\t".$role."\n";
 				foreach($parents as $parent)
 				{
-					echo "\t".Color::getColoredString("inherits", "purple")."\t".$parent."\n";
+					$cli .= "\t".\Glial\Shell\Color::getColoredString("inherits", "purple")."\t".$parent."\n";
 				}
 			}
 			
-			echo Color::getColoredString("Available Resources", "black", "yellow") . "\n";
+			$cli .= \Glial\Shell\Color::getColoredString("Available Resources", "black", "yellow") . "\n";
 			foreach($this->resources as $resource => $parent)
 			{
-				echo "\t".$resource."\n";
+				$cli .= "\t".$resource."\n";
 				
 			}
 
-			echo Color::getColoredString("Allow / Deny", "black", "yellow") . "\n";
+			$cli .= \Glial\Shell\Color::getColoredString("Allow / Deny", "black", "yellow") . "\n";
 			foreach($this->access as $group => $tab_ressource)
 			{
 				foreach($tab_ressource as $ressource => $allowed)
 				{
-					echo "\t"
-					.Color::getColoredString($group, "light_green").str_repeat(" ",20-mb_strlen($group))
-					.Color::getColoredString($ressource, "light_red").str_repeat(" ",20-mb_strlen($ressource))
-					.Color::getColoredString($allowed, "light_blue")."\n";
+					$cli .= "\t"
+					.\Glial\Shell\Color::getColoredString($group, "light_green").str_repeat(" ",20-mb_strlen($group))
+					.\Glial\Shell\Color::getColoredString($ressource, "light_red").str_repeat(" ",20-mb_strlen($ressource))
+					.\Glial\Shell\Color::getColoredString($allowed, "light_blue")."\n";
 				}
 			}
+			
+			return $cli;
 		}
 		else
 		{
@@ -362,7 +461,6 @@ class Acl
 				{
 					$html .= '<i>inherits</i>  '.$parent.'</li>';
 				}
-				
 				$html .= '</li>';
 			}
 			$html .= '</ul><ul><h1>Available Resources</h1>';

@@ -52,6 +52,8 @@ class Controller
 
 
         if (!IS_CLI) {
+		
+			/*
             if (empty($GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$controller][$action]) || $GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$controller][$action] != 1) {
                 if ($controller !== "" && $action !== "") {
                     $this->error = __("Acess denied") . " : $controller/$action";
@@ -59,7 +61,7 @@ class Controller
 
 
                 }
-            }
+            }*/
         }
 
         $this->db = $GLOBALS['_DB'];
