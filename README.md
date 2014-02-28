@@ -1,7 +1,8 @@
 glial
 =====
-[![Build Status](https://travis-ci.org/guard/guard.png?branch=master)](https://travis-ci.org/guard/guard)
-
+[![Latest Stable Version](https://poser.pugx.org/phpunit/phpunit/v/stable.png)](https://packagist.org/packages/phpunit/phpunit)
+[![Build Status](https://travis-ci.org/sebastianbergmann/phpunit.png?branch=master)](https://travis-ci.org/sebastianbergmann/phpunit)
+[![Dependency Status](https://www.versioneye.com/php/phpunit:phpunit/dev-master/badge.png)](https://www.versioneye.com/php/phpunit:phpunit/dev-master)
 
 http://www.glial-framework-php.org/
 
