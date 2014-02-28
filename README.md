@@ -15,15 +15,19 @@ http://www.glial-framework-php.org/
 
 <h2>How to install?</h2>
 
-A new application in current directory:
-`curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php --`
 
+To create a new project :
+<a href="https://github.com/Esysteme/glial-new">Have a look on Glial-new</a>
 
-A new application in selected directory:
-`curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php -- --install-dir="/home/www/DIR"`
+To install as a library :
 
-An existing application :  (example with Esysteme/Estrildidae)
-`curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php -- --install-dir="/home/www/DIR" --application="Esysteme/Estrildidae"`
+Simply add a dependency on glial/glial to your project's composer.json file if you use Composer to manage the dependencies of your project. Here is a minimal example of a composer.json file that just defines a development-time dependency on Glial 2.1:
+
+`{
+    "require-dev": {
+        "glial/glial": "2.1.*"
+    }
+}`
 
 
 <h2>Why use Glial?</h2>
