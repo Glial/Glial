@@ -17,7 +17,7 @@ http://www.glial-framework-php.org/
 
 
 <h3>To create a new project</h3>
-<a href="https://github.com/Esysteme/glial-new">Have a look on Glial-new</a>
+<a href="https://github.com/Esysteme/glial-new">Have a look on glial-new</a>
 
 <h3>To install as a library</h3>
 
