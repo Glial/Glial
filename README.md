@@ -1,5 +1,7 @@
 glial
 =====
+[![Build Status](https://travis-ci.org/guard/guard.png?branch=master)](https://travis-ci.org/guard/guard)
+
 
 http://www.glial-framework-php.org/
 
