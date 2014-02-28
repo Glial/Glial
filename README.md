@@ -16,10 +16,10 @@ http://www.glial-framework-php.org/
 <h2>How to install?</h2>
 
 
-To create a new project :
+<h3>To create a new project</h3>
 <a href="https://github.com/Esysteme/glial-new">Have a look on Glial-new</a>
 
-To install as a library :
+<h3>To install as a library</h3>
 
 Simply add a dependency on glial/glial to your project's composer.json file if you use Composer to manage the dependencies of your project. Here is a minimal example of a composer.json file that just defines a development-time dependency on Glial 2.1:
 
