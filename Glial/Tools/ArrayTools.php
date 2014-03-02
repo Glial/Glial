@@ -1,6 +1,6 @@
 <?php
 
-namespace glial\tools;
+namespace Glial\Tools;
 
 class ArrayTools
 {

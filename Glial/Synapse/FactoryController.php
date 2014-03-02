@@ -3,7 +3,7 @@
 namespace Glial\Synapse;
 
 use \Glial\Synapse\Controller;
-use \Glial\Sgbd\Sql\Sql;
+use \Glial\I18n\I18n;
 
 class FactoryController
 {
@@ -11,7 +11,7 @@ class FactoryController
 	/**
 	
 	 * (Glial 2.1)<br/>
-     	 * Add a MVC node in a view 
+     * Add a MVC node in a view 
 	 * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
 	 * @param string construct of controller
 	 * @return boolean Success
@@ -20,7 +20,7 @@ class FactoryController
 	 * @description create a new MVC and display the output in standard flux
 	 * @access public
 	 */
-	public static function addNode($controller, $action, $param)
+	public static function addNode($controller, $action, $param = array())
 	{
 		$node = new Controller($controller, $action, json_encode($param));
 		$node->recursive = true;
@@ -47,8 +47,10 @@ class FactoryController
 	{
 
 		$node = new Controller($controller, $action, json_encode($param));
+		
+		$node->setRootNode();
 		$node->get_controller();
-
+        
 		if ( !$node->layout_name )
 		{
 			$node->display();
@@ -56,7 +58,8 @@ class FactoryController
 		}
 		else
 		{
-			$node->set_layout();
+            
+            $node->set_layout();
 			return true;
 		}
 	}

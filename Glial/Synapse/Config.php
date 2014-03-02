@@ -1,6 +1,6 @@
 <?php
 
-namespace glial\synapse;
+namespace Glial\Synapse;
 
 class Config
 {

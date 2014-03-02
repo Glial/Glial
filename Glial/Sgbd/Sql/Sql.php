@@ -141,15 +141,7 @@ abstract class Sql
         $keys = array_keys($data[$table]);
 
 
-        // to delete
-        if (empty($this->_table[$table])) {
-            try {
-                $this->_table[$table] = unserialize(file_get_contents(TMP . "database" . DS . $table . ".table.txt"));
-            } catch (Exception $e) {
-                throw new Exception("This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
-                exit;
-            }
-        }
+        $this->getInfosTable($table);
 
         //use \synapse\model;
         //if (!class_exists($table, false))
@@ -165,7 +157,7 @@ abstract class Sql
         $table2 = str_replace("-", "", $table);
 
         //$my_table = singleton::getInstance('glial\synapse\model\table\\'.$table2);
-        $my_table = singleton::getInstance('application\model\\' . $table2);
+        $my_table = Singleton::getInstance('application\model\\' . $table2);
         $validate = $my_table->validate;
 
         //debug($validate);
@@ -426,6 +418,18 @@ abstract class Sql
             }
 
             //
+        }
+    }
+
+    public function getInfosTable($table)
+    {
+        if (empty($this->_table[$table])) {
+            try {
+                $this->_table[$table] = unserialize(file_get_contents(TMP . "database" . DS . $table . ".table.txt"));
+                return $this->_table[$table];
+            } catch (Exception $e) {
+                throw new Exception("This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
+            }
         }
     }
 

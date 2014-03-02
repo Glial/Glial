@@ -2,10 +2,11 @@
 
 namespace Glial\Synapse;
 
-use \Glial\Synapse\Singleton;
+//use \Glial\Synapse\Singleton;
 use \Glial\Synapse\Variable;
 use \Glial\I18n\I18n;
 use \Glial\Utility\Inflector;
+
 
 class Controller
 {
@@ -33,6 +34,8 @@ class Controller
     var $ajax = false;
     var $error;
     var $html;
+	private $isRootNode;
+	
     public $db;
 
     /**
@@ -53,15 +56,13 @@ class Controller
 
         if (!IS_CLI) {
 		
-			/*
-            if (empty($GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$controller][$action]) || $GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$controller][$action] != 1) {
-                if ($controller !== "" && $action !== "") {
-                    $this->error = __("Acess denied") . " : $controller/$action";
-                    return;
+			//not nice, but fast
+			if (! $GLOBALS['acl']->isAllowed($GLOBALS['_SITE']['id_group'],$controller."/".$action))
+			{
 
-
-                }
-            }*/
+                //$this->error = __("Acess denied") . " : $controller/$action";
+				return;
+            }
         }
 
         $this->db = $GLOBALS['_DB'];
@@ -96,7 +97,6 @@ class Controller
 
 
 
-        //echo "$class_name,  $name, $arguments \n";
     }
 
     final function get_controller()
@@ -112,15 +112,19 @@ class Controller
         if (file_exists($filename)) {
             include_once $filename;
         } else {
+		
+		
+			/*
             $filename = ROOT . DS ."vendor".DS."glial".DS . "glial" .DS ."Glial" .DS . "Neuron" . DS . "Controller" . DS ."Neuron". $this->controller . ".php";
             if (file_exists($filename)) {
 		$this->controller = "\Glial\Neuron\Controller\Neuron". $this->controller;
                 include_once $filename;
             } else {
+			*/
                 trigger_error("impossible to get the class file : " . $filename. ":".__FILE__ .":". __LINE__, E_USER_NOTICE);
                 exit;
                 //throw new Exception("Impossible to load :".$filename);
-            }
+            //}
         }
 
 
@@ -188,41 +192,41 @@ class Controller
             return;
         }
         echo $this->html;
+        
+        
     }
 
     final function set_layout()
     {
         Variable::$_open = false;
-
-		
 		
 		if (! IS_CLI)
 		{
-			if (empty($this->html)) { // certainement une meilleur maniere de procÃƒÂ©der
+			/*
+            if (empty($this->html)) { // certainement une meilleur maniere de procÃƒÂ©der
 
 				set_flash("error", "Access denied", $this->error);
 				header("location :" . LINK . "user/register/");
 				return;
 				die();
-			}
-		
+			}*/
 			
-			global $_LG, $_SITE;
-
-			//$this->html = $_LG->getTranslation($this->html);
+			global $_SITE;
 
 			$GLIALE_CONTENT = $this->html;
 			$GLIALE_TITLE = $this->title;
 			$GLIALE_ARIANE = $this->ariane;
 
-
-
 			ob_implicit_flush(false);
+          
 			ob_start();
 
 			Variable::$_open = true;
+           
 			include APP_DIR . DS . "layout" . DS . $this->layout_name . ".layout.php";
 
+            
+            
 			if (!$this->ajax) {
 				echo $this->js;
 			}
@@ -230,9 +234,14 @@ class Controller
 
 
 			Variable::$_html = ob_get_clean();
-
-			echo I18n::getTranslation(Variable::$_html);
+            
+            Variable::$_html = I18n::getTranslation(Variable::$_html);
+            
+			echo Variable::$_html;
+			
+			//echo I18n::getTranslation(Variable::$_html);
 		
+     
 		}
     }
 
@@ -281,6 +290,14 @@ class Controller
             $this->javascript[] = $js;
         }
     }
-
+	/*
+	 * Define if this MVC is the root node
+	 * This is internal method, and should be never used
+	 */
+	
+	final function setRootNode()
+	{
+		$this->isRootNode = true;
+	}
 }
 
