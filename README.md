@@ -1,6 +1,9 @@
 glial
 =====
 
+[![Latest Stable Version](https://poser.pugx.org/glial/glial/v/stable.png)](https://packagist.org/packages/glial/glial) [![Total Downloads](https://poser.pugx.org/glial/glial/downloads.png)](https://packagist.org/packages/glial/glial) [![Latest Unstable Version](https://poser.pugx.org/glial/glial/v/unstable.png)](https://packagist.org/packages/glial/glial) [![License](https://poser.pugx.org/glial/glial/license.png)](https://packagist.org/packages/glial/glial)
+[![Dependency Status](https://www.versioneye.com/php/glial:glial/dev-master/badge.png)](https://www.versioneye.com/php/glial:glial/dev-master)
+
 http://www.glial-framework-php.org/
 
 <h2>Requirement ?</h2>
@@ -11,16 +14,21 @@ http://www.glial-framework-php.org/
 
 <h2>How to install?</h2>
 
-A new application in current directory:
-`curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php --`
 
+<h3>To create a new project</h3>
+<a href="https://github.com/Esysteme/glial-new">Have a look on glial-new</a>
 
-A new application in selected directory:
-`curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php -- --install-dir="/home/www/DIR"`
+<h3>To install as a library</h3>
 
-An existing application :  (example with Esysteme/Estrildidae)
-`curl -sS https://raw.github.com/Esysteme/Init-Glial/master/install.php | php -- --install-dir="/home/www/DIR" --application="Esysteme/Estrildidae"`
+Simply add a dependency on glial/glial to your project's composer.json file if you use Composer to manage the dependencies of your project. Here is a minimal example of a composer.json file that just defines a development-time dependency on Glial 2.1:
 
+```json
+{
+    "require": {
+        "glial/glial": "2.1.*"
+    }
+}
+```
 
 <h2>Why use Glial?</h2>
 
