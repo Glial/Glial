@@ -33,7 +33,7 @@ class Acl
 
     public function __construct($inifile)
     {
-        $path_to_acl_tmp = TMP . "acl/acl.json";
+        $path_to_acl_tmp = TMP . "acl/acl.ser";
 
         if (file_exists($path_to_acl_tmp)) {
             if (is_file($path_to_acl_tmp)) {
@@ -66,7 +66,7 @@ class Acl
 
     public function __sleep()
     {
-        return array('roles', 'resources', 'access', 'maxLength');
+        return array('roles', 'resources', 'access', 'maxLength', 'alias');
     }
 
     /*
@@ -118,7 +118,6 @@ class Acl
                             $this->addResource($controller . "/" . $action);
 
                             if (strlen($controller . "/" . $action) > $this->maxLength['ressource']) {
-                                echo "----" . strlen($controller . "/" . $action);
                                 $this->maxLength['ressource'] = strlen($controller . "/" . $action);
                             }
                         }
@@ -150,7 +149,15 @@ class Acl
 
         $tab = parse_ini_file($filename, true);
 
-        //print_r($tab);
+        
+        //add alias
+        foreach ($tab['alias'] as $role => $alias)
+        {
+            $this->alias[$alias] = $role;
+        }
+        
+        
+        
         //definistion des roles
         foreach ($tab['role']['add'] as $role) {
             $this->addRole($role);
@@ -170,19 +177,13 @@ class Acl
         //allow
         foreach ($tab['allow'] as $role => $tab_ressource) {
             foreach ($tab_ressource as $ressource) {
-                echo $role . " -> --" . $ressource . "--" . strlen($ressource) . "\n";
-                //echo $role."\n";
 
                 if (strpos($ressource, '*') === false) {
                     $this->allow($role, $ressource);
                 } else {
-
-                    echo $role . " -> " . strlen($ressource) . "\n";
-
                     if (strlen($ressource) === 1) {
                         foreach ($this->resources as $key => $val) {
                             $this->allow($role, $key);
-                            echo $role . " => " . $key . "\n";
                         }
                     } else {
                         $ressource = str_replace("*", "", $ressource);
@@ -319,8 +320,9 @@ class Acl
 
     /*
      * Return true if match between role and resource is allowed
+     * Version 2.1.2 add Alias
      * @since Glial 2.1.1
-     * @version 2.1.1
+     * @version 2.1.2
      * @param  string $role the roles are defined in acl.config.ini.php
      * @param  string $resource should validate this regex /[\w]+\/[\w]+/i => example : "controller/action"
      * @return boolean Return true if role and resource match
@@ -331,6 +333,9 @@ class Acl
 
     function isAllowed($role, $resource)
     {
+        
+        $role = $this->getAliasIfExist($role);
+        
         //We first check that the resource & role exist
         if ($this->checkIfRoleExist($role) && $this->checkIfResourceExist($resource)) {
             //He has access to something
@@ -409,10 +414,6 @@ class Acl
     public function __toString()
     {
         if (IS_CLI) {
-
-
-            //$width = count($this->roles) * 2 +;
-
             $number_length = ceil(log(count($this->resources), 10));
 
             $cli = "┌"
@@ -423,9 +424,6 @@ class Acl
 
             ksort($this->resources);
             ksort($this->roles);
-
-
-
 
             $tab_role = array();
             foreach ($this->roles as $role => $var) {
@@ -442,12 +440,10 @@ class Acl
                 $cli .= "│\n";
             }
 
-
             $cli .= "├"
                     . str_repeat("─", $number_length + 2 + $this->maxLength['ressource'])
                     . str_repeat("┼─", count($this->roles))
                     . "┤\n";
-
 
             $i = 1;
 
@@ -470,12 +466,10 @@ class Acl
                 $i++;
             }
 
-
             $cli .= "└"
                     . str_repeat("─", $number_length + 2 + $this->maxLength['ressource'])
                     . str_repeat("┴─", count($this->roles))
                     . "┘\n";
-
 
             return $cli;
         } else {
@@ -500,6 +494,23 @@ class Acl
             }
             return $html . '</ul>';
         }
+    }
+    
+
+    /*
+     * This function looking for the index in array alias if exist return the value else return the string set in param
+     * @return String role
+     * @since Glial 2.1.2
+     * @version 2.1.2
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @description Return the real name of the role if exist
+     * @access private
+     */
+
+    private function getAliasIfExist($role)
+    {
+        
+        return (!empty($this->alias[$role]))? $this->alias[$role]:$role;
     }
 
 }
