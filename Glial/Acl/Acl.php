@@ -43,7 +43,7 @@ class Acl
                 $this->resources = $tmp->resources;
                 $this->access = $tmp->access;
                 $this->maxLength = $tmp->maxLength;
-
+                $this->alias = $tmp->alias;
                 return true;
             }
         }
@@ -335,7 +335,7 @@ class Acl
     {
         
         $role = $this->getAliasIfExist($role);
-        
+
         //We first check that the resource & role exist
         if ($this->checkIfRoleExist($role) && $this->checkIfResourceExist($resource)) {
             //He has access to something
