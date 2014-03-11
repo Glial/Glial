@@ -21,7 +21,7 @@ class Inflector
     }
 
     /**
-     * Returns Cake model class name ("Person" for the database table "people".) for given database table.
+     * Returns Glial model class name ("Person" for the database table "people".) for given database table.
      *
      * @param string $tableName Name of database table to get class name for
      * @return string Class name

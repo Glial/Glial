@@ -4,6 +4,7 @@ namespace Glial\Sgbd\Sql;
 
 use \Glial\Synapse\Singleton;
 use \Glial\Synapse\Validation;
+use \Glial\Utility\Inflector;
 
 abstract class Sql
 {
@@ -28,18 +29,15 @@ abstract class Sql
     private $_keys = array();
 
     //to be surcharged
-
-    public function __contruct($name)
-    {
-        $this->$_name = $name;
-    }
-
     public function get_table_to_history()
     {
         if ($this->$_history_active) {
             $this->_table_to_history = \history::get_table_with_history();
         }
     }
+    
+    abstract protected function __construct($name);
+            
 
     abstract protected function sql_connect($var1, $var2, $var3);
 
@@ -74,7 +72,7 @@ abstract class Sql
 
     //function mutualised
 
-    public function sql_query($sql, $table = "", $type = "")
+    final public function sql_query($sql, $table = "", $type = "")
     {
 
         if (IS_CLI) { //to save memory with crawler & bot
@@ -143,21 +141,17 @@ abstract class Sql
 
         $this->getInfosTable($table);
 
-        //use \synapse\model;
-        //if (!class_exists($table, false))
-        //{
-
         $validation = new Validation($this);
+        
+        include_once APP_DIR . DS . "model" . DS .$this->_name  . DS . $table . ".php";
+ 
 
-        include_once APP_DIR . DS . "model" . DS . $table . ".php";
-        //}
-        // use simple quote to prevent problem with \n or sth else
-
-
+        $model_name = "Identifier". Inflector::camelize($this->_name);
         $table2 = str_replace("-", "", $table);
+        
 
         //$my_table = singleton::getInstance('glial\synapse\model\table\\'.$table2);
-        $my_table = Singleton::getInstance('application\model\\' . $table2);
+        $my_table = Singleton::getInstance('application\\model\\'.$model_name.'\\' . $table2);
         $validate = $my_table->validate;
 
         //debug($validate);
@@ -428,9 +422,22 @@ abstract class Sql
                 $this->_table[$table] = unserialize(file_get_contents(TMP . "database" . DS . $table . ".table.txt"));
                 return $this->_table[$table];
             } catch (Exception $e) {
-                throw new Exception("This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
+                throw new Exception("GLI-010 : This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
             }
         }
+    }
+    
+    
+    /*
+     * @since Glial 2.1.2
+     * @param $name String Name of the db link defined in db.config.ini
+     * @parameters dbname The database name.
+     */
+     
+    
+    public function setName($name)
+    {
+        $this->_name = $name;
     }
 
 }

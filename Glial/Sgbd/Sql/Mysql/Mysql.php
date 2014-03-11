@@ -10,6 +10,10 @@ class Mysql extends Sql
     public $db;
     public $link;
 
+    function __construct($name)
+    {
+        $this->setName($name);
+    }
 
     /*
      * @since Glial 1.0
@@ -25,7 +29,7 @@ class Mysql extends Sql
         mysqli_set_charset($this->link, 'utf8');
         $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
         $this->_query("SET NAMES 'utf8'");
-        
+
         return $this->link;
     }
 
@@ -35,11 +39,13 @@ class Mysql extends Sql
      * @param string $dbname The database name.
      * @alias make the same as mysqli::select_db
      */
+
     public function sql_select_db($dbname)
     {
         $this->db = $dbname;
         return mysqli_select_db($this->link, $dbname);
     }
+
     /*
      * @since Glial 1.0
      * @return Returns FALSE on failure. For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries _query() will return a mysqli_result object. For other successful queries _query() will return TRUE.
@@ -179,16 +185,13 @@ class Mysql extends Sql
 
         $index = array();
         while ($ob = $this->sql_fetch_object($res)) {
-            
-            if ($ob->Key_name === "PRIMARY")
-            {
+
+            if ($ob->Key_name === "PRIMARY") {
                 continue;
             }
-            if ($ob->Non_unique === "0")
-            {
+            if ($ob->Non_unique === "0") {
                 $index[] = $ob->Column_name;
             }
-            
         }
         return $index;
     }

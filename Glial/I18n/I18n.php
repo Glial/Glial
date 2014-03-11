@@ -294,7 +294,7 @@ namespace Glial\I18n {
          */
         private static function initiate($iso)
         {
-           
+
 
             $sql = "CREATE TABLE IF NOT EXISTS `translation_" . mb_strtolower($iso) . "` (
 		`id` int(11) NOT NULL auto_increment,
@@ -365,7 +365,7 @@ namespace Glial\I18n {
         public static function getTranslation($html = '')
         {
 //first loop to translate language by language
-            
+
 
 
             if (!empty(self::$_to_translate)) {
@@ -622,12 +622,15 @@ namespace Glial\I18n {
 
         public static function get_answer_from_google($string, $from)
         {
+           
 
 //debug("We calling google ...");
 //$url ="http://translate.google.fr/translate_t?text=Traduction%20automatique%20de%20pages%20web%0Aceci%20est%20un%20test&hl=fr&langpair=fr|en&tbb=1&ie=utf-8";
             $url = 'http://translate.google.fr/translate_t?text=' . urlencode($string) . '&hl=fr&langpair=' . $from . '|' . self::$_language . '&tbb=1&ie=utf-8';
+            $url = 'http://translate.google.fr/?text=' . urlencode($string) . '&amp;hl=' . self::$_language . '&amp;langpair=' . $from . '%7Cfr&amp;tbb=1&amp;ie=utf-8';
 
             $UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
+            $UA = 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36';
 
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
@@ -641,11 +644,9 @@ namespace Glial\I18n {
 //$body = iconv(self::charset[$to], "UTF-8", $body);
 
 
-            $content = Grabber::getTagContent($body, '<body', true);
-            $content = Grabber::getTagContent($content, '<form', true);
-            $content = Grabber::getTagContent($content, '<span id=result_box', true);
-
+            $content = Grabber::getTagContent($body, '<span id=result_box', true);
             $content = str_replace('<br>', '', $content);
+
             $out = Grabber::getTagContents($content, '<span title="', true);
 
 
@@ -655,11 +656,9 @@ namespace Glial\I18n {
 
 //we check that we have same number of input and output
             if (count($nb) != count($out)) {
+                throw new Exception("GLI-009 : Problem with machine translation");
                 return false;
             }
-
-
-            
 
             return $out;
         }
@@ -702,7 +701,6 @@ namespace Glial\I18n {
         private static function saveCashFile()
         {
             //if number of elem more important we save cash file
-
 
             foreach (self::$countNumberElemAtLoading as $md5 => $val) {
                 if (count(self::$_translations[$md5]) > $val) {
