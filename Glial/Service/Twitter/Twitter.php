@@ -4,6 +4,9 @@ namespace Glial\Service\Twitter;
 
 class Twitter
 {
+  
+  private $app_details = array();
+  
   public function createUserSession($credentials){
 
   $_SESSION['user_id'] = $credentials["user_id"];
