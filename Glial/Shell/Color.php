@@ -99,16 +99,16 @@ class Color
 
     public static function printAll()
     {
-        $fgs = $this->get_foreground_color();
+        $fgs = self::getForegroundColor();
 // Get Background Colors
-        $bgs = $this->get_background_color();
+        $bgs = self::getBackgroundColor();
 
 // Loop through all foreground and background colors
         $count = count($fgs);
         for ($i = 0; $i < $count; $i++) {
-            echo self::get_colored_string("Test Foreground colors", $fgs[$i]) . "\t";
+            echo self::getColoredString("Test Foreground colors : ". $fgs[$i], $fgs[$i]) . "\t";
             if ( isset($bgs[$i]) ) {
-                echo self::get_colored_string("Test Background colors", null, $bgs[$i]);
+                echo self::getColoredString("Test Background colors : ". $bgs[$i], null, $bgs[$i]);
             }
             echo "\n";
         }
@@ -117,7 +117,7 @@ class Color
 // Loop through all foreground and background colors
         foreach ($fgs as $fg) {
             foreach ($bgs as $bg) {
-                echo self::get_colored_string("Test Colors", $fg, $bg) . "\t";
+                echo self::getColoredString("Test Colors", $fg, $bg) . "\t";
             }
             echo "\n";
         }

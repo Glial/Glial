@@ -133,7 +133,7 @@ class Controller
 
 		$this->db = $GLOBALS['_DB'];
 		$page->db = $GLOBALS['_DB'];
-        $this->param = json_decode($this->param);
+        $this->param = json_decode($this->param, true);
 
         $this->title = $this->controller;
         $action = $this->action;

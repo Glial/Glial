@@ -10,9 +10,9 @@ class Mysql extends Sql
     public $db;
     public $link;
 
-    function __construct($name)
+    function __construct($name, $elem)
     {
-        $this->setName($name);
+        $this->setName($name, $elem);
     }
 
     /*
@@ -95,9 +95,9 @@ class Mysql extends Sql
         return mysqli_error($this->link);
     }
 
-    public function sql_fetch_array($res)
+    public function sql_fetch_array($res, $resulttype = MYSQLI_BOTH)
     {
-        return mysqli_fetch_array($res);
+        return mysqli_fetch_array($res, $resulttype);
     }
 
     public function sql_to_array($res)

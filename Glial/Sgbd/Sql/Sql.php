@@ -27,6 +27,7 @@ abstract class Sql
     private $_table = '';
     private $_name = '';
     private $_keys = array();
+    private $_param = array();
 
     //to be surcharged
     public function get_table_to_history()
@@ -36,7 +37,7 @@ abstract class Sql
         }
     }
     
-    abstract protected function __construct($name);
+    abstract protected function __construct($name, $elem);
             
 
     abstract protected function sql_connect($var1, $var2, $var3);
@@ -435,9 +436,17 @@ abstract class Sql
      */
      
     
-    public function setName($name)
+    public function setName($name, $elem)
     {
         $this->_name = $name;
+        $this->_param = $elem;
+        
+    }
+    
+    
+    public function getParams()
+    {
+        return $this->_param;
     }
 
 }
