@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": ">=5.5.0",
-                "phpunit/phpunit": "3.7.*",
+                "phpunit/phpunit": "*",
                 "fabpot/php-cs-fixer" : "*",
                 "phpdocumentor/phpdocumentor": "*"
     },
