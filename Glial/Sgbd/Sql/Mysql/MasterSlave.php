@@ -45,7 +45,7 @@ class MasterSlave {
             throw new \Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
         }
         
-        return $instance->sql_fetch_array($res);
+        return $instance->sql_fetch_array($res, MYSQLI_ASSOC);
 
     }
     
@@ -69,6 +69,13 @@ class MasterSlave {
 
     }
     
+    public function getMasterStatus($instance)
+    {
+        return isMaster($instance);
+    }
     
-    
+    public function getSlaveStatus($instance)
+    {
+        return isSlave($instance);
+    }
 }

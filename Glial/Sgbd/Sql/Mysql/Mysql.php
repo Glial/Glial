@@ -25,6 +25,12 @@ class Mysql extends Sql
     public function sql_connect($host, $login, $password)
     {
         $this->link = mysqli_connect($host, $login, $password);
+        
+        
+        if (! $this->link)
+        {
+            throw new \Exception('GLI-12 : Impossible to connect to : '.$host);
+        }
 
         mysqli_set_charset($this->link, 'utf8');
         $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");

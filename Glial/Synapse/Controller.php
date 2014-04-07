@@ -34,7 +34,7 @@ class Controller
     var $ajax = false;
     var $error;
     var $html;
-	private $isRootNode;
+    private $isRootNode;
 	
     public $db;
 
@@ -50,6 +50,8 @@ class Controller
      */
     final function __construct($controller, $action, $param)
     {
+        
+        
 
         $controller = Inflector::camelize($controller);
 
@@ -133,7 +135,11 @@ class Controller
 
 		$this->db = $GLOBALS['_DB'];
 		$page->db = $GLOBALS['_DB'];
-        $this->param = json_decode($this->param, true);
+                
+                
+                
+                
+        $this->param = json_decode($this->param);
 
         $this->title = $this->controller;
         $action = $this->action;
@@ -235,7 +241,7 @@ class Controller
 
 			Variable::$_html = ob_get_clean();
             
-            Variable::$_html = I18n::getTranslation(Variable::$_html);
+                        Variable::$_html = I18n::getTranslation(Variable::$_html);
             
 			echo Variable::$_html;
 			
@@ -300,4 +306,3 @@ class Controller
 		$this->isRootNode = true;
 	}
 }
-
