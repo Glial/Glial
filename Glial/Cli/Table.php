@@ -1,6 +1,6 @@
 <?php
 
-namespace Glial\Table;
+namespace Glial\Cli;
 
 /*
  *  Example of use :

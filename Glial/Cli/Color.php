@@ -1,6 +1,6 @@
 <?php
 
-namespace Glial\Shell;
+namespace Glial\Cli;
 
 /*
  *  Example of use :

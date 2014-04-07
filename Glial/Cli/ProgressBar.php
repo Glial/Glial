@@ -1,6 +1,6 @@
 <?php
 
-namespace Glial\ProgressBar;
+namespace Glial\Cli;
 
 /*
  *  Example of use :

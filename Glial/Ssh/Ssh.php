@@ -2,7 +2,7 @@
 
 namespace Glial\Ssh;
 
-//pour_alveric1$
+
 class Ssh {
 
     private $connection;
