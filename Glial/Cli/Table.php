@@ -1,6 +1,17 @@
 <?php
 
+<<<<<<< HEAD:Glial/Shell/Table.php
 namespace Glial\Shell;
+=======
+namespace Glial\Cli;
+
+/*
+ *  Example of use :
+
+  // Test some basic printing with Colors class
+  echo color::getColoredString("Testing Colors class, this is purple string on yellow background.", "purple", "yellow") . "\n";
+ */
+>>>>>>> e9550ac252545261b11c7a9feb3f263d457f9581:Glial/Cli/Table.php
 
 class Table
 {

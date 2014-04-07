@@ -26,7 +26,7 @@ class Monitoring {
         foreach ($this->$instance as $db)
         {
             
-            $sql 
+          
             
             
         }
