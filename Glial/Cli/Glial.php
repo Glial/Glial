@@ -6,7 +6,10 @@
  * and open the template in the editor.
  */
 
-namespace Glial\Shell;
+namespace Glial\Cli;
+
+
+use  \Glial\Cli\Color;
 
 class Glial
 {
@@ -20,6 +23,7 @@ class Glial
 ██║   ██║██║     ██║██╔══██║██║     
 ╚██████╔╝███████╗██║██║  ██║███████╗
  ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═╝╚══════╝";
+        
 
         return $logo;
     }
@@ -29,7 +33,9 @@ class Glial
     {
         $str = self::logo();
         
-        $str .= PHP_EOL."Glial 2.1.2 (2014-04-05) by Aurélien LEQUOY.".PHP_EOL;
+        $str .= PHP_EOL;
+        $str .= Color::getColoredString("Glial 2.1.2", "green");
+        $str .= " (2014-04-05) by Aurélien LEQUOY.".PHP_EOL;
         
         return $str;
     }
