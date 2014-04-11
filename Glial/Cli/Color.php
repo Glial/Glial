@@ -179,7 +179,7 @@ Code	Effect	Note
      */
     public static function strip($string)
     {
-        return preg_replace('/\033\[[\d;]+m/', '', $string);
+        return preg_replace('/\033\[[\d;]+[\d]?m/', '', $string);
     }
 
     private static function testColor($color, $array)

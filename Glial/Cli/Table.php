@@ -2,9 +2,7 @@
 
 namespace Glial\Cli;
 
-
-class Table
-{
+class Table {
 
     const DATA = "data";
     const HEADER = "header";
@@ -29,7 +27,6 @@ class Table
         'left' => true,
         'inner' => true
     );
-    
     var $borderColor = "blue";
     var $data = array();
     var $data_type = array();
@@ -38,26 +35,22 @@ class Table
     var $maxLine;
     var $maxLengthByCol = array();
 
-    public function __construct($style = 1)
-    {
+    public function __construct($style = 1) {
         $this->style = $style;
     }
 
-    public function addHeader($header)
-    {
+    public function addHeader($header) {
         $this->addLine($header, Table::HEADER);
     }
 
-    public function addLine($line, $data_type = Table::DATA)
-    {
+    public function addLine($line, $data_type = Table::DATA) {
         if ($this->checkLine($line)) {
             $this->data[] = $line;
             $this->data_type[] = $data_type;
         }
     }
 
-    public function addData($data)
-    {
+    public function addData($data) {
         foreach ($data as $line) {
             $this->addLine($line);
         }
@@ -71,24 +64,21 @@ class Table
      * @return void
      * @see    $_border
      */
-    function setBorder($visibility)
-    {
+    function setBorder($visibility) {
         $this->_border = array_merge($this->_border, array_intersect_key($visibility, $this->_border));
     }
 
-    private function checkLine($line)
-    {
+    private function checkLine($line) {
         foreach ($line as $elem) {
-            if (!is_string($elem)) {
-                throw new Exception("GLI-015 : \$line must be an array of string");
+            if (!empty($elem) && !is_string($elem)) {
+                throw new \Exception("GLI-015 : \$line must be an array of string");
             }
         }
 
         return true;
     }
 
-    public function display()
-    {
+    public function display() {
         $this->calcul();
 
 
@@ -100,11 +90,7 @@ class Table
         return $tab;
     }
 
-    private function calcul()
-    {
-        $mb_length = function ($str) {
-            return mb_strlen(Color::strip($str));
-        };
+    private function calcul() {
 
         //possible to report in add line to prevent second parse
         $this->maxLine = 0;
@@ -121,12 +107,17 @@ class Table
             $colone = array_column($this->data, $i);
             $this->dataByCol[] = $colone;
 
-            $this->maxLengthByCol[] = max(array_map($mb_length, $colone));
+            $this->maxLengthByCol[] = max(array_map(function ($str) {
+                //echo $str. " -- ". mb_strlen(Color::strip($str), "utf8").PHP_EOL;
+                        return mb_strlen(Color::strip($str), "utf8");
+                    }, $colone));
+    
         }
+        
+        debug($this->maxLengthByCol);
     }
 
-    private function hr($type = Table::HR_TOP)
-    {
+    private function hr($type = Table::HR_TOP) {
         switch ($type) {
             case Table::HR_TOP: $asci = array(0, 5, 1, 10);
                 break;
@@ -153,10 +144,8 @@ class Table
         return $tab . PHP_EOL;
     }
 
-    private function content($type = 1)
-    {
+    private function content($type = 1) {
         $tab = '';
-
 
         $j = 0;
         foreach ($this->data as $line) {
@@ -165,7 +154,9 @@ class Table
 
             $i = 0;
             foreach ($line as $cell) {
-                $borderData[] = str_pad($cell, $this->maxLengthByCol[$i]);
+                
+                echo $cell ."-$i-".$this->maxLengthByCol[$i] . PHP_EOL;
+                $borderData[] = str_pad($cell, mb_strlen($cell,"utf8") - mb_strlen(Color::strip($cell),"utf8")+ $this->maxLengthByCol[$i]);
                 $i++;
             }
 
@@ -183,8 +174,7 @@ class Table
         return $tab;
     }
 
-    public function flushAll()
-    {
+    public function flushAll() {
         $this->data = array();
         $this->data_type = array();
         $this->cellByLine = array();
