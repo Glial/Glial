@@ -77,6 +77,8 @@ class Controller
         $this->recursive = false;
     }
 
+
+    /*
     function __call($name, $arguments)
     {
         $this->layout_name = false;
@@ -99,7 +101,7 @@ class Controller
 
 
 
-    }
+    }*/
 
     final function get_controller()
     {

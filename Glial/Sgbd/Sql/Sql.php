@@ -36,9 +36,8 @@ abstract class Sql
             $this->_table_to_history = \history::get_table_with_history();
         }
     }
-    
+
     abstract protected function __construct($name, $elem);
-            
 
     abstract protected function sql_connect($var1, $var2, $var3);
 
@@ -143,16 +142,16 @@ abstract class Sql
         $this->getInfosTable($table);
 
         $validation = new Validation($this);
-        
-        include_once APP_DIR . DS . "model" . DS .$this->_name  . DS . $table . ".php";
- 
 
-        $model_name = "Identifier". Inflector::camelize($this->_name);
+        include_once APP_DIR . DS . "model" . DS . $this->_name . DS . $table . ".php";
+
+
+        $model_name = "Identifier" . Inflector::camelize($this->_name);
         $table2 = str_replace("-", "", $table);
-        
+
 
         //$my_table = singleton::getInstance('glial\synapse\model\table\\'.$table2);
-        $my_table = Singleton::getInstance('application\\model\\'.$model_name.'\\' . $table2);
+        $my_table = Singleton::getInstance('application\\model\\' . $model_name . '\\' . $table2);
         $validate = $my_table->validate;
 
         //debug($validate);
@@ -275,14 +274,18 @@ abstract class Sql
                 $sql = "SELECT id FROM `" . $table . "` WHERE 1=1 ";
 
 
-                foreach ($data[$table] as $key => $value) {
 
-                    //select only unique key
-                    if (in_array($key, $this->_keys[$table])) {
-                        $sql .= " AND `" . $key . "` = '" . $value . "' ";
+                if (!empty($this->_keys[$table])) {
+                    foreach ($data[$table] as $key => $value) {
+
+                        //select only unique key
+                        if (in_array($key, $this->_keys[$table])) {
+                            $sql .= " AND `" . $key . "` = '" . $value . "' ";
+                        }
                     }
                 }
-
+                
+                
                 $res = $this->sql_query($sql, $table, "SELECT");
                 $tab = $this->sql_to_array($res);
 
@@ -427,23 +430,19 @@ abstract class Sql
             }
         }
     }
-    
-    
+
     /*
      * @since Glial 2.1.2
      * @param $name String Name of the db link defined in db.config.ini
      * @parameters dbname The database name.
      */
-     
-    
+
     public function setName($name, $elem)
     {
         $this->_name = $name;
         $this->_param = $elem;
-        
     }
-    
-    
+
     public function getParams()
     {
         return $this->_param;
