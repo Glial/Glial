@@ -45,13 +45,13 @@ class FactorySql
             trigger_error("This driver isn't supported : " . $elem['driver'], E_USER_ERROR);
         }
 
-        
-        
         $driver = '\Glial\Sgbd\Sql\\'.ucwords(strtolower($elem['driver'])).'\\'.ucwords(strtolower($elem['driver']));
         
         self::$db[$name] = new $driver($name, $elem);
         self::$db[$name]->sql_connect($elem['hostname'], $elem['user'], $elem['password']);
         self::$db[$name]->sql_select_db($elem['database']);
+        
+        return self::$db[$name];
     }
 
 }

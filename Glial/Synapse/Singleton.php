@@ -5,7 +5,7 @@ namespace Glial\Synapse;
 class Singleton
 {
 
-     static $instances = array();
+    static $instances = array();
 
     protected function __construct()
     {
