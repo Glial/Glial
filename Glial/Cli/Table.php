@@ -155,7 +155,7 @@ class Table {
             $i = 0;
             foreach ($line as $cell) {
                 
-                echo $cell ."-$i-".$this->maxLengthByCol[$i] . PHP_EOL;
+                
                 $borderData[] = str_pad($cell, mb_strlen($cell,"utf8") - mb_strlen(Color::strip($cell),"utf8")+ $this->maxLengthByCol[$i]);
                 $i++;
             }
