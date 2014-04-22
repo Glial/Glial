@@ -7,6 +7,8 @@ use \Glial\I18n\I18n;
 
 class FactoryController {
 
+    
+    static $di = array();
     /**
 
      * (Glial 2.1)<br/>
@@ -23,6 +25,7 @@ class FactoryController {
         
 
         $node = new Controller($controller, $action, json_encode($param));
+        $node->setDi(self::$di);
         $node->recursive = true;
         $node->get_controller();
     }
@@ -46,7 +49,8 @@ class FactoryController {
     public static function rootNode($controller, $action, $param = array()) {
 
         $node = new Controller($controller, $action, json_encode($param));
-
+        $node->setDi(self::$di);
+        
         $node->setRootNode();
         $node->get_controller();
 
@@ -73,10 +77,23 @@ class FactoryController {
      * @package Controller
      * @See Also addNode
      * @since 2.1.2 First time this was introduced.
-     * @version 2.1.2
+     * @version 2.1.3
      */
-    public static function init(array $array) {
-        
+
+    public static function setDi(array $di) {
+        self::$di = $di;
+    }
+    
+    public static function addDi($name,$object)
+    {
+        if (empty(self::$di[$name]))
+        {
+            self::$di[$name] = $object;
+        }
+        else
+        {
+            throw new Exception('GLI-019 : This dependency inection already exist !');
+        }
     }
 
 }

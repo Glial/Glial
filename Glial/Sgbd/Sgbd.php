@@ -7,16 +7,24 @@
  */
 
 // factory for any connection ? db / ssh / memecached etc...
+<<<<<<< HEAD
 //use Glial\Sgbd\Sql\FactorySql;
+=======
+>>>>>>> 9c5c6102cf9d03747c59a7012ed23a460d9f2b66
 
 namespace Glial\Sgbd;
 
-class Sgbd {
+use \Glial\Cli\Table;
+use \Glial\Cli\Shell;
 
-    private static $db = array();
-    private static $config = array();
+class Sgbd
+{
+
+    private $db = array();
+    private $config = array();
 
     //from  Glial\Synapse\Config
+<<<<<<< HEAD
     static function init($config) {
         self::$config = array_merge(self::$config, $config);
     }
@@ -26,14 +34,30 @@ class Sgbd {
         if (array_key_exists($name, self::$config)) {
             if (empty(self::$db[$name])) {
                 self::$db[$name] = \Glial\Sgbd\Sql\FactorySql::connect($name, self::$config[$name]);
+=======
+    function __construct($config)
+    {
+
+        $this->config = array_merge($this->config, $config);
+    }
+
+    public function sql($name)
+    {
+
+        if (array_key_exists($name, $this->config)) {
+            if (empty($this->db[$name])) {
+
+                $this->db[$name] = \Glial\Sgbd\Sql\FactorySql::connect($name, $this->config[$name]);
+>>>>>>> 9c5c6102cf9d03747c59a7012ed23a460d9f2b66
             }
 
-            return self::$db[$name];
+            return $this->db[$name];
         } else {
             throw new \Exception("GLI-19 : This connection was not configured : '" . $name . "' !");
         }
     }
 
+<<<<<<< HEAD
     static public function getAll() {
         return array_keys(self::$config);
     }
@@ -46,6 +70,57 @@ class Sgbd {
     public function __invoke($name)
     {
         self::sql($name);
+=======
+    public function getAll()
+    {
+        return array_key_exists($this->config);
+    }
+
+    public function __toString()
+    {
+
+        $tab = new Table(1);
+
+        $tab->addHeader(array("Id", "Name", "Is connected ?", "Driver", "IP", "Port", "User", "Password"));
+
+        
+        $i = 1;
+        foreach ($this->config as $name => $param) {
+            $port = (empty($param['port'])) ? "3306" : $param['port'];
+            $isconnected = (empty($this->db[$name])) ? "" : "■";
+
+            $tab->addLine(array((string)$i, $name, $isconnected, $param['driver'], $param['hostname'], $port, $param['user'], str_repeat("*", strlen($param['password']))));
+            $i++;
+        }
+
+        return $tab->display();
+    }
+
+    public function mainMenu()
+    {
+        $tab = new Table(0);
+
+        $tab->addHeader(array("============== Main Menu =============="));
+        $tab->addLine(array(""));
+
+        $options = array("[L]ist connections", "[A]dd a connection", "[E]dit a connection", "[D]elete a connection", "[T]est all","E[x]it");
+
+        $i = 1;
+        foreach ($options as $option) {
+            $tab->addLine(array(str_pad($i . ".", 3) . $option));
+            $i++;
+        }
+        
+        echo $tab->display();
+        
+        
+        $filter = function ($val){
+          
+           return preg_match("/([1-5]|l|a|e|d|t|x)/i", $val);
+        };
+        
+        Shell::prompt("Enter your choice [1~".count($options)."] (empty for exit) : ", $filter, true);
+>>>>>>> 9c5c6102cf9d03747c59a7012ed23a460d9f2b66
     }
 
 }

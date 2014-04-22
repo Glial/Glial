@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace Glial\Cli;
 
 class Table {
@@ -110,6 +112,11 @@ class Table {
                         return mb_strlen(Color::strip($str), "utf8");
                     }, $colone));
         }
+<<<<<<< HEAD
+=======
+        
+        //debug($this->maxLengthByCol);
+>>>>>>> 9c5c6102cf9d03747c59a7012ed23a460d9f2b66
     }
 
     private function hr($type = Table::HR_TOP) {
