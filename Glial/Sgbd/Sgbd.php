@@ -7,15 +7,12 @@
  */
 
 // factory for any connection ? db / ssh / memecached etc...
-<<<<<<< HEAD
-//use Glial\Sgbd\Sql\FactorySql;
-=======
->>>>>>> 9c5c6102cf9d03747c59a7012ed23a460d9f2b66
 
 namespace Glial\Sgbd;
 
 use \Glial\Cli\Table;
 use \Glial\Cli\Shell;
+use \Glial\Sgbd\Sql\FactorySql;
 
 class Sgbd
 {
@@ -24,17 +21,6 @@ class Sgbd
     private $config = array();
 
     //from  Glial\Synapse\Config
-<<<<<<< HEAD
-    static function init($config) {
-        self::$config = array_merge(self::$config, $config);
-    }
-
-    public static function sql($name) {
-
-        if (array_key_exists($name, self::$config)) {
-            if (empty(self::$db[$name])) {
-                self::$db[$name] = \Glial\Sgbd\Sql\FactorySql::connect($name, self::$config[$name]);
-=======
     function __construct($config)
     {
 
@@ -48,7 +34,6 @@ class Sgbd
             if (empty($this->db[$name])) {
 
                 $this->db[$name] = \Glial\Sgbd\Sql\FactorySql::connect($name, $this->config[$name]);
->>>>>>> 9c5c6102cf9d03747c59a7012ed23a460d9f2b66
             }
 
             return $this->db[$name];
@@ -57,20 +42,6 @@ class Sgbd
         }
     }
 
-<<<<<<< HEAD
-    static public function getAll() {
-        return array_keys(self::$config);
-    }
-    
-    
-    static public function getConfigOf($db) {
-        return self::$config[$db];
-    }
-    
-    public function __invoke($name)
-    {
-        self::sql($name);
-=======
     public function getAll()
     {
         return array_key_exists($this->config);
@@ -120,7 +91,6 @@ class Sgbd
         };
         
         Shell::prompt("Enter your choice [1~".count($options)."] (empty for exit) : ", $filter, true);
->>>>>>> 9c5c6102cf9d03747c59a7012ed23a460d9f2b66
     }
 
 }
