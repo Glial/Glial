@@ -47,8 +47,16 @@ class FactorySql
 
         $driver = '\Glial\Sgbd\Sql\\'.ucwords(strtolower($elem['driver'])).'\\'.ucwords(strtolower($elem['driver']));
         
+        
+        $addr = $elem['hostname'];
+        
+        if (! empty($elem['port']) && is_numeric($elem['port']))
+        {
+            $addr .= ":".$elem['port'];
+        }
+        
         self::$db[$name] = new $driver($name, $elem);
-        self::$db[$name]->sql_connect($elem['hostname'], $elem['user'], $elem['password']);
+        self::$db[$name]->sql_connect($addr, $elem['user'], $elem['password']);
         self::$db[$name]->sql_select_db($elem['database']);
         
         return self::$db[$name];

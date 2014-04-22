@@ -70,8 +70,8 @@ class Table {
 
     private function checkLine($line) {
         foreach ($line as $elem) {
-            if (!empty($elem) && !is_string($elem)) {
-                throw new \Exception("GLI-015 : \$line must be an array of string");
+            if (!empty($elem) && !is_string($elem) && !is_int($elem)) {
+                throw new \Exception("GLI-015 : \$line must be an array of string/int : '" . $elem . "'");
             }
         }
 
@@ -80,12 +80,10 @@ class Table {
 
     public function display() {
         $this->calcul();
-
-
+        
         $tab = $this->hr(Table::HR_TOP);
         $tab .= $this->content();
         $tab .= $this->hr(Table::HR_BOTTOM);
-
 
         return $tab;
     }
@@ -108,13 +106,10 @@ class Table {
             $this->dataByCol[] = $colone;
 
             $this->maxLengthByCol[] = max(array_map(function ($str) {
-                //echo $str. " -- ". mb_strlen(Color::strip($str), "utf8").PHP_EOL;
+                        //echo $str. " -- ". mb_strlen(Color::strip($str), "utf8").PHP_EOL;
                         return mb_strlen(Color::strip($str), "utf8");
                     }, $colone));
-    
         }
-        
-        debug($this->maxLengthByCol);
     }
 
     private function hr($type = Table::HR_TOP) {
@@ -154,9 +149,10 @@ class Table {
 
             $i = 0;
             foreach ($line as $cell) {
+
+
+                $borderData[] = str_pad($cell, strlen($cell) - mb_strlen(Color::strip($cell), "utf8") + $this->maxLengthByCol[$i]);
                 
-                
-                $borderData[] = str_pad($cell, mb_strlen($cell,"utf8") - mb_strlen(Color::strip($cell),"utf8")+ $this->maxLengthByCol[$i]);
                 $i++;
             }
 
@@ -182,5 +178,6 @@ class Table {
         $this->maxLine = 0;
         $this->maxLengthByCol = array();
     }
+
 
 }

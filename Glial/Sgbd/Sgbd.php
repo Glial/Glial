@@ -7,9 +7,7 @@
  */
 
 // factory for any connection ? db / ssh / memecached etc...
-
 //use Glial\Sgbd\Sql\FactorySql;
-
 
 namespace Glial\Sgbd;
 
@@ -20,7 +18,6 @@ class Sgbd {
 
     //from  Glial\Synapse\Config
     static function init($config) {
-
         self::$config = array_merge(self::$config, $config);
     }
 
@@ -28,15 +25,7 @@ class Sgbd {
 
         if (array_key_exists($name, self::$config)) {
             if (empty(self::$db[$name])) {
-                
-                
-                debug($name);
-                debug(self::$config[$name]);
-                
                 self::$db[$name] = \Glial\Sgbd\Sql\FactorySql::connect($name, self::$config[$name]);
-                
-                
-                debug(self::$db[$name]);
             }
 
             return self::$db[$name];
@@ -44,10 +33,19 @@ class Sgbd {
             throw new \Exception("GLI-19 : This connection was not configured : '" . $name . "' !");
         }
     }
+
+    static public function getAll() {
+        return array_keys(self::$config);
+    }
     
-    static public function getAll()
+    
+    static public function getConfigOf($db) {
+        return self::$config[$db];
+    }
+    
+    public function __invoke($name)
     {
-        return array_key_exists(self::$config);
+        self::sql($name);
     }
 
 }
