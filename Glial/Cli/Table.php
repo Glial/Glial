@@ -1,5 +1,7 @@
 <?php
 
+
+
 namespace Glial\Cli;
 
 class Table {
@@ -114,7 +116,7 @@ class Table {
     
         }
         
-        debug($this->maxLengthByCol);
+        //debug($this->maxLengthByCol);
     }
 
     private function hr($type = Table::HR_TOP) {

@@ -10,7 +10,7 @@
 
 namespace Glial\Acl;
 
-use Glial\Shell\Color;
+use Glial\Cli\Color;
 
 class Acl
 {
@@ -434,7 +434,7 @@ class Acl
                 $cli .= "│ " . str_repeat(" ", $number_length + $this->maxLength['ressource']) . " ";
 
                 foreach ($tab_role as $role) {
-                    $cli .= "│" . Color::getColoredString($role[$i], "white");
+                    $cli .= "│" . Color::getColoredString($role[$i], "grey");
                 }
 
                 $cli .= "│\n";
@@ -451,17 +451,17 @@ class Acl
 
                 $background = (($i - 1) % 3 === 0) ? "blue" : "black";
 
-                $cli .= Color::getColoredString("│", "light_grey", $background)
-                        . Color::getColoredString(str_repeat(" ", $number_length - strlen($i)) . $i, "light_grey", $background)
-                        . Color::getColoredString(" " . $resource, "light_grey", $background)
-                        . Color::getColoredString(str_repeat(" ", $this->maxLength['ressource'] - mb_strlen($resource)), "light_grey", $background)
-                        . Color::getColoredString(" ", "light_grey", $background);
+                $cli .= Color::getColoredString("│", null, $background)
+                        . Color::getColoredString(str_repeat(" ", $number_length - strlen($i)) . $i, null, $background)
+                        . Color::getColoredString(" " . $resource, null, $background)
+                        . Color::getColoredString(str_repeat(" ", $this->maxLength['ressource'] - mb_strlen($resource)), null, $background)
+                        . Color::getColoredString(" ", null, $background);
 
                 foreach ($this->roles as $role => $var) {
-                    $cli .= ($this->isAllowed($role, $resource)) ? Color::getColoredString("│■", "light_grey", $background) : Color::getColoredString("│ ", "light_grey", $background);
+                    $cli .= ($this->isAllowed($role, $resource)) ? Color::getColoredString("│■", null, $background) : Color::getColoredString("│ ", null, $background);
                 }
 
-                $cli .= Color::getColoredString("│", "light_grey", $background) . "\n";
+                $cli .= Color::getColoredString("│", null, $background) . "\n";
 
                 $i++;
             }

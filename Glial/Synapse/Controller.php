@@ -7,7 +7,6 @@ use \Glial\Synapse\Variable;
 use \Glial\I18n\I18n;
 use \Glial\Utility\Inflector;
 
-
 class Controller
 {
 
@@ -34,8 +33,8 @@ class Controller
     var $ajax = false;
     var $error;
     var $html;
+    public $di = array();
     private $isRootNode;
-	
     public $db;
 
     /**
@@ -50,24 +49,22 @@ class Controller
      */
     final function __construct($controller, $action, $param)
     {
-        
-        
+
+
 
         $controller = Inflector::camelize($controller);
 
 
         if (!IS_CLI) {
-		
-			//not nice, but fast
-			if (! $GLOBALS['acl']->isAllowed($GLOBALS['_SITE']['id_group'],$controller."/".$action))
-			{
+
+            //not nice, but fast
+            if (!$GLOBALS['acl']->isAllowed($GLOBALS['_SITE']['id_group'], $controller . "/" . $action)) {
 
                 //$this->error = __("Acess denied") . " : $controller/$action";
-				return;
+                return;
             }
         }
 
-        $this->db = $GLOBALS['_DB'];
 
 
         $this->controller = $controller;
@@ -77,31 +74,35 @@ class Controller
         $this->recursive = false;
     }
 
+    final public function setDi($di)
+    {
+        $this->di = $di;
+    }
 
     /*
-    function __call($name, $arguments)
-    {
-        $this->layout_name = false;
-        $this->view = false;
+      function __call($name, $arguments)
+      {
+      $this->layout_name = false;
+      $this->view = false;
 
-        if (empty(trim($this->controller)))
-        {
-            trigger_error(__("The controller is empty :")." $name", E_USER_ERROR);
-        }
-        
-        
-        
-        $class_name = "\Glial\Neuron\Controller\Neuron" . $this->controller;
-        $class = new $class_name;
-
-        $class->db = $GLOBALS['_DB'];
-        //debug($class);
-
-        $class->$name($arguments);
+      if (empty(trim($this->controller)))
+      {
+      trigger_error(__("The controller is empty :")." $name", E_USER_ERROR);
+      }
 
 
 
-    }*/
+      $class_name = "\Glial\Neuron\Controller\Neuron" . $this->controller;
+      $class = new $class_name;
+
+      $class->db = $GLOBALS['_DB'];
+      //debug($class);
+
+      $class->$name($arguments);
+
+
+
+      } */
 
     final function get_controller()
     {
@@ -111,36 +112,32 @@ class Controller
 
 
         $filename = APP_DIR . DS . "controller" . DS . $this->controller . ".controller.php";
-		
-		
+
+
         if (file_exists($filename)) {
             include_once $filename;
         } else {
-		
-		
-			/*
-            $filename = ROOT . DS ."vendor".DS."glial".DS . "glial" .DS ."Glial" .DS . "Neuron" . DS . "Controller" . DS ."Neuron". $this->controller . ".php";
-            if (file_exists($filename)) {
-		$this->controller = "\Glial\Neuron\Controller\Neuron". $this->controller;
-                include_once $filename;
-            } else {
-			*/
-                trigger_error("impossible to get the class file : " . $filename. ":".__FILE__ .":". __LINE__, E_USER_NOTICE);
-                exit;
-                //throw new Exception("Impossible to load :".$filename);
+
+
+            /*
+              $filename = ROOT . DS ."vendor".DS."glial".DS . "glial" .DS ."Glial" .DS . "Neuron" . DS . "Controller" . DS ."Neuron". $this->controller . ".php";
+              if (file_exists($filename)) {
+              $this->controller = "\Glial\Neuron\Controller\Neuron". $this->controller;
+              include_once $filename;
+              } else {
+             */
+            trigger_error("impossible to get the class file : " . $filename . ":" . __FILE__ . ":" . __LINE__, E_USER_NOTICE);
+            exit;
+            //throw new Exception("Impossible to load :".$filename);
             //}
         }
 
 
         $page = new $this->controller($this->controller, $this->action, $this->param);
 
+        $page->setDi($this->di);
+        
 
-		$this->db = $GLOBALS['_DB'];
-		$page->db = $GLOBALS['_DB'];
-                
-                
-                
-                
         $this->param = json_decode($this->param);
 
         $this->title = $this->controller;
@@ -200,57 +197,52 @@ class Controller
             return;
         }
         echo $this->html;
-        
-        
     }
 
     final function set_layout()
     {
         Variable::$_open = false;
-		
-		if (! IS_CLI)
-		{
-			/*
-            if (empty($this->html)) { // certainement une meilleur maniere de procÃƒÂ©der
 
-				set_flash("error", "Access denied", $this->error);
-				header("location :" . LINK . "user/register/");
-				return;
-				die();
-			}*/
-			
-			global $_SITE;
+        if (!IS_CLI) {
+            /*
+              if (empty($this->html)) { // certainement une meilleur maniere de procÃƒÂ©der
 
-			$GLIALE_CONTENT = $this->html;
-			$GLIALE_TITLE = $this->title;
-			$GLIALE_ARIANE = $this->ariane;
+              set_flash("error", "Access denied", $this->error);
+              header("location :" . LINK . "user/register/");
+              return;
+              die();
+              } */
 
-			ob_implicit_flush(false);
-          
-			ob_start();
+            global $_SITE;
 
-			Variable::$_open = true;
-           
-			include APP_DIR . DS . "layout" . DS . $this->layout_name . ".layout.php";
+            $GLIALE_CONTENT = $this->html;
+            $GLIALE_TITLE = $this->title;
+            $GLIALE_ARIANE = $this->ariane;
 
-            
-            
-			if (!$this->ajax) {
-				echo $this->js;
-			}
-			echo "</html>\n"; //TODO a mettre ailleurs
+            ob_implicit_flush(false);
+
+            ob_start();
+
+            Variable::$_open = true;
+
+            include APP_DIR . DS . "layout" . DS . $this->layout_name . ".layout.php";
 
 
-			Variable::$_html = ob_get_clean();
-            
-                        Variable::$_html = I18n::getTranslation(Variable::$_html);
-            
-			echo Variable::$_html;
-			
-			//echo I18n::getTranslation(Variable::$_html);
-		
-     
-		}
+
+            if (!$this->ajax) {
+                echo $this->js;
+            }
+            echo "</html>\n"; //TODO a mettre ailleurs
+
+
+            Variable::$_html = ob_get_clean();
+
+            Variable::$_html = I18n::getTranslation(Variable::$_html);
+
+            echo Variable::$_html;
+
+            //echo I18n::getTranslation(Variable::$_html);
+        }
     }
 
     final function get_javascript()
@@ -298,13 +290,15 @@ class Controller
             $this->javascript[] = $js;
         }
     }
-	/*
-	 * Define if this MVC is the root node
-	 * This is internal method, and should be never used
-	 */
-	
-	final function setRootNode()
-	{
-		$this->isRootNode = true;
-	}
+
+    /*
+     * Define if this MVC is the root node
+     * This is internal method, and should be never used
+     */
+
+    final function setRootNode()
+    {
+        $this->isRootNode = true;
+    }
+
 }
