@@ -91,9 +91,57 @@ public function retrieveTweets($twitter_auth, $search_params) {
         $search_params['max_id'] = $max_id;
         $this->retrieveTweets($twitter_auth, $search_params);
     }
+    
+    
 }
 
+/**
+ * 
+ * Author : Fabien POTENCIER
+ * 
+ */
+ 
+ 
+public function tweet($message, $username, $password)
+{
+  $context = stream_context_create(array(
+    'http' => array(
+      'method'  => 'POST',
+      'header'  => sprintf("Authorization: Basic %s\r\n", base64_encode($username.':'.$password)).
+                   "Content-type: application/x-www-form-urlencoded\r\n",
+      'content' => http_build_query(array('status' => $message)),
+      'timeout' => 5,
+    ),
+  ));
+  $ret = file_get_contents('http://twitter.com/statuses/update.xml', false, $context);
+ 
+  return false !== $ret;
+}
 
+/**
+ * 
+ * Author : EllisGL  
+ * 
+ */
+ 
+function postTweet($message, $username, $password) 
+{ 
+$url = 'http://twitter.com/statuses/update.json'; 
+$fld = http_build_query(array('status' => $message)); 
+$ch = curl_init(); 
+
+curl_setopt($ch, CURLOPT_URL, $url); 
+curl_setopt($ch, CURLOPT_USERPWD, $username.':'.$password); 
+curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC); 
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+curl_setopt($ch, CURLOPT_POST, 1); 
+curl_setopt($ch, CURLOPT_POSTFIELDS, $fld); 
+
+$ret = curl_exec($ch); 
+
+return false !== $ret; 
+}
  
   
 }
