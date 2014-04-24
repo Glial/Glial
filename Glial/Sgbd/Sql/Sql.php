@@ -86,8 +86,8 @@ abstract class Sql
 
         if (!$res = $this->_query($sql)) {
             //error
-            die("<br />SQL : $sql<br /><b>" . $this->_error() . "</b>" .
-                    "<br />FILE : " . $this->called_from[0]['file'] . " LINE : " . $this->called_from[0]['line']);
+            echo "SQL : $sql<br /><b>" . $this->_error() . "</b>" .
+                    "<br />FILE : " . $this->called_from[0]['file'] . " LINE : " . $this->called_from[0]['line'];
         }
 
         $this->res = $res;

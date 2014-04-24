@@ -44,7 +44,7 @@ class Sgbd
 
     public function getAll()
     {
-        return array_key_exists($this->config);
+        return array_keys($this->config);
     }
 
     public function __toString()
