@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-namespace Glial\Cli;
+namespace Glial\Neuron\Install;
 
 
 use  \Glial\Cli\Color;
