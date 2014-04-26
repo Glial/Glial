@@ -12,5 +12,6 @@ class Shell
             $val = trim(fgets(STDIN));
         } while (!$filter($val) && !(empty($val) && strlen($val) === 0 && $allow_empty)); // 
     }
+    
 
 }
