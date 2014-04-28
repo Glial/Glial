@@ -81,13 +81,13 @@ abstract class Sql
 
         $this->res = "";
 
-        $this->called_from = debug_backtrace();
+        $called_from = debug_backtrace();
         $startmtime = microtime(true);
 
         if (!$res = $this->_query($sql)) {
             //error
             echo "SQL : $sql<br /><b>" . $this->_error() . "</b>" .
-                    "<br />FILE : " . $this->called_from[0]['file'] . " LINE : " . $this->called_from[0]['line'];
+                    "<br />FILE : " . $called_from[0]['file'] . " LINE : " . $called_from[0]['line'];
         }
 
         $this->res = $res;
@@ -96,8 +96,8 @@ abstract class Sql
 
         $this->query[$this->number_of_query]['query'] = $sql;
         $this->query[$this->number_of_query]['time'] = $totaltime;
-        $this->query[$this->number_of_query]['file'] = $this->called_from[0]['file'];
-        $this->query[$this->number_of_query]['line'] = $this->called_from[0]['line'];
+        $this->query[$this->number_of_query]['file'] = $called_from[0]['file'];
+        $this->query[$this->number_of_query]['line'] = $called_from[0]['line'];
         $this->rows_affected = $this->sql_affected_rows();
         $this->query[$this->number_of_query]['rows'] = $this->rows_affected;
         $this->query[$this->number_of_query]['last_id'] = $this->_insert_id();

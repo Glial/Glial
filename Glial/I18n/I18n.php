@@ -311,7 +311,7 @@ namespace Glial\I18n {
 		UNIQUE KEY `key` (`key`,`file_found`),
 		INDEX `id_history_etat` (`id_history_etat`)
 		);";
-            self::$_SQL->sql_query($sql);
+            self::$_SQL->sql('default')->sql_query($sql);
         }
 
         /**
@@ -331,14 +331,14 @@ namespace Glial\I18n {
             $translate_auto = 1;
 
             $sql = "SELECT text,translate_auto from translation_main WHERE `key` ='" . $key . "' and `destination` = '" . $to . "'";
-            $res = self::$_SQL->sql_query($sql);
+            $res = self::$_SQL->sql('default')->sql_query($sql);
 
 
-            if (self::$_SQL->sql_num_rows($res) == 1) {
-                $ob = self::$_SQL->sql_fetch_object($res);
+            if (self::$_SQL->sql('default')->sql_num_rows($res) == 1) {
+                $ob = self::$_SQL->sql('default')->sql_fetch_object($res);
                 $rep = $ob->text;
                 $translate_auto = $ob->translate_auto;
-            } else if (self::$_SQL->sql_num_rows($res) == 0) {
+            } else if (self::$_SQL->sql('default')->sql_num_rows($res) == 0) {
 
                 self::$_to_translate[$from][$key]['val'] = $text;
                 self::$_to_translate[$from][$key]['file'] = self::$file;
@@ -449,8 +449,8 @@ namespace Glial\I18n {
 
             $sql = "INSERT IGNORE INTO `translation_" . mb_strtolower($iso) . "`
 		SET `key` ='" . $key . "',
-		`source` = '" . self::$_SQL->sql_real_escape_string($source) . "',
-		`text` = '" . self::$_SQL->sql_real_escape_string($text) . "',
+		`source` = '" . self::$_SQL->sql('default')->sql_real_escape_string($source) . "',
+		`text` = '" . self::$_SQL->sql('default')->sql_real_escape_string($text) . "',
 		`date_inserted` = now(),
 		`date_updated` = now(),
 		`translate_auto` = '" . $translate_auto . "',
@@ -458,15 +458,15 @@ namespace Glial\I18n {
 		`id_history_etat` = 1,
 		`line_found` ='" . self::$line . "'";
 
-            self::$_SQL->sql_query($sql);
+            self::$_SQL->sql('default')->sql_query($sql);
         }
 
         private static function save_db($iso, $source, $text, $key, $translate_auto, $file, $line)
         {
             $data = array();
             $data["translation_" . mb_strtolower($iso)]['key'] = $key;
-            $data["translation_" . mb_strtolower($iso)]['source'] = self::$_SQL->sql_real_escape_string($source);
-            $data["translation_" . mb_strtolower($iso)]['text'] = self::$_SQL->sql_real_escape_string($text);
+            $data["translation_" . mb_strtolower($iso)]['source'] = self::$_SQL->sql('default')->sql_real_escape_string($source);
+            $data["translation_" . mb_strtolower($iso)]['text'] = self::$_SQL->sql('default')->sql_real_escape_string($text);
             $data["translation_" . mb_strtolower($iso)]['date_inserted'] = date("Y-m-d H:i:s");
             $data["translation_" . mb_strtolower($iso)]['date_updated'] = date("Y-m-d H:i:s");
             $data["translation_" . mb_strtolower($iso)]['translate_auto'] = intval($translate_auto);
@@ -474,11 +474,11 @@ namespace Glial\I18n {
             $data["translation_" . mb_strtolower($iso)]['id_history_etat'] = 1;
             $data["translation_" . mb_strtolower($iso)]['line_found'] = intval($line);
 
-            self::$_SQL->set_history_type(6);
-            self::$_SQL->set_history_user(11);
+            self::$_SQL->sql('default')->set_history_type(6);
+            self::$_SQL->sql('default')->set_history_user(11);
 
-            if (!self::$_SQL->sql_save($data)) {
-                debug(self::$_SQL->error);
+            if (!self::$_SQL->sql('default')->sql_save($data)) {
+                debug(self::$_SQL->sql('default')->error);
 //mail("aurelien.lequoy@gmail.com","Estrildidae : Bug with I18n", json_encode($data));
             }
         }
@@ -486,7 +486,7 @@ namespace Glial\I18n {
         public static function testTable($iso)
         {
 
-            $ret = self::$_SQL->getListTable();
+            $ret = self::$_SQL->sql('default')->getListTable();
 
             if (in_array("translation_" . strtolower($iso), $ret['table'])) {
                 true;
@@ -570,7 +570,7 @@ namespace Glial\I18n {
         public static function load($language)
         {
             self::$_language = $language;
-            self::testTable(self::$_language);
+            //self::testTable(self::$_language);
         }
 
         /**
@@ -689,8 +689,11 @@ namespace Glial\I18n {
             } else {
 //chargement du fichier de cache en fonction de la BDD
                 $sql = "SELECT * FROM `translation_" . strtolower(self::$_language) . "` WHERE file_found ='" . self::$file . "'";
-                $res23 = self::$_SQL->sql_query($sql);
-                while ($ob = self::$_SQL->sql_fetch_object($res23)) {
+                
+                debug(self::$_SQL);
+                
+                $res23 = self::$_SQL->sql('default')->sql_query($sql);
+                while ($ob = self::$_SQL->sql('default')->sql_fetch_object($res23)) {
                     self::$_translations[self::$_md5File][$ob->key] = $ob->text;
                 }
 
@@ -727,7 +730,7 @@ namespace Glial\I18n {
   UNIQUE KEY `key` (`key`,`destination`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=32601 ; ";
 
-            self::$_SQL->sql_query($sql);
+            self::$_SQL->sql('default')->sql_query($sql);
         }
 
         public static function write_ini_file($assoc_arr, $path, $has_sections = false)
