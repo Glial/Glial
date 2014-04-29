@@ -254,10 +254,7 @@ trait Install {
         $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
 
 
-        $acl = new Acl(CONFIG . "acl.config.ini");
-        echo $acl;
-
-
+        echo $this->di['acl'];
         echo $this->di['db'];
 
         //$this->di['db']->mainMenu();
