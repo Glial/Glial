@@ -7,9 +7,8 @@
  * @copyright Nicholas de Jong
  ****************************************************************************/
 
-/**
- * Crypt - a static interface to CryptAesClass
- */
+name Glial\Security\Crypt;
+
 class Crypt {
         
         /**
