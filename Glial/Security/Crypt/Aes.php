@@ -1,5 +1,7 @@
 <?php
 
+namespace Glial\Security\Crypt;
+
 class Aes {
         
         /**
