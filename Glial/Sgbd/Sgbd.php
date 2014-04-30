@@ -92,5 +92,16 @@ class Sgbd
         
         Shell::prompt("Enter your choice [1~".count($options)."] (empty for exit) : ", $filter, true);
     }
-
+    
+    public function getParam($db)
+    {
+        if (!empty($this->config[$db]))
+        {
+            return $this->config[$db];
+        }
+        else
+        {
+            throw new \Exception("GLI-021 : Error this instances \"".$db."\" doesn't exit", 21);
+        }
+    }
 }
