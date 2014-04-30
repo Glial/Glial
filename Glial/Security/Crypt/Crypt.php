@@ -7,7 +7,7 @@
  * @copyright Nicholas de Jong
  ****************************************************************************/
 
-name Glial\Security\Crypt;
+namespace Glial\Security\Crypt;
 
 class Crypt {
         
