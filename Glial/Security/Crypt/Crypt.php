@@ -1,3 +1,4 @@
+<?php
 /****************************************************************************
  * Crypt / CryptAesClass / CryptClass
  * Nicholas de Jong - http://nicholasdejong.com - https://github.com/ndejong
