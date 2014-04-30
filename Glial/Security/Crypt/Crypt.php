@@ -93,7 +93,7 @@ class Crypt {
                 
                 // Create CryptAesClass if we don't have not yet
                 if(!self::$CryptAesClass) {
-                        self::$CryptAesClass = new CryptAesClass($key,$options);
+                        self::$CryptAesClass = new Aes($key,$options);
                 }
         }
 }
