@@ -66,6 +66,15 @@ This is an OOP framework that is extremely DRY. Everything is built using strict
 There are no code generators and endless configuration files, so setting up is fast and easy.
 
 
+<h2>Who use Glial ?</h2>
+
+* Acsediate
+* BNPPARIBAS
+* Société Générale (SGCIB)
+* Arkadin
+* Alstom
+* Photobox
+
 
 <h2>User Guide</h2>
 
