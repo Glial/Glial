@@ -2,12 +2,15 @@
     "name": "glial/glial",
     "license": "GPL-3.0",
     "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
+    "keywords": ["framework"],
+    "type": "library",
+    "license": "MIT",
     "authors": [
         {
             "name": "Aurélien LEQUOY",
-            "email": "aurelien.lequoy@gmail.com",
+            "email": "aurelien.lequoy@esysteme.com",
             "homepage": "http://www.glial-framework-php.org/",
-            "role": "Developer"
+            "role": "Creator"
         }
     ],
     "require": {
@@ -22,5 +25,6 @@
     },
     "autoload": {
         "psr-4": {"Glial\\": "Glial/"}
-    }
+    },
+    "minimum-stability": "dev"
 }

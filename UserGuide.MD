@@ -15,8 +15,8 @@ About model.
 To construct the model, we read the database to build the model. It's mean we use some convention to make a good parsing. and must respect these points :
 
 
-- all tables must have the first field called id, with a primary index not null autoincremented
-- all fk, have to start by "id_" fallowed by the name of the table
+* all tables must have the first field called id, with a primary index not null autoincremented
+* all fk, have to start by "id_" fallowed by the name of the table
 
 if for one table we need to reference two FK on the same table we have to add a "__" double underscore followed by detailled name.
 
