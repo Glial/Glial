@@ -11,6 +11,7 @@ http://www.glial-framework-php.org/
 1. modrewrite of Apache
 1. PHP 5.5.*
 1. curl
+2. mcrypt
 
 <h2>How to install?</h2>
 
@@ -32,28 +33,35 @@ Simply add a dependency on glial/glial to your project's composer.json file if y
 
 <h2>Why use Glial?</h2>
 
-<h3>BUILD APPLICATIONS QUICKLY</h3>
+<h3>Build application quickly</h3>
 Many common components are included: translation tools, database access, code profiling, encryption, validation, and more.
 
-<h3>USE SPECIFIC LIBRARIES AND TOOLS</h3>
-Extending existing components and adding new libraries is very easy.
+<h3>Use specific libraries and tools</h3>
+* Full support to PSR-0~4
+* Extending existing components and adding new libraries is very easy.
 
-<h3>WRITE COMMERCIAL APPLICATIONS</h3>
-Uses the GNU/GPL license, so you can use and modify it for commercial purposes.
 
-<h3>A VERY FAST FRAMEWORK</h3>
+<h3>Write commercial applications</h3>
+Uses the GU/GPL license, so you can use and modify it for commercial purposes.
+
+<h3>A very fast framework</h3>
 Benchmarking a framework is hard and rarely reflects the real world, but Glial is very efficient and carefully optimized for real world usage.
 
-<h3>GOOD DEBUGGING AND PROFILING TOOLS</h3>
-Simple and effective tools help identify and solve performance issues quickly.
+A simple page with core system loaded we turn around between 400 and 800 query by second. 
 
-<h3>KNOW WHAT THE FRAMEWORK IS DOING</h3>
+
+<h3>Good debugging and profiling tools</h3>
+* Simple and effective tools help identify and solve performance issues quickly.
+* In dev mode you have some tools which show you the execution time for each module and memory used, same for each databases connected
+
+
+<h3>Know what the framework is doing</h3>
 Very well commented code and a simple routing structure makes it easy to understand what is happening.
 
-<h3>WORK WITH OBJECTS AND CLASSES</h3>
+<h3>Works with objects and classes</h3>
 This is an OOP framework that is extremely DRY. Everything is built using strict PHP 5 classes and objects.
 
-<h3>WRITE YOUR OWN CODE</h3>
+<h3>Write you own code</h3>
 There are no code generators and endless configuration files, so setting up is fast and easy.
 
 
