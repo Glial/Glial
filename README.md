@@ -9,7 +9,7 @@ http://www.glial-framework-php.org/
 <h2>Requirement ?</h2>
 
 1. Linux (degraded on windows with daemon and cli)
-1. PHP 5.5 or better
+1. **PHP 5.5** or better
 1. modrewrite of Apache
 1. curl
 2. mcrypt
@@ -102,7 +102,7 @@ the name will be : link__mail_message__user
 
 
 
-About controller.
+<h3>About controller</h3>
 
 For the moment no custom route are supported.
 
@@ -112,7 +112,7 @@ Each controller/action, will be checked by auth, to decide to display or not. Mo
 - write (allow access to all in create / update / delete)
 
 
-About view.
+<h3>About view</h3>
 
 We decided to use PHP, and not an engine of template because nobody can be faster than PHP only, and the goal of Glial it's to focus on developement.
 And not spend time to learn a new language even it's easy.
