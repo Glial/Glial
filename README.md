@@ -72,7 +72,7 @@ There are no code generators and endless configuration files, so setting up is f
 * BNPPARIBAS
 * Société Générale (SGCIB)
 * Arkadin
-* Alstom
+* Alstom (Transport)
 * Photobox
 
 
