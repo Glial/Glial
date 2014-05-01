@@ -8,8 +8,9 @@ http://www.glial-framework-php.org/
 
 <h2>Requirement ?</h2>
 
+1. Linux (degraded on windows with daemon and cli)
+1. PHP 5.5 or better
 1. modrewrite of Apache
-1. PHP 5.5.*
 1. curl
 2. mcrypt
 
