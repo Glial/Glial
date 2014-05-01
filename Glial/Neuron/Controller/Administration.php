@@ -108,7 +108,9 @@ trait Administration {
         $this->layout_name = false;
         $this->view = false;
 
-        foreach ($this->db as $key => $dbLink) {
+        foreach ($this->di['db']->getAll() as $key) {
+
+            $dbLink = $this->di['db']->sql($key);
 
             $tab_object = $dbLink->getListTable();
 
