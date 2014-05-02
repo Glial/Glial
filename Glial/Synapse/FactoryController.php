@@ -5,10 +5,11 @@ namespace Glial\Synapse;
 use \Glial\Synapse\Controller;
 use \Glial\I18n\I18n;
 
-class FactoryController {
+class FactoryController
+{
 
-    
     static $di = array();
+
     /**
 
      * (Glial 2.1)<br/>
@@ -21,13 +22,14 @@ class FactoryController {
      * @description create a new MVC and display the output in standard flux
      * @access public
      */
-    public static function addNode($controller, $action, $param = array()) {
-        
+    public static function addNode($controller, $action, $param = array())
+    {
+
 
         $node = new Controller($controller, $action, json_encode($param));
         $node->setDi(self::$di);
         $node->recursive = true;
-        $node->get_controller();
+        $node->getController();
     }
 
     /**
@@ -46,20 +48,21 @@ class FactoryController {
      * @since 2.1 First time this was introduced.
      * @version 2.1
      */
-    public static function rootNode($controller, $action, $param = array()) {
+    public static function rootNode($controller, $action, $param = array())
+    {
 
         $node = new Controller($controller, $action, json_encode($param));
         $node->setDi(self::$di);
-        
+
         $node->setRootNode();
-        $node->get_controller();
+        $node->getController();
 
         if (!$node->layout_name) {
             $node->display();
             return false;
         } else {
 
-            $node->set_layout();
+            $node->setLayout();
             return true;
         }
     }
@@ -79,19 +82,16 @@ class FactoryController {
      * @since 2.1.2 First time this was introduced.
      * @version 2.1.3
      */
-
-    public static function setDi(array $di) {
+    public static function setDi(array $di)
+    {
         self::$di = $di;
     }
-    
-    public static function addDi($name,$object)
+
+    public static function addDi($name, $object)
     {
-        if (empty(self::$di[$name]))
-        {
+        if (empty(self::$di[$name])) {
             self::$di[$name] = $object;
-        }
-        else
-        {
+        } else {
             throw new Exception('GLI-019 : This dependency inection already exist !');
         }
     }
