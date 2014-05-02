@@ -23,7 +23,6 @@ class Controller
     var $layout_name = "default";
     var $title = "undefined";
     var $view;
-    var $menu;
     var $msg_flash = array();
     var $javascript = array();
     var $code_javascript = array();
@@ -38,7 +37,7 @@ class Controller
     public $db;
 
     /**
-     * Short description of method okh
+     * Short description of method
      *
      * @access public
      * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
@@ -49,23 +48,13 @@ class Controller
      */
     final function __construct($controller, $action, $param)
     {
-
-
-
         $controller = Inflector::camelize($controller);
 
-
         if (!IS_CLI) {
-
-            //not nice, but fast
             if (!$GLOBALS['acl']->isAllowed($GLOBALS['_SITE']['id_group'], $controller . "/" . $action)) {
-
-                //$this->error = __("Acess denied") . " : $controller/$action";
                 return;
             }
         }
-
-
 
         $this->controller = $controller;
         $this->action = $action;
@@ -79,76 +68,41 @@ class Controller
         $this->di = $di;
     }
 
-    /*
-      function __call($name, $arguments)
-      {
-      $this->layout_name = false;
-      $this->view = false;
-
-      if (empty(trim($this->controller)))
-      {
-      trigger_error(__("The controller is empty :")." $name", E_USER_ERROR);
-      }
-
-
-
-      $class_name = "\Glial\Neuron\Controller\Neuron" . $this->controller;
-      $class = new $class_name;
-
-      $class->db = $GLOBALS['_DB'];
-      //debug($class);
-
-      $class->$name($arguments);
-
-
-
-      } */
-
-    final function get_controller()
+    final function getController()
     {
-        if (empty($this->controller)) { // certainement un meilleur maniere de procÃƒÂ©der
+        if (empty($this->controller)) {
             return;
         }
 
-
         $filename = APP_DIR . DS . "controller" . DS . $this->controller . ".controller.php";
-
 
         if (file_exists($filename)) {
             include_once $filename;
         } else {
-
-
-            /*
-              $filename = ROOT . DS ."vendor".DS."glial".DS . "glial" .DS ."Glial" .DS . "Neuron" . DS . "Controller" . DS ."Neuron". $this->controller . ".php";
-              if (file_exists($filename)) {
-              $this->controller = "\Glial\Neuron\Controller\Neuron". $this->controller;
-              include_once $filename;
-              } else {
-             */
             trigger_error("impossible to get the class file : " . $filename . ":" . __FILE__ . ":" . __LINE__, E_USER_NOTICE);
             exit;
-            //throw new Exception("Impossible to load :".$filename);
-            //}
         }
 
 
         $page = new $this->controller($this->controller, $this->action, $this->param);
-
         $page->setDi($this->di);
-        
 
         $this->param = json_decode($this->param);
 
         $this->title = $this->controller;
         $action = $this->action;
 
+        $page->before();
         $page->$action($this->param);
-        $this->ajax = $page->ajax;
-        $this->js = $page->get_javascript();
+        $page->after();
+
+        if (!IS_CLI) {
+            $this->ajax = $page->ajax;
+            $this->js = $page->getJavascript();
+        }
+        
         $this->layout_name = $page->layout_name;
         $this->view = $page->view;
-        $this->menu = $page->menu;
 
 
         if ($page->title !== "undefined") {
@@ -165,12 +119,11 @@ class Controller
             ${$key} = $val;
         }
 
+
         if (!$this->recursive) {
 
-
-
             if (!Variable::$_open) {
-                ob_start(); //TODO 
+                ob_start();
             }
 
             if ($this->view) {
@@ -199,19 +152,11 @@ class Controller
         echo $this->html;
     }
 
-    final function set_layout()
+    final function setLayout()
     {
         Variable::$_open = false;
 
         if (!IS_CLI) {
-            /*
-              if (empty($this->html)) { // certainement une meilleur maniere de procÃƒÂ©der
-
-              set_flash("error", "Access denied", $this->error);
-              header("location :" . LINK . "user/register/");
-              return;
-              die();
-              } */
 
             global $_SITE;
 
@@ -227,8 +172,6 @@ class Controller
 
             include APP_DIR . DS . "layout" . DS . $this->layout_name . ".layout.php";
 
-
-
             if (!$this->ajax) {
                 echo $this->js;
             }
@@ -240,12 +183,10 @@ class Controller
             Variable::$_html = I18n::getTranslation(Variable::$_html);
 
             echo Variable::$_html;
-
-            //echo I18n::getTranslation(Variable::$_html);
         }
     }
 
-    final function get_javascript()
+    final function getJavascript()
     {
         $js = "\n<!-- start library javascript -->\n";
 
@@ -282,7 +223,7 @@ class Controller
         return $this->value;
     }
 
-    final function add_javascript($js)
+    final function addJavascript($js)
     {
         if (is_array($js)) {
             $this->javascript = array_merge($js, $this->javascript);
@@ -299,6 +240,16 @@ class Controller
     final function setRootNode()
     {
         $this->isRootNode = true;
+    }
+
+    function after()
+    {
+        
+    }
+
+    function before()
+    {
+        
     }
 
 }
