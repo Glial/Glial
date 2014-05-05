@@ -4,14 +4,12 @@ namespace Glial\Sgbd\Sql\Mysql;
 
 use \Glial\Sgbd\Sql\Sql;
 
-class Mysql extends Sql
-{
+class Mysql extends Sql {
 
     public $db;
     public $link;
 
-    function __construct($name, $elem)
-    {
+    function __construct($name, $elem) {
         $this->setName($name, $elem);
     }
 
@@ -22,19 +20,19 @@ class Mysql extends Sql
      * @alias make the same as mysqli::select_db and init charset connection in utf-8
      */
 
-    public function sql_connect($host, $login, $password)
-    {
-        $this->link = mysqli_connect($host, $login, $password);
-        
-        
-        if (! $this->link)
-        {
-            throw new \Exception('GLI-012 : Impossible to connect to : '.$host);
+    public function sql_connect($host, $login, $password) {
+
+        try {
+            $this->link = mysqli_connect($host, $login, $password);
+
+            mysqli_set_charset($this->link, 'utf8');
+            $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
+            $this->_query("SET NAMES 'utf8'");
+        } catch (Exception $ex) {
+            throw new \Exception('GLI-012 : Impossible to connect to : ' . $host);
         }
 
-        mysqli_set_charset($this->link, 'utf8');
-        $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
-        $this->_query("SET NAMES 'utf8'");
+
 
         return $this->link;
     }
@@ -46,8 +44,7 @@ class Mysql extends Sql
      * @alias make the same as mysqli::select_db
      */
 
-    public function sql_select_db($dbname)
-    {
+    public function sql_select_db($dbname) {
         $this->db = $dbname;
         return mysqli_select_db($this->link, $dbname);
     }
@@ -61,53 +58,43 @@ class Mysql extends Sql
      * @see mysqli_query http://php.net/manual/en/mysqli.query.php
      */
 
-    public function _query($sql)
-    {
+    public function _query($sql) {
         return mysqli_query($this->link, $sql);
     }
 
-    public function sql_num_rows($res)
-    {
+    public function sql_num_rows($res) {
         return mysqli_num_rows($res);
     }
 
-    public function sql_close()
-    {
+    public function sql_close() {
         $this->link = mysqli_close($this->link);
     }
 
-    public function sql_affected_rows()
-    {
+    public function sql_affected_rows() {
         return mysqli_affected_rows($this->link);
     }
 
-    public function sql_real_escape_string($data)
-    {
+    public function sql_real_escape_string($data) {
         return mysqli_real_escape_string($this->link, $data);
     }
 
-    public function sql_insert_id()
-    {
+    public function sql_insert_id() {
         return $this->last_id;
     }
 
-    public function _insert_id()
-    {
+    public function _insert_id() {
         return mysqli_insert_id($this->link);
     }
 
-    public function _error()
-    {
+    public function _error() {
         return mysqli_error($this->link);
     }
 
-    public function sql_fetch_array($res, $resulttype = MYSQLI_BOTH)
-    {
+    public function sql_fetch_array($res, $resulttype = MYSQLI_BOTH) {
         return mysqli_fetch_array($res, $resulttype);
     }
 
-    public function sql_to_array($res)
-    {
+    public function sql_to_array($res) {
         $rep = array();
 
         while ($tab = mysqli_fetch_array($res, MYSQL_ASSOC)) {
@@ -118,33 +105,27 @@ class Mysql extends Sql
         return $rep;
     }
 
-    public function sql_fetch_object($res)
-    {
+    public function sql_fetch_object($res) {
         return mysqli_fetch_object($res);
     }
 
-    public function sql_fetch_row($res)
-    {
+    public function sql_fetch_row($res) {
         return mysqli_fetch_row($res);
     }
 
-    public function sql_num_fields($res)
-    {
+    public function sql_num_fields($res) {
         return mysqli_num_fields($res);
     }
 
-    public function sql_field_name($res, $i)
-    {
+    public function sql_field_name($res, $i) {
         return mysqli_fetch_fields($res, $i);
     }
 
-    public function sql_free_result($res)
-    {
+    public function sql_free_result($res) {
         return mysqli_free_result($res);
     }
 
-    public function sql_fetch_field($res, $i = 0)
-    {
+    public function sql_fetch_field($res, $i = 0) {
         return mysqli_fetch_field($res, $i);
     }
 
@@ -158,8 +139,7 @@ class Mysql extends Sql
      * @return array
      * 
      */
-    public function getListTable()
-    {
+    public function getListTable() {
         $sql = "SHOW FULL TABLES";
 
         $res = $this->_query($sql);
@@ -183,8 +163,7 @@ class Mysql extends Sql
         return $ret;
     }
 
-    public function getIndexUnique($table_name)
-    {
+    public function getIndexUnique($table_name) {
         $sql = "show keys from `" . $table_name . "` in " . $this->db;
 
         $res = $this->_query($sql);
