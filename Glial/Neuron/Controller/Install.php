@@ -250,24 +250,21 @@ trait Install {
 
    public function testDatabases() {
 
-        
-        $this->out("Setting chmod 660 to all directory of /tmp", "OK");
-        $this->out("checking db.config.php", "OK");
 
-        echo "GGGGGGGGGGGGGGGGGGGGGGGGGGGGG".PHP_EOL;
-        /*
+
+        
         foreach ($this->di['db']->getAll() as $name) {
             
             try {
-                //$this->di['db']->sql($name);
+                @$this->di['db']->sql($name);
                 $res = "OK";
             } catch (Exception $ex) {
                  $res = "KO";
             }
             
 
-            $this->out("Connected to database : $name", $res);
-        }*/
+            echo $this->out("Connected to database : $name", $res);
+        }
     }
 
 }
