@@ -256,8 +256,17 @@ trait Install {
         foreach ($this->di['db']->getAll() as $name) {
             
             try {
-                @$this->di['db']->sql($name);
-                $res = "OK";
+                $ret = @$this->di['db']->sql($name);
+                
+                if ($ret)
+                {
+                    $res = "OK";
+                }
+                else
+                {
+                    $res = "KO";
+                }
+                
             } catch (Exception $ex) {
                  $res = "KO";
             }
