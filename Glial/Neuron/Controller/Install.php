@@ -246,7 +246,7 @@ trait Install {
 
     function testDatabases() {
 
-        $this->out("checking db.config.php", true);
+        $this->out("checking db.config.php", "OK");
 
         foreach ($this->di['db']->getAll() as $name) {
             
