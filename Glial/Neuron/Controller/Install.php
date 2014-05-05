@@ -246,16 +246,16 @@ trait Install {
 
         $this->out("checking db.config.php", true);
 
-        foreach ($this->di['db']->connectAll() as $name => $dblink) {
+        foreach ($this->di['db']->getAll() as $name) {
             
-            if ($dblink)
-            {
+            try {
+                $this->di['db']->sql($name);
                 $res = "OK";
+            } catch (Exception $ex) {
+                 $res = "KO";
             }
-            else
-            {
-                $res = "KO";
-            }
+            
+
             $this->out("Connected to database : $name", $res);
         }
     }
