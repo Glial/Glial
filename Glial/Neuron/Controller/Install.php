@@ -6,39 +6,17 @@ use \Glial\Cli\Glial;
 use \Glial\Cli\Color;
 
 trait Install {
+
     function index() {
         //remove view 
         $this->view = false;
 
-        
+
         //header
         echo PHP_EOL . Glial::header() . PHP_EOL;
 
 
-        // test php version
-        $fct = function($msg) {
-            $err = "";
-            $version = '5.5.10';
-            if (version_compare(PHP_VERSION, $version, '<')) {
-                $err = "(Should be highter than : ".$version.")";
-            }
-
-            return array(true, $msg);
-        };
-        $this->anonymous($fct, "Check PHP version : ".PHP_VERSION." " .$err );
-
-
-        //test all extention php required
-        $extentions = array('gd', 'mysqli', 'curl', 'ssh2', 'phar');
-
-        foreach ($extentions as $ext) {
-
-            $fct = function($msg) {
-                
-                return array(extension_loaded($ext), $msg);
-            };
-            $this->anonymous($fct, "PHP version : " . $ext);
-        }
+        $this->testPhpComponent();
 
 
         //making tree directory
@@ -158,7 +136,6 @@ trait Install {
 
         echo $this->di['acl'];
         echo $this->di['db'];
-
     }
 
     function composer() {
@@ -240,6 +217,36 @@ trait Install {
 
 
         $return = Shell::prompt("TEst input [Y/n]", $gg);
+    }
+
+    function testPhpComponent() {
+
+        // test php version
+        $fct = function($msg) {
+            $err = "";
+            $version = '5.5.10';
+            if (version_compare(PHP_VERSION, $version, '<')) {
+                $err = " (Should be highter than : " . $version . ")";
+
+                $msg .= $err;
+            }
+
+            return array(true, $msg);
+        };
+        $this->anonymous($fct, "Check PHP version : " . PHP_VERSION);
+
+
+        //test all extention php required
+        $extentions = array('gd', 'mysqli', 'curl', 'ssh2', 'phar');
+
+        foreach ($extentions as $ext) {
+
+            $fct = function($msg) use ($ext) {
+
+                return array(extension_loaded($ext), $msg);
+            };
+            $this->anonymous($fct, "PHP version : " . $ext);
+        }
     }
 
 }
