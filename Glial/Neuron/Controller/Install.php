@@ -137,8 +137,8 @@ trait Install {
         $this->testDatabases();
 
 
-        echo $this->di['acl'];
-        echo $this->di['db'];
+        //echo $this->di['acl'];
+        //echo $this->di['db'];
     }
 
     function composer() {
