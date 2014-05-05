@@ -135,8 +135,8 @@ trait Install {
 
 
         $this->testDatabases();
-        
-        
+
+
         echo $this->di['acl'];
         echo $this->di['db'];
     }
@@ -163,6 +163,9 @@ trait Install {
                 break;
             case 'NA': $status = Color::getColoredString("!!", "blue");
                 break;
+
+            default:
+                throw new \Exception("GLI-024 : Arguement '" . $type . "' not valid {OK|KO|NA}", 21);
         }
 
 
@@ -209,19 +212,6 @@ trait Install {
         echo $this->out($message, $fine);
     }
 
-    public function sgbd() {
-
-        parse_ini_file($filename);
-
-
-        $gg = function ($input) {
-            preg_match("/(y|n)/i", $input);
-        };
-
-
-        $return = Shell::prompt("TEst input [Y/n]", $gg);
-    }
-
     function testPhpComponent() {
 
         // test php version
@@ -251,15 +241,22 @@ trait Install {
             $this->anonymous($fct, "Check PHP extention : " . $ext);
         }
     }
-    
-    function testDatabases()
-    {
-        
+
+    function testDatabases() {
+
         $this->out("checking db.config.php", true);
-        
-        foreach($this->di['db']->connectAll() as $name => $dblink)
-        {
-            $this->out("Connected to database : $name", $dblink);
+
+        foreach ($this->di['db']->connectAll() as $name => $dblink) {
+            
+            if ($dblink)
+            {
+                $res = "OK";
+            }
+            else
+            {
+                $res = "KO";
+            }
+            $this->out("Connected to database : $name", $res);
         }
     }
 
