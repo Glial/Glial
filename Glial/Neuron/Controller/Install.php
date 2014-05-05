@@ -261,6 +261,8 @@ trait Install {
             } catch (Exception $ex) {
                 echo "ON PASSE ICI ".__FILE__.PHP_EOL;
                 echo $this->out($ex->getMessage(), "KO");
+                
+                die("WAZAAAAAAAAAAA");
             }
 
 
