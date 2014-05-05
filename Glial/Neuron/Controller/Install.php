@@ -134,6 +134,9 @@ trait Install {
         $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
 
 
+        $this->testDatabases();
+        
+        
         echo $this->di['acl'];
         echo $this->di['db'];
     }
