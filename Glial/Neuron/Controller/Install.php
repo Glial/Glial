@@ -197,7 +197,7 @@ trait Install {
             ob_end_clean();
         }
 
-        echo $this->out($msg, $fine . " ");
+        echo $this->out($msg, $fine);
     }
 
     public function anonymous($function, $msg) {
@@ -245,7 +245,18 @@ trait Install {
 
                 return array(extension_loaded($ext), $msg);
             };
-            $this->anonymous($fct, "PHP version : " . $ext);
+            $this->anonymous($fct, "Check PHP extention : " . $ext);
+        }
+    }
+    
+    function testDatabases()
+    {
+        
+        $this->out("checking db.config.php", true);
+        
+        foreach($this->di['db']->connectAll() as $name => $dblink)
+        {
+            $this->out("Connected to database : $name", $dblink);
         }
     }
 

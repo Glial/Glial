@@ -37,7 +37,7 @@ abstract class Sql
         }
     }
 
-    abstract protected function __construct($name, $elem);
+    abstract protected function __construct($host, $login, $password);
 
     abstract protected function sql_connect($var1, $var2, $var3);
 
@@ -64,6 +64,8 @@ abstract class Sql
     abstract protected function getListTable();
 
     abstract protected function getIndexUnique($table_name);
+    
+    abstract protected function test($host, $login, $password);
 
     public function sql_fetch_field($res, $field_offset = 0)
     {

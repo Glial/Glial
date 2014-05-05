@@ -2,63 +2,47 @@
 
 namespace Glial\Sgbd\Sql;
 
-
 /*
  * @since Glial 2.1
  * @description connect to each database present in db.config.php
  * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
  */
 
+class FactorySql {
 
-
-
-class FactorySql
-{
     private static $driver = array("mysql", "mysqli", "pdo", "oracle", "sybase");
     private static $db = array();
 
-    static function init($data)
-    {
-        foreach ($data as $name => $param) {
+    /*
+     * @since Glial 2.1
+     * @description connect to each database present in db.config.php
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * 
+     */
 
-            self::connect($name, $param);
-        }
-
-        return self::$db;
-        
-        /*
-        if (count(self::$db) === 1) {
-            return array_shift(array_values(self::$db));
-        } else {
-            return self::$db;
-        }*/
-    }
-/*
- * @since Glial 2.1
- * @description connect to each database present in db.config.php
- * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
- * 
- */
-    static function connect($name, $elem)
-    {
+    static function connect($name, $elem) {
         if (!in_array($elem['driver'], self::$driver)) {
-            trigger_error("This driver isn't supported : " . $elem['driver'], E_USER_ERROR);
+            throw new \Exception("GLI-023 : This driver isn't supported : " . $elem['driver']);
         }
 
-        $driver = '\Glial\Sgbd\Sql\\'.ucwords(strtolower($elem['driver'])).'\\'.ucwords(strtolower($elem['driver']));
-        
-        
+        $driver = '\Glial\Sgbd\Sql\\' . ucwords(strtolower($elem['driver'])) . '\\' . ucwords(strtolower($elem['driver']));
+
+
         $addr = $elem['hostname'];
-        
-        if (! empty($elem['port']) && is_numeric($elem['port']))
-        {
-            $addr .= ":".$elem['port'];
+
+        if (!empty($elem['port']) && is_numeric($elem['port'])) {
+            $addr .= ":" . $elem['port'];
         }
-        
+
         self::$db[$name] = new $driver($name, $elem);
+
+        if (!self::$db[$name]) {
+            return false;
+        }
+
         self::$db[$name]->sql_connect($addr, $elem['user'], $elem['password']);
         self::$db[$name]->sql_select_db($elem['database']);
-        
+
         return self::$db[$name];
     }
 
