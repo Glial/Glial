@@ -29,7 +29,8 @@ class Mysql extends Sql
         
         if (! $this->link)
         {
-            throw new \Exception('GLI-12 : Impossible to connect to : '.$host);
+            return false;
+            throw new \Exception('GLI-012 : Impossible to connect to : '.$host);
         }
 
         mysqli_set_charset($this->link, 'utf8');
