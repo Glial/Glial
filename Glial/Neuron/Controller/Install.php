@@ -19,7 +19,11 @@ trait Install {
         $this->testPhpComponent();
 
 
+        $this->out("Setting chmod 660 to all directory of /tmp", "OK");
         $this->testDatabases();
+        
+        
+        /*
         
         //making tree directory
         $fct = function($msg) {
@@ -84,21 +88,6 @@ trait Install {
         $this->cmd("php glial administration generate_model", "Making model with reverse engineering of databases");
 
 
-        /*
-          shell_exec("find " . $_SERVER['PWD'] . " -type f -exec chmod 740 {} \;;");
-          echo $this->out("Setting chmod 440 to all files", "OK");
-
-          shell_exec("find " . $_SERVER['PWD'] . " -type d -exec chmod 750 {} \;;");
-          echo $this->out("Setting chmod 550 to all files", "OK");
-
-
-          shell_exec("find " . $_SERVER['PWD'] . "/tmp -type f -exec chmod 770 {} \;;");
-          echo $this->out("Setting chmod 660 to all files of /tmp", "OK");
-
-          shell_exec("find " . $_SERVER['PWD'] . "/tmp -type d -exec chmod 770 {} \;;");
-          echo $this->out("Setting chmod 660 to all directory of /tmp", "OK");
-
-         */
 
 
         $fct = function ($msg) {
@@ -135,6 +124,21 @@ trait Install {
         $this->cmd("chmod +x glial", "Setting chmod +x to executable 'glial'");
         $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
 
+        /*
+          shell_exec("find " . $_SERVER['PWD'] . " -type f -exec chmod 740 {} \;;");
+          echo $this->out("Setting chmod 440 to all files", "OK");
+
+          shell_exec("find " . $_SERVER['PWD'] . " -type d -exec chmod 750 {} \;;");
+          echo $this->out("Setting chmod 550 to all files", "OK");
+
+
+          shell_exec("find " . $_SERVER['PWD'] . "/tmp -type f -exec chmod 770 {} \;;");
+          echo $this->out("Setting chmod 660 to all files of /tmp", "OK");
+
+          shell_exec("find " . $_SERVER['PWD'] . "/tmp -type d -exec chmod 770 {} \;;");
+          echo $this->out("Setting chmod 660 to all directory of /tmp", "OK");
+
+         */
 
         
 
@@ -143,7 +147,7 @@ trait Install {
         //echo $this->di['db'];
     }
 
-    function composer() {
+    public function composer() {
         $this->view = false;
         echo PHP_EOL . Glial::header() . PHP_EOL;
 
@@ -246,6 +250,8 @@ trait Install {
 
     function testDatabases() {
 
+        
+        $this->out("Setting chmod 660 to all directory of /tmp", "OK");
         $this->out("checking db.config.php", "OK");
 
         foreach ($this->di['db']->getAll() as $name) {
