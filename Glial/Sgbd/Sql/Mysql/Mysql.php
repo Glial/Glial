@@ -24,15 +24,13 @@ class Mysql extends Sql {
 
         try {
             $this->link = mysqli_connect($host, $login, $password);
-
-            mysqli_set_charset($this->link, 'utf8');
-            $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
-            $this->_query("SET NAMES 'utf8'");
         } catch (Exception $ex) {
+            echo "ON PASSE ICI".__FILE__.PHP_EOL;
             throw new \Exception('GLI-012 : Impossible to connect to : ' . $host);
         }
-
-
+        mysqli_set_charset($this->link, 'utf8');
+        $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
+        $this->_query("SET NAMES 'utf8'");
 
         return $this->link;
     }

@@ -259,6 +259,7 @@ trait Install {
                 $ret = $this->di['db']->sql($name);
                 echo $this->out("Connected to database : $name", "OK");
             } catch (Exception $ex) {
+                echo "ON PASSE ICI ".__FILE__.PHP_EOL;
                 echo $this->out($ex->getMessage(), "KO");
             }
 
