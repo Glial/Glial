@@ -251,7 +251,7 @@ trait Install {
         foreach ($this->di['db']->getAll() as $name) {
             
             try {
-                $this->di['db']->sql($name);
+                //$this->di['db']->sql($name);
                 $res = "OK";
             } catch (Exception $ex) {
                  $res = "KO";
