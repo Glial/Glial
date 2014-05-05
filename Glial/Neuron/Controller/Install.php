@@ -19,6 +19,8 @@ trait Install {
         $this->testPhpComponent();
 
 
+        $this->testDatabases();
+        
         //making tree directory
         $fct = function($msg) {
             $dirs = array("data", "data/img", "documentation", "tmp/crop", "tmp/documentation", "application/webroot/js",
@@ -134,7 +136,7 @@ trait Install {
         $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
 
 
-        $this->testDatabases();
+        
 
 
         //echo $this->di['acl'];
