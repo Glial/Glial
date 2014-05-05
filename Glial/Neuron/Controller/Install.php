@@ -21,110 +21,110 @@ trait Install {
 
         $this->out("Setting chmod 660 to all directory of /tmp", "OK");
         $this->testDatabases();
-        
-        
-        /*
-        
-        //making tree directory
-        $fct = function($msg) {
-            $dirs = array("data", "data/img", "documentation", "tmp/crop", "tmp/documentation", "application/webroot/js",
-                "application/webroot/css", "application/webroot/file", "application/webroot/video", "application/webroot/image");
 
-            $error = array();
-            foreach ($dirs as $dir) {
-
-                $dir = $_SERVER['PWD'] . "/" . $dir;
-
-                if (!file_exists($dir)) {
-                    if (!mkdir($dir)) {
-                        echo $this->out("Impossible to create this directory : " . $key . " ", "KO");
-                    }
-                }
-            }
-
-            return array(true, $msg);
-        };
-        $this->anonymous($fct, "Making tree directory");
-
-
-
-        // replace and install lastest jQuery
-        $fct = function ($msg) {
-            $name = "jquery-latest.min.js";
-            $jQuery = $_SERVER['PWD'] . "/application/webroot/js/" . $name;
-
-            $old_version = "";
-            if (file_exists($jQuery)) {
-                $data = file_get_contents($jQuery);
-                preg_match("/v[\d]+\.[\d]+\.[\d]+/", $data, $version);
-
-                $old_version = $version[0] . " => ";
-                $this->cmd("rm " . $jQuery, "Delete old jQuery");
-            }
-
-            $this->cmd("cd " . $_SERVER['PWD'] . "/application/webroot/js && wget -q http://code.jquery.com/" . $name, "Download lastest jQuery");
-
-            if (file_exists($jQuery)) {
-                $data = file_get_contents($jQuery);
-
-                preg_match("/v[\d]+\.[\d]+\.[\d]+/", $data, $version);
-
-                $msg = sprintf($msg, $old_version . Color::getColoredString($version[0], "green"));
-
-                return array(true, $msg);
-            } else {
-                $msg = sprintf($msg, "NOT INSTALLED");
-                return array(false, $msg);
-            }
-        };
-        $this->anonymous($fct, "jQuery installed (%s)");
-
-
-        $this->cmd("chown www-data:www-data -R *", "Setting right to www-data:www-data");
-
-
-        $this->cmd("php glial administration admin_index_unique", "Generating DDL cash for index");
-        $this->cmd("php glial administration admin_table", "Generating DDL cash for databases");
-        $this->cmd("php glial administration generate_model", "Making model with reverse engineering of databases");
-
-
-
-
-        $fct = function ($msg) {
-            $file = $_SERVER['PWD'] . "/glial";
-            $data = file_get_contents($file);
-
-            $new_data = str_replace("php application", "php " . $_SERVER['PWD'] . "/application", $data);
-            if (!file_put_contents($file, $new_data)) {
-                return array(false, $msg);
-            }
-            return array(true, $msg);
-        };
-
-        $this->anonymous($fct, "Replace relative path by full path in Glial exec");
-
-        $fct = function ($msg) {
-
-            $file = $_SERVER['PWD'] . "/glial";
-            $path_to_php = exec("which php", $res, $code);
-
-            if ($code !== 0) {
-                return array(false, $msg . " $code:$path_to_php: can't find php");
-            }
-
-            $data = file($file);
-            $data[0] = "#!" . $path_to_php . PHP_EOL;
-            file_put_contents($file, implode("", $data));
-
-            return array(true, $msg);
-        };
-
-        $this->anonymous($fct, "get full path of php");
-
-        $this->cmd("chmod +x glial", "Setting chmod +x to executable 'glial'");
-        $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
 
         /*
+
+          //making tree directory
+          $fct = function($msg) {
+          $dirs = array("data", "data/img", "documentation", "tmp/crop", "tmp/documentation", "application/webroot/js",
+          "application/webroot/css", "application/webroot/file", "application/webroot/video", "application/webroot/image");
+
+          $error = array();
+          foreach ($dirs as $dir) {
+
+          $dir = $_SERVER['PWD'] . "/" . $dir;
+
+          if (!file_exists($dir)) {
+          if (!mkdir($dir)) {
+          echo $this->out("Impossible to create this directory : " . $key . " ", "KO");
+          }
+          }
+          }
+
+          return array(true, $msg);
+          };
+          $this->anonymous($fct, "Making tree directory");
+
+
+
+          // replace and install lastest jQuery
+          $fct = function ($msg) {
+          $name = "jquery-latest.min.js";
+          $jQuery = $_SERVER['PWD'] . "/application/webroot/js/" . $name;
+
+          $old_version = "";
+          if (file_exists($jQuery)) {
+          $data = file_get_contents($jQuery);
+          preg_match("/v[\d]+\.[\d]+\.[\d]+/", $data, $version);
+
+          $old_version = $version[0] . " => ";
+          $this->cmd("rm " . $jQuery, "Delete old jQuery");
+          }
+
+          $this->cmd("cd " . $_SERVER['PWD'] . "/application/webroot/js && wget -q http://code.jquery.com/" . $name, "Download lastest jQuery");
+
+          if (file_exists($jQuery)) {
+          $data = file_get_contents($jQuery);
+
+          preg_match("/v[\d]+\.[\d]+\.[\d]+/", $data, $version);
+
+          $msg = sprintf($msg, $old_version . Color::getColoredString($version[0], "green"));
+
+          return array(true, $msg);
+          } else {
+          $msg = sprintf($msg, "NOT INSTALLED");
+          return array(false, $msg);
+          }
+          };
+          $this->anonymous($fct, "jQuery installed (%s)");
+
+
+          $this->cmd("chown www-data:www-data -R *", "Setting right to www-data:www-data");
+
+
+          $this->cmd("php glial administration admin_index_unique", "Generating DDL cash for index");
+          $this->cmd("php glial administration admin_table", "Generating DDL cash for databases");
+          $this->cmd("php glial administration generate_model", "Making model with reverse engineering of databases");
+
+
+
+
+          $fct = function ($msg) {
+          $file = $_SERVER['PWD'] . "/glial";
+          $data = file_get_contents($file);
+
+          $new_data = str_replace("php application", "php " . $_SERVER['PWD'] . "/application", $data);
+          if (!file_put_contents($file, $new_data)) {
+          return array(false, $msg);
+          }
+          return array(true, $msg);
+          };
+
+          $this->anonymous($fct, "Replace relative path by full path in Glial exec");
+
+          $fct = function ($msg) {
+
+          $file = $_SERVER['PWD'] . "/glial";
+          $path_to_php = exec("which php", $res, $code);
+
+          if ($code !== 0) {
+          return array(false, $msg . " $code:$path_to_php: can't find php");
+          }
+
+          $data = file($file);
+          $data[0] = "#!" . $path_to_php . PHP_EOL;
+          file_put_contents($file, implode("", $data));
+
+          return array(true, $msg);
+          };
+
+          $this->anonymous($fct, "get full path of php");
+
+          $this->cmd("chmod +x glial", "Setting chmod +x to executable 'glial'");
+          $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
+
+          /*
           shell_exec("find " . $_SERVER['PWD'] . " -type f -exec chmod 740 {} \;;");
           echo $this->out("Setting chmod 440 to all files", "OK");
 
@@ -140,7 +140,7 @@ trait Install {
 
          */
 
-        
+
 
 
         //echo $this->di['acl'];
@@ -248,31 +248,22 @@ trait Install {
         }
     }
 
-   public function testDatabases() {
+    public function testDatabases() {
 
 
 
-        
+
         foreach ($this->di['db']->getAll() as $name) {
-            
-            try {
-                $ret = @$this->di['db']->sql($name);
-                
-                if ($ret)
-                {
-                    $res = "OK";
-                }
-                else
-                {
-                    $res = "KO";
-                }
-                
-            } catch (Exception $ex) {
-                 $res = "KO";
-            }
-            
 
-            echo $this->out("Connected to database : $name", $res);
+            try {
+                $ret = $this->di['db']->sql($name);
+                echo $this->out("Connected to database : $name", "OK");
+            } catch (Exception $ex) {
+                echo $this->out($ex->getMessage(), "KO");
+            }
+
+
+            
         }
     }
 

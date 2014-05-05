@@ -29,7 +29,6 @@ class Mysql extends Sql
         
         if (! $this->link)
         {
-            return false;
             throw new \Exception('GLI-012 : Impossible to connect to : '.$host);
         }
 
