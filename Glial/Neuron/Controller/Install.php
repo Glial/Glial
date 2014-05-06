@@ -165,7 +165,7 @@ trait Install {
 		
         echo "Source files successfully imported !" . PHP_EOL;
 		echo "To add databases edit the file : '".$_SERVER['PWD']."/configuration/db.config.ini.php'".PHP_EOL;
-        echo "To finish install run : '" . Color::getColoredString("cd ".basename($_SERVER['PWD'])."; php glial install index", "purple") . "'" . PHP_EOL;
+        echo "To finish install run : '" . Color::getColoredString("cd ".$_SERVER['PWD']."; php glial install all", "purple") . "'" . PHP_EOL;
     }
 
     public function out($msg, $type) {
