@@ -11,22 +11,31 @@ trait Install {
         //remove view 
         $this->view = false;
 
-        
-        
-        
+		//to make sexy install ?
+		
         //header
         echo PHP_EOL . Glial::header() . PHP_EOL;
 
 
-        $this->testPhpComponent();
+//		ini_set('display_errors', '0');
+        $drivers = $this->testDatabases();
+		ini_set('display_errors', '1');
+		
+		$map_driver_with_ext = array(
+		"mysql" => "mysqli",
+		"postgresql" => "pgsql",
+		"sybase" => "sybase",
+		"oracle" => "oci8");
+		
+		$ext = array();
+		foreach($drivers as $driver)
+		{
+			$ext[] = $map_driver_with_ext[$driver];
+		}
+		
+        $this->testPhpComponent($ext);
 
-
-        $this->out("Setting chmod 660 to all directory of /tmp", "OK");
-        $this->testDatabases();
-
-
-        /*
-
+		
           //making tree directory
           $fct = function($msg) {
           $dirs = array("data", "data/img", "documentation", "tmp/crop", "tmp/documentation", "application/webroot/js",
@@ -126,6 +135,7 @@ trait Install {
           $this->cmd("chmod +x glial", "Setting chmod +x to executable 'glial'");
           $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
 
+		  
           /*
           shell_exec("find " . $_SERVER['PWD'] . " -type f -exec chmod 740 {} \;;");
           echo $this->out("Setting chmod 440 to all files", "OK");
@@ -160,11 +170,10 @@ trait Install {
     public function out($msg, $type) {
         switch ($type) {
             case 'OK':
-            case true: $status = Color::getColoredString("OK", "green");
+				$status = Color::getColoredString("OK", "green");
                 break;
 
             case 'KO':
-            case false:
                 $status = Color::getColoredString("KO", "red");
                 $msg = Color::getColoredString($msg, "red");
                 $err = true;
@@ -191,7 +200,7 @@ trait Install {
 
     public function onError() {
 
-        echo PHP_EOL . "To understand what happen : " . Color::getColoredString("glial/tmp/log/error_php.log", "cyan") . PHP_EOL;
+        echo PHP_EOL . "To understand what happen : " . Color::getColoredString($_SERVER['PWD']."/tmp/log/error_php.log", "cyan") . PHP_EOL;
         echo "To resume the setup : " . Color::getColoredString("php composer.phar update", "cyan") . PHP_EOL;
         exit(10);
     }
@@ -204,10 +213,10 @@ trait Install {
         passthru($cmd, $code_retour);
 
         if ($code_retour !== 0) {
-            $fine = false;
+            $fine = "KO";
             ob_end_flush();
         } else {
-            $fine = true;
+            $fine = "OK";
             ob_end_clean();
         }
 
@@ -220,7 +229,10 @@ trait Install {
         echo $this->out($message, $fine);
     }
 
-    function testPhpComponent() {
+    function testPhpComponent($ext) {
+	
+	
+		debug($ext);
 
         // test php version
         $fct = function($msg) {
@@ -236,10 +248,11 @@ trait Install {
         };
         $this->anonymous($fct, "Check PHP version : " . PHP_VERSION);
 
-
         //test all extention php required
-        $extentions = array('gd', 'mysqli', 'curl', 'ssh2', 'phar');
+        $extentions = array_merge($ext, array('gd', 'curl', 'ssh2', 'phar'));
 
+		debug($extentions);
+		
         foreach ($extentions as $ext) {
 
             $fct = function($msg) use ($ext) {
@@ -251,25 +264,22 @@ trait Install {
     }
 
     public function testDatabases() {
-
-
-
-
+		
+		$drivers = array();
+	
         foreach ($this->di['db']->getAll() as $name) {
-
             try {
                 $ret = $this->di['db']->sql($name);
                 echo $this->out("Connected to database : $name", "OK");
-            } catch (Exception $ex) {
-                echo "ON PASSE ICI ".__FILE__.PHP_EOL;
+            } catch (\Exception $ex) {
                 echo $this->out($ex->getMessage(), "KO");
-                
-                die("WAZAAAAAAAAAAA");
             }
-
-
-            
+			
+			$drivers[] = $this->di['db']->getParam($name)['driver'];
         }
+		
+		$drivers = array_unique($drivers);
+		return $drivers;
     }
 
 }
