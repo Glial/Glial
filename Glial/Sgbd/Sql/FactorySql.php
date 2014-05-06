@@ -10,7 +10,7 @@ namespace Glial\Sgbd\Sql;
 
 class FactorySql {
 
-    private static $driver = array("mysql", "mysqli", "pdo", "oracle", "sybase");
+    private static $driver = array("postgresql", "mysql", "pdo", "oracle", "sybase");
     private static $db = array();
 
     /*
