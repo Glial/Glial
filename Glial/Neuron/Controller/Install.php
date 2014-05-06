@@ -6,6 +6,11 @@ use \Glial\Cli\Glial;
 use \Glial\Cli\Color;
 
 trait Install {
+	
+	function all()
+	{
+		$this->index();
+	}
 
     function index() {
         //remove view 
