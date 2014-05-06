@@ -22,10 +22,9 @@ class Mysql extends Sql
      * @alias make the same as mysqli::select_db and init charset connection in utf-8
      */
 
-    public function sql_connect($host, $login, $password)
+    public function sql_connect($host, $login, $password, $dbname, $port=3306)
     {
-        $this->link = mysqli_connect($host, $login, $password);
-        
+        $this->link = mysqli_connect($host, $login, $password, $dbname, $port=3306);
         
         if (! $this->link)
         {

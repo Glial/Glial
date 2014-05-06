@@ -23,7 +23,7 @@ trait Install {
 		
 		$map_driver_with_ext = array(
 		"mysql" => "mysqli",
-		"postgresql" => "pgsql",
+		"pgsql" => "pgsql",
 		"sybase" => "sybase",
 		"oracle" => "oci8");
 		
@@ -162,9 +162,10 @@ trait Install {
     public function composer() {
         $this->view = false;
         echo PHP_EOL . Glial::header() . PHP_EOL;
-
-        echo "Source files successfuly imported !" . PHP_EOL;
-        echo "To finish install run : '" . Color::getColoredString("glial install", "purple") . "'" . PHP_EOL;
+		
+        echo "Source files successfully imported !" . PHP_EOL;
+		echo "To add databases edit the file : '".$_SERVER['PWD']."/configuration/db.config.ini.php'".PHP_EOL;
+        echo "To finish install run : '" . Color::getColoredString("php glial install", "purple") . "'" . PHP_EOL;
     }
 
     public function out($msg, $type) {
@@ -230,9 +231,6 @@ trait Install {
     }
 
     function testPhpComponent($ext) {
-	
-	
-		debug($ext);
 
         // test php version
         $fct = function($msg) {
@@ -251,8 +249,6 @@ trait Install {
         //test all extention php required
         $extentions = array_merge($ext, array('gd', 'curl', 'ssh2', 'phar'));
 
-		debug($extentions);
-		
         foreach ($extentions as $ext) {
 
             $fct = function($msg) use ($ext) {

@@ -39,7 +39,7 @@ abstract class Sql
 
     abstract protected function __construct($name, $elem);
 
-    abstract protected function sql_connect($var1, $var2, $var3);
+    abstract protected function sql_connect($var1, $var2, $var3, $db, $port);
 
     abstract protected function sql_select_db($var1);
 

@@ -22,19 +22,19 @@ class Pgsql extends Sql
      * @alias make the same as mysqli::select_db and init charset connection in utf-8
      */
 
-    public function sql_connect($host, $login, $password)
+    public function sql_connect($host, $login, $password, $database, $port=5432)
     {
-        $this->link = pg_connect($host, $login, $password);
-        
+        if ( ! is_numeric($port))
+		 {
+			$port = 5432;
+		 }
+
+		$this->link = pg_connect("host=".$host." port=".$port." dbname=".$database." user=".$login." password=".$password." options='--client_encoding=UTF8'");
         
         if (! $this->link)
         {
             throw new \Exception('GLI-012 : Impossible to connect to : '.$host);
         }
-
-        pg_set_charset($this->link, 'utf8');
-        $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
-        $this->_query("SET NAMES 'utf8'");
 
         return $this->link;
     }
