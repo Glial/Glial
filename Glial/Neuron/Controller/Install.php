@@ -11,7 +11,9 @@ trait Install {
         //remove view 
         $this->view = false;
 
-
+        
+        
+        
         //header
         echo PHP_EOL . Glial::header() . PHP_EOL;
 
