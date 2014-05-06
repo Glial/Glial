@@ -1,10 +1,10 @@
 <?php
 
-namespace Glial\Sgbd\Sql\Mysql;
+namespace Glial\Sgbd\Sql\Pgsql;
 
 use \Glial\Sgbd\Sql\Sql;
 
-class Mysql extends Sql
+class Pgsql extends Sql
 {
 
     public $db;
