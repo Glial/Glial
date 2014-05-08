@@ -3,7 +3,6 @@
 namespace Glial\Sgbd;
 
 use \Glial\Cli\Table;
-use \Glial\Cli\Shell;
 use \Glial\Sgbd\Sql\FactorySql;
 
 class Sgbd
@@ -47,7 +46,12 @@ class Sgbd
      * @version 3.0
      */
     public function sql($name)
-    {
+    {   
+        if (preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name))
+        {
+            throw new \Exception("GLI-25 : The name of identifier is invalid : '" . $name . "' (only letter / number and underscore are allowed) !");
+        }      
+        
         if (array_key_exists($name, $this->config)) {
             if (empty($this->db[$name])) {
 
@@ -97,11 +101,8 @@ class Sgbd
      */
     public function __toString()
     {
-
         $tab = new Table(1);
-
         $tab->addHeader(array("Id", "Name", "Is connected ?", "Driver", "IP", "Port", "User", "Password"));
-
 
         $i = 1;
         foreach ($this->config as $name => $param) {
@@ -148,7 +149,7 @@ class Sgbd
      * @return object of the sgbd class (MySQL / PostGreSQL / Oracle / Sybase) 
      * @description connect to all database in db.config.ini.php and return the object / dblink created
      * @access public
-     * @example $this->di['db']->connectAll()
+     * @example foreach($this->di['db']->connectAll() as $db) {}
      * @package Sgbd
      * @See Also sql
      * @since 3.0 First time this was introduced.

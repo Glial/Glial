@@ -1,10 +1,10 @@
 <?php
 
-namespace Glial\Sgbd\Sql\Mysql;
+namespace Glial\Sgbd\Sql\Pgsql;
 
 use \Glial\Sgbd\Sql\Sql;
 
-class Mysql extends Sql
+class Pgsql extends Sql
 {
 
     public $db;
@@ -22,18 +22,19 @@ class Mysql extends Sql
      * @alias make the same as mysqli::select_db and init charset connection in utf-8
      */
 
-    public function sql_connect($host, $login, $password, $dbname, $port=3306)
+    public function sql_connect($host, $login, $password, $database, $port=5432)
     {
-        $this->link = mysqli_connect($host, $login, $password, $dbname, $port=3306);
+        if ( ! is_numeric($port))
+		 {
+			$port = 5432;
+		 }
+
+		$this->link = pg_connect("host=".$host." port=".$port." dbname=".$database." user=".$login." password=".$password." options='--client_encoding=UTF8'");
         
         if (! $this->link)
         {
             throw new \Exception('GLI-012 : Impossible to connect to : '.$host);
         }
-
-        mysqli_set_charset($this->link, 'utf8');
-        $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
-        $this->_query("SET NAMES 'utf8'");
 
         return $this->link;
     }
@@ -48,41 +49,41 @@ class Mysql extends Sql
     public function sql_select_db($dbname)
     {
         $this->db = $dbname;
-        return mysqli_select_db($this->link, $dbname);
+        return pg_select_db($this->link, $dbname);
     }
 
     /*
      * @since Glial 1.0
-     * @return Returns FALSE on failure. For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries _query() will return a mysqli_result object. For other successful queries _query() will return TRUE.
+     * @return Returns FALSE on failure. For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries _query() will return a pg_result object. For other successful queries _query() will return TRUE.
      * @param string $dbname The database name.
      * @description Performs a query against the database. 
-     * @alias make the same as mysqli_query
-     * @see mysqli_query http://php.net/manual/en/mysqli.query.php
+     * @alias make the same as pg_query
+     * @see pg_query http://php.net/manual/en/mysqli.query.php
      */
 
     public function _query($sql)
     {
-        return mysqli_query($this->link, $sql);
+        return pg_query($this->link, $sql);
     }
 
     public function sql_num_rows($res)
     {
-        return mysqli_num_rows($res);
+        return pg_num_rows($res);
     }
 
     public function sql_close()
     {
-        $this->link = mysqli_close($this->link);
+        $this->link = pg_close($this->link);
     }
 
     public function sql_affected_rows()
     {
-        return mysqli_affected_rows($this->link);
+        return pg_affected_rows($this->link);
     }
 
     public function sql_real_escape_string($data)
     {
-        return mysqli_real_escape_string($this->link, $data);
+        return pg_real_escape_string($this->link, $data);
     }
 
     public function sql_insert_id()
@@ -92,24 +93,24 @@ class Mysql extends Sql
 
     public function _insert_id()
     {
-        return mysqli_insert_id($this->link);
+        return pg_insert_id($this->link);
     }
 
     public function _error()
     {
-        return mysqli_error($this->link);
+        return pg_error($this->link);
     }
 
-    public function sql_fetch_array($res, $resulttype = MYSQLI_BOTH)
+    public function sql_fetch_array($res, $resulttype = pg_BOTH)
     {
-        return mysqli_fetch_array($res, $resulttype);
+        return pg_fetch_array($res, $resulttype);
     }
 
     public function sql_to_array($res)
     {
         $rep = array();
 
-        while ($tab = mysqli_fetch_array($res, MYSQL_ASSOC)) {
+        while ($tab = pg_fetch_array($res, MYSQL_ASSOC)) {
 
             $rep[] = $tab;
         }
@@ -119,32 +120,32 @@ class Mysql extends Sql
 
     public function sql_fetch_object($res)
     {
-        return mysqli_fetch_object($res);
+        return pg_fetch_object($res);
     }
 
     public function sql_fetch_row($res)
     {
-        return mysqli_fetch_row($res);
+        return pg_fetch_row($res);
     }
 
     public function sql_num_fields($res)
     {
-        return mysqli_num_fields($res);
+        return pg_num_fields($res);
     }
 
     public function sql_field_name($res, $i)
     {
-        return mysqli_fetch_fields($res, $i);
+        return pg_fetch_fields($res, $i);
     }
 
     public function sql_free_result($res)
     {
-        return mysqli_free_result($res);
+        return pg_free_result($res);
     }
 
     public function sql_fetch_field($res, $i = 0)
     {
-        return mysqli_fetch_field($res, $i);
+        return pg_fetch_field($res, $i);
     }
 
     /**
