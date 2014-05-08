@@ -11,55 +11,53 @@ namespace Glial\Cli;
 
 class Color
 {
-    
     /*
      * http://en.wikipedia.org/wiki/ANSI_escape_code
-Code	Effect	Note
-0	Reset / Normal	all attributes off
-1	Bold or increased intensity	
-2	Faint (decreased intensity)	not widely supported
-3	Italic: on	not widely supported. Sometimes treated as inverse.
-4	Underline: Single	
-5	Blink: Slow	less than 150 per minute
-6	Blink: Rapid	MS-DOS ANSI.SYS; 150 per minute or more; not widely supported
-7	Image: Negative	inverse or reverse; swap foreground and background (reverse video)
-8	Conceal	not widely supported
-9	Crossed-out	Characters legible, but marked for deletion. Not widely supported.
-10	Primary(default) font	
-11–19	n-th alternate font	Select the n-th alternate font. 14 being the fourth alternate font, up to 19 being the 9th alternate font.
-20	Fraktur	hardly ever supported
-21	Bold: off or Underline: Double	bold off not widely supported, double underline hardly ever
-22	Normal color or intensity	neither bold nor faint
-23	Not italic, not Fraktur	
-24	Underline: None	not singly or doubly underlined
-25	Blink: off	
-26	Reserved	
-27	Image: Positive	
-28	Reveal	conceal off
-29	Not crossed out	
-30–37	Set text color (foreground)	30 + x, where x is from the color table below
-38	Set xterm-256 text color (foreground)[dubious – discuss]	next arguments are 5;x where x is color index (0..255)
-39	Default text color (foreground)	implementation defined (according to standard)
-40–47	Set background color	40 + x, where x is from the color table below
-48	Set xterm-256 background color	next arguments are 5;x where x is color index (0..255)
-49	Default background color	implementation defined (according to standard)
-50	Reserved	
-51	Framed	
-52	Encircled	
-53	Overlined	
-54	Not framed or encircled	
-55	Not overlined	
-56–59	Reserved	
-60	ideogram underline or right side line	hardly ever supported
-61	ideogram double underline or double line on the right side	hardly ever supported
-62	ideogram overline or left side line	hardly ever supported
-63	ideogram double overline or double line on the left side	hardly ever supported
-64	ideogram stress marking	hardly ever supported
-90–99	Set foreground text color, high intensity	aixterm (not in standard)
-100–109	Set background color, high intensity	aixterm (not in standard)
-    */
-    
-    
+      Code	Effect	Note
+      0	Reset / Normal	all attributes off
+      1	Bold or increased intensity
+      2	Faint (decreased intensity)	not widely supported
+      3	Italic: on	not widely supported. Sometimes treated as inverse.
+      4	Underline: Single
+      5	Blink: Slow	less than 150 per minute
+      6	Blink: Rapid	MS-DOS ANSI.SYS; 150 per minute or more; not widely supported
+      7	Image: Negative	inverse or reverse; swap foreground and background (reverse video)
+      8	Conceal	not widely supported
+      9	Crossed-out	Characters legible, but marked for deletion. Not widely supported.
+      10	Primary(default) font
+      11–19	n-th alternate font	Select the n-th alternate font. 14 being the fourth alternate font, up to 19 being the 9th alternate font.
+      20	Fraktur	hardly ever supported
+      21	Bold: off or Underline: Double	bold off not widely supported, double underline hardly ever
+      22	Normal color or intensity	neither bold nor faint
+      23	Not italic, not Fraktur
+      24	Underline: None	not singly or doubly underlined
+      25	Blink: off
+      26	Reserved
+      27	Image: Positive
+      28	Reveal	conceal off
+      29	Not crossed out
+      30–37	Set text color (foreground)	30 + x, where x is from the color table below
+      38	Set xterm-256 text color (foreground)[dubious – discuss]	next arguments are 5;x where x is color index (0..255)
+      39	Default text color (foreground)	implementation defined (according to standard)
+      40–47	Set background color	40 + x, where x is from the color table below
+      48	Set xterm-256 background color	next arguments are 5;x where x is color index (0..255)
+      49	Default background color	implementation defined (according to standard)
+      50	Reserved
+      51	Framed
+      52	Encircled
+      53	Overlined
+      54	Not framed or encircled
+      55	Not overlined
+      56–59	Reserved
+      60	ideogram underline or right side line	hardly ever supported
+      61	ideogram double underline or double line on the right side	hardly ever supported
+      62	ideogram overline or left side line	hardly ever supported
+      63	ideogram double overline or double line on the left side	hardly ever supported
+      64	ideogram stress marking	hardly ever supported
+      90–99	Set foreground text color, high intensity	aixterm (not in standard)
+      100–109	Set background color, high intensity	aixterm (not in standard)
+     */
+
 // Set up shell colors
     private static $color = array(
         'black' => 30,
@@ -101,6 +99,11 @@ Code	Effect	Note
      * @param $background_colors string the color of foreground to know witch color available have a look on $background_colors
      * @return return the string with Ansi code, if one color is not found generate a trow exception
      */
+
+    public function __construct()
+    {
+        
+    }
 
     public static function getColoredString($string, $color = null, $background = null, $style = null)
     {
@@ -160,7 +163,7 @@ Code	Effect	Note
             foreach (array_keys(self::$color) as $color) {
 
                 foreach (array_keys(self::$background) as $background) {
-                    echo self::getColoredString(str_pad($color, 7).str_pad($background, 7).str_pad($style, 9), $color, $background, $style). " ";
+                    echo self::getColoredString(str_pad($color, 7) . str_pad($background, 7) . str_pad($style, 9), $color, $background, $style) . " ";
                 }
                 echo PHP_EOL;
             }

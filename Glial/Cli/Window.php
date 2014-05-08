@@ -5,7 +5,8 @@ namespace Glial\Cli;
 use Glial\Cli\Color;
 use Glial\String\String;
 
-class Window {
+class Window
+{
 
     public $max_default = 180;
     public $max_width;
@@ -20,8 +21,6 @@ class Window {
     public $color_foreground_msg = "black";
     public $color_shadow = "black";
     public $color_cursor = "red";
-    
-    
     private $windows;
     private $position_input;
     private $position_input2;
@@ -29,14 +28,16 @@ class Window {
     private $after;
     private $cursor_position_horizontal = 1;
     private $cursor_position_vertical = 1;
+    private $cursor_position_input = array();
 
-    public function __construct($title, $msg) {
+    public function __construct($title, $msg)
+    {
 
         $value = '';
         $sizes = exec("stty size");
         $size = explode(" ", $sizes);
 
-        
+
         $this->max_width = $size[1];
         $this->max_height = $size[0];
 
@@ -45,25 +46,27 @@ class Window {
         echo $this->windows($title, $msg);
 
 
-        
+
+
         /*
-        echo "\033[" . ($this->after + $this->position_input2 ) . "A";
-        echo "\033[" . ceil($this->before) . "C";
-        echo "\033[37;44m";
-*/
+          echo "\033[" . ($this->after + $this->position_input2 ) . "A";
+          echo "\033[" . ceil($this->before) . "C";
+          echo "\033[37;44m";
+         */
 //$value = trim(fgets(STDIN));
         //system("stty -icanon");
-        
-        
         //$c = fread(STDIN, 1);
-        
-        
+
+
+        echo "\033[{$this->cursor_position_input[0]['y']};{$this->cursor_position_input[0]['x']}H";
+
         while (true) {
 
-            echo "\033[s";
+            // echo "\033[s";
             $c = fread(STDIN, 1);
 
-            echo "\033[u";
+            //echo "\033[u";
+            
             echo "      ";
             echo "\033[6D";
 
@@ -73,30 +76,31 @@ class Window {
             }
 
             if (preg_match('/^[a-z0-9\.\$]$/i', $c) && strlen($c) === 1) {
-                echo $c;
+                //echo $c;
             } else {
                 
             }
         }
 
-/*
-        echo "\033[0m";
-        echo "\033[H";
+        /*
+          echo "\033[0m";
+          echo "\033[H";
 
-        for ($i = 0; $i < $this->max_height; $i++) {
-            echo Color::getColoredString(str_repeat(" ", $this->max_width), $this->color_shadow, $this->color_shadow);
-            echo PHP_EOL;
-        }
+          for ($i = 0; $i < $this->max_height; $i++) {
+          echo Color::getColoredString(str_repeat(" ", $this->max_width), $this->color_shadow, $this->color_shadow);
+          echo PHP_EOL;
+          }
 
 
-        echo "\033[H";
- * *
- */
+          echo "\033[H";
+         * *
+         */
 
         return $value;
     }
 
-    public function windows($title, $msg) {
+    public function windows($title, $msg)
+    {
         if (strpos($title, "\n")) {
             throw new Exception("GLI-020 : The title must be on one line", 20);
         }
@@ -130,12 +134,20 @@ class Window {
             $this->borderLeft();
 
             if ($line === "[[INPUT]]") {
-                $this->windows .= Color::getColoredString(str_pad(" ", $this->msg_width-6 ), $this->color_foreground_msg, $this->color_cursor);
-                $this->position_input = $i;
+
+                $cursor = array();
+
+                $cursor['x'] = ($this->max_width - $this->msg_width) / 2 + 4;
+                $cursor['y'] = ceil(($this->max_height - $this->msg_height) / 2) + $i;
+
+                $this->cursor_position_input[] = $cursor;
+
+                $this->windows .= Color::getColoredString(str_pad(" ", $this->msg_width - 6), $this->color_foreground_msg, $this->color_cursor);
+                //$this->position_input = $i;
             } else {
-                
+
                 $this->windows .= Color::getColoredString(String::str_pad_unicode($line, Color::strip($this->msg_width) - 6), $this->color_foreground_msg, $this->color_window);
-                
+
                 //$this->windows .= Color::getColoredString(str_pad($line, mb_strlen(Color::strip($this->msg_width) - 6)-strlen($this->msg_width) ), $this->color_foreground_msg, $this->color_window);
             }
 
@@ -147,10 +159,14 @@ class Window {
 
         $this->borderBottom();
 
+
+        debug($this);
+
         return $this->encapsulate();
     }
 
-    private function borderTop($title) {
+    private function borderTop($title)
+    {
         $this->windows = Color::getColoredString(" ", $this->color_shadow, $this->color_background);
         $this->windows .= Color::getColoredString("┌", $this->color_shadow, $this->color_window);
         $this->windows .= Color::getColoredString(str_repeat("─", ($this->msg_width - $this->title_length) / 2 - 4), $this->color_shadow, $this->color_window);
@@ -163,18 +179,21 @@ class Window {
         $this->windows .= PHP_EOL;
     }
 
-    private function borderLeft() {
+    private function borderLeft()
+    {
         $this->windows .= Color::getColoredString(" ", $this->color_shadow, $this->color_background);
         $this->windows .= Color::getColoredString("│ ", $this->color_shadow, $this->color_window);
     }
 
-    private function borderRight() {
+    private function borderRight()
+    {
         $this->windows .= Color::getColoredString(" │", $this->color_shadow, $this->color_window);
         $this->windows .= Color::getColoredString(" ", $this->color_shadow, $this->color_shadow);
         $this->windows .= PHP_EOL;
     }
 
-    private function borderBottom() {
+    private function borderBottom()
+    {
         $this->windows .= Color::getColoredString(" ", $this->color_shadow, $this->color_background);
         $this->windows .= Color::getColoredString("└", $this->color_shadow, $this->color_window);
         $this->windows .= Color::getColoredString(str_repeat("─", ($this->msg_width - 4)), $this->color_shadow, $this->color_window);
@@ -186,65 +205,63 @@ class Window {
         $this->windows .= Color::getColoredString(str_repeat("─", ($this->msg_width - 2)), $this->color_shadow, $this->color_shadow);
     }
 
-    private function encapsulate() {
+    private function encapsulate()
+    {
         $out = "";
         $top = 1;
-        
-        
+
+
         debug($this);
-        
-        
+
+
         $lines = explode("\n", $this->windows);
         $before_after = ($this->max_height - count($lines) ) / 2;
         $this->after = $before_after;
 
         for ($i = 0; $i < floor($before_after); $i++) {
-            $out .= Color::getColoredString(str_pad($this->cursor_position_vertical .":".$top, 5), "grey", $this->color_background);
-            $out .= Color::getColoredString(str_repeat(" ", $this->max_width-5), $this->color_shadow, $this->color_background);
+            $out .= Color::getColoredString(str_pad($this->cursor_position_vertical . ":" . $top, 5), "grey", $this->color_background);
+            $out .= Color::getColoredString(str_repeat(" ", $this->max_width - 5), $this->color_shadow, $this->color_background);
             $out .= $this->eol();
-            
+
             $top++;
         }
-        
+
         $before = ($this->max_width - $this->msg_width) / 2;
         $this->before = $before;
 
         foreach ($lines as $line) {
-            
-            $out .= Color::getColoredString(str_pad($this->cursor_position_vertical .":".$top, 5), "grey", $this->color_background);
-            $out .= Color::getColoredString(str_repeat(" ", $before-5), $this->color_shadow, $this->color_background);
+
+            $out .= Color::getColoredString(str_pad($this->cursor_position_vertical . ":" . $top, 5), "grey", $this->color_background);
+            $out .= Color::getColoredString(str_repeat(" ", $before - 5), $this->color_shadow, $this->color_background);
             $out .= $line;
             $out .= Color::getColoredString(str_repeat(" ", ceil($before)), $this->color_shadow, $this->color_background);
             $out .= $this->eol();
             $top++;
         }
-        
+
 
         for ($i = $this->cursor_position_vertical; $i <= $this->max_height; $i++) {
-            
 
-            echo $i.":";
-            $out .= Color::getColoredString(str_pad($this->cursor_position_vertical .":".$top.":".$i. ":".$this->max_height, 11), "grey", $this->color_background);
-            $out .= Color::getColoredString(str_repeat(" ", $this->max_width-11), $this->color_shadow, $this->color_background);
-            
-            if ($i == $this->max_height)
-            {
-                echo "$i WAZAAAAAAA";
-                echo PHP_EOL;
-                
+
+            //echo $i.":";
+            $out .= Color::getColoredString(str_pad($this->cursor_position_vertical . ":" . $top . ":" . $i . ":" . $this->max_height, 11), "grey", $this->color_background);
+            $out .= Color::getColoredString(str_repeat(" ", $this->max_width - 11), $this->color_shadow, $this->color_background);
+
+            if ($i != $this->max_height) {
+                $out .= $this->eol();
             }
-            $out .= $this->eol();
-            
+
+
             $top++;
         }
-        
+
         return $out;
-        
+
         //echo $this->cursor_position_vertical;
-        
     }
 
-    private function eol() {
+    private function eol()
+    {
         $this->cursor_position_vertical++;
         return PHP_EOL;
     }
