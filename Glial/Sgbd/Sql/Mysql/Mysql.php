@@ -24,11 +24,11 @@ class Mysql extends Sql
 
     public function sql_connect($host, $login, $password, $dbname, $port=3306)
     {
-        $this->link = mysqli_connect($host, $login, $password, $dbname, $port=3306);
+        $this->link = mysqli_connect($host, $login, $password, $dbname, $port);
         
         if (! $this->link)
         {
-            throw new \Exception('GLI-012 : Impossible to connect to : '.$host);
+            throw new \Exception('GLI-012 : Impossible to connect to : '.$host.":".$port);
         }
 
         mysqli_set_charset($this->link, 'utf8');
