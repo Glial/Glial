@@ -193,7 +193,7 @@ trait Install {
 
 
         $msg .= " ";
-        $ret = $msg . str_repeat(".", 76 - strlen(Color::strip($msg))) . " [ " . $status . " ]" . PHP_EOL;
+        $ret = $msg . str_repeat(".", 120 - strlen(Color::strip($msg))) . " [ " . $status . " ]" . PHP_EOL;
 
 
         if (!empty($err)) {
