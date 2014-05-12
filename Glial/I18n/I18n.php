@@ -690,7 +690,7 @@ namespace Glial\I18n {
 //chargement du fichier de cache en fonction de la BDD
                 $sql = "SELECT * FROM `translation_" . strtolower(self::$_language) . "` WHERE file_found ='" . self::$file . "'";
                 
-                debug(self::$_SQL);
+             
                 
                 $res23 = self::$_SQL->sql('default')->sql_query($sql);
                 while ($ob = self::$_SQL->sql('default')->sql_fetch_object($res23)) {
