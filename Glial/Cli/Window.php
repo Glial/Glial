@@ -60,27 +60,18 @@ class Window
 
         echo "\033[{$this->cursor_position_input[0]['y']};{$this->cursor_position_input[0]['x']}H";
 
-        while (true) {
+        $read = new \Hoa\Console\Readline\Readline();
 
-            // echo "\033[s";
-            $c = fread(STDIN, 1);
-
-            //echo "\033[u";
-            
-            echo "      ";
-            echo "\033[6D";
+        $read->setAutocompleter(new \Hoa\Console\Readline\Autocompleter\Word(
+                get_defined_functions()['internal']
+        ));
 
 
-            if ($c === "\n") {
-                break;
-            }
 
-            if (preg_match('/^[a-z0-9\.\$]$/i', $c) && strlen($c) === 1) {
-                //echo $c;
-            } else {
-                
-            }
-        }
+        do {
+            $line = $read->readLine('> ');
+            echo $line . PHP_EOL;
+        } while (false !== $line && 'quit' != $line);
 
         /*
           echo "\033[0m";
