@@ -45,42 +45,22 @@ class Window
 
         echo $this->windows($title, $msg);
 
-
-
-
-        /*
-          echo "\033[" . ($this->after + $this->position_input2 ) . "A";
-          echo "\033[" . ceil($this->before) . "C";
-          echo "\033[37;44m";
-         */
-//$value = trim(fgets(STDIN));
-        //system("stty -icanon");
-        //$c = fread(STDIN, 1);
-
-
         echo "\033[{$this->cursor_position_input[0]['y']};{$this->cursor_position_input[0]['x']}H";
 
-        while (true) {
-
-            // echo "\033[s";
-            $c = fread(STDIN, 1);
-
-            //echo "\033[u";
-            
-            echo "      ";
-            echo "\033[6D";
 
 
-            if ($c === "\n") {
-                break;
-            }
+        $read = new \Hoa\Console\Readline\Readline();
 
-            if (preg_match('/^[a-z0-9\.\$]$/i', $c) && strlen($c) === 1) {
-                //echo $c;
-            } else {
-                
-            }
-        }
+        $read->setAutocompleter(new \Hoa\Console\Readline\Autocompleter\Word(
+                get_defined_functions()['internal']
+        ));
+
+
+        $color = Color::setColor("grey","red");
+        
+       // $line = $read->readLine($color);
+
+        $line = fgets(STDIN);
 
         /*
           echo "\033[0m";

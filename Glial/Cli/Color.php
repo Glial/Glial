@@ -192,5 +192,26 @@ class Color
             throw new \DomainException("GLI-016 : Color code not found : " . $color);
         }
     }
+    
+    static public function setColor($color = null, $background = null, $style = null)
+    {
+        ($style) ? self::testColor($color, self::$color) : '';
+        ($style) ? self::testColor($background, self::$background) : '';
+        ($style) ? self::testColor($style, self::$style) : '';
+
+        $colored_string = "";
+
+        $ansi = array();
+
+        $ansi[] = ($style) ? self::$style[$style] : '0';
+        $ansi[] = ($color) ? self::$color[$color] : '37';
+        $ansi[] = ($background) ? self::$background[$background] : '40';
+
+        $str = implode(';', $ansi);
+
+        $color = "\033[" . $str . "m";
+        
+        return $color;
+    }
 
 }
