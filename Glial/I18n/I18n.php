@@ -644,22 +644,10 @@ namespace Glial\I18n {
 //$body = iconv(self::charset[$to], "UTF-8", $body);
 
 
-debug($url);
-debug($body);
-
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
-            
-   	debug($content);         
-            
             $content = str_replace('<br>', '', $content);
-
-	
-	debug($content);
-
             $out = Grabber::getTagContents($content, '<span title="', true);
 
-
-	debug($out);
 //verify that we exactly the same number of element
             $nb = explode("\n", trim($string));
 
