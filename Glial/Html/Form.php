@@ -6,7 +6,7 @@ namespace Glial\Html;
 class Form
 {
 
-  static public function input($table, $field, $options, $indice)
+  static public function input($table, $field, $options=array(), $indice=-1)
   {
   
   
