@@ -47,9 +47,12 @@ class Window
 
         echo "\033[{$this->cursor_position_input[0]['y']};{$this->cursor_position_input[0]['x']}H";
 
-
-
         $read = new \Hoa\Console\Readline\Readline();
+
+        $read->setAutocompleter(new \Hoa\Console\Readline\Autocompleter\Word(
+                get_defined_functions()['internal']
+        ));
+
 
         $read->setAutocompleter(new \Hoa\Console\Readline\Autocompleter\Word(
                 get_defined_functions()['internal']
@@ -61,8 +64,6 @@ class Window
        // $line = $read->readLine($color);
 
         $line = fgets(STDIN);
-
-        /*
           echo "\033[0m";
           echo "\033[H";
 
