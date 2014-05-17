@@ -627,7 +627,7 @@ namespace Glial\I18n {
 //debug("We calling google ...");
 //$url ="http://translate.google.fr/translate_t?text=Traduction%20automatique%20de%20pages%20web%0Aceci%20est%20un%20test&hl=fr&langpair=fr|en&tbb=1&ie=utf-8";
             $url = 'http://translate.google.fr/translate_t?text=' . urlencode($string) . '&hl=fr&langpair=' . $from . '|' . self::$_language . '&tbb=1&ie=utf-8';
-            $url = 'http://translate.google.fr/?text=' . urlencode($string) . '&amp;hl=' . self::$_language . '&amp;langpair=' . $from . '%7Cfr&amp;tbb=1&amp;ie=utf-8';
+            $url = 'https://translate.google.fr/?text=' . urlencode($string) . '&amp;hl=' . self::$_language . '&amp;langpair=' . $from . '%7Cfr&amp;tbb=1&amp;ie=utf-8';
 
             $UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
             $UA = 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36';
