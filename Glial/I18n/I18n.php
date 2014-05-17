@@ -645,6 +645,7 @@ namespace Glial\I18n {
 
 
 debug($url);
+debug($body);
 
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
             
