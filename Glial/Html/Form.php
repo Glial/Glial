@@ -45,7 +45,7 @@ class Form
          }
     
     
-    return "<input id=\"" . $id . "\"  type=\"text\" name=\"" . $name ."\" ".$extra." />" . $error;
+    return "<input id=\"" . $id . "\" name=\"" . $name ."\" ".$extra." />" . $error;
   
   
   }
