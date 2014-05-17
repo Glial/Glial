@@ -656,7 +656,7 @@ namespace Glial\I18n {
 
 //we check that we have same number of input and output
             if (count($nb) != count($out)) {
-                throw new \Exception("GLI-009 : Problem with machine translation");
+                throw new \Exception("GLI-009 : Problem with machine translation".trim($string).PHP_EOL.var_dump($out));
                 return false;
             }
 
