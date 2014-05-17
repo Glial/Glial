@@ -636,13 +636,15 @@ namespace Glial\I18n {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_USERAGENT, $UA);
-            curl_setopt($ch, CURLOPT_REFERER, "http://www.esysteme.com/translate.php");
+            curl_setopt($ch, CURLOPT_REFERER, "http://www.starcraft.com/");
             $body = curl_exec($ch);
             curl_close($ch);
 
 // if we send no user_agent google send sentence translated in default charset we asked for the language
 //$body = iconv(self::charset[$to], "UTF-8", $body);
 
+
+debug($url);
 
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
             
