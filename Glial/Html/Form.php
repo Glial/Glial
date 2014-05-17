@@ -8,7 +8,7 @@ class Form
 
   static public function input($table, $field, $options=array(), $indice=-1)
   {
-  
+    $error = "";
   
     if ($indice != -1) {
         if (!empty($_GET[$table][$indice][$field])) {
