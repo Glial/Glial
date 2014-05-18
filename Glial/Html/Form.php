@@ -52,7 +52,7 @@ class Form
 
 
 
-function select($table, $field, $data, $default_id = "", $classo = "", $ajax = 0, $indice = -1)
+function static public select($table, $field, $data, $default_id = "", $classo = "", $ajax = 0, $indice = -1)
 {
     if (!empty($_SESSION['ERROR'][$table][$field])) {
         $error = " <span class=\"error\">" . $_SESSION['ERROR'][$table][$field] . "</span>";
