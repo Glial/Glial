@@ -47,6 +47,7 @@ class Sgbd
      */
     public function sql($name)
     {   
+
         if (! preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name))
         {
             throw new \Exception("GLI-25 : The name of identifier is invalid : '" . $name . "' (only letter / number and underscore are allowed) !");
