@@ -266,14 +266,12 @@ abstract class Sql
                 $sql = "INSERT IGNORE INTO `" . $table . "` (`" . implode("`,`", $keys) . "`) VALUES ('" . implode("','", $data[$table]) . "') --";
                 $this->sql_query($sql, $table, "INSERT");
             }
+            
 
+            //case where ignore insert 0 line and we need the id inserted with these infos, focus on index unique
             $this->last_id = $this->query[$this->number_of_query - 1]['last_id'];
-
             if ($this->last_id == 0) {
-
                 $sql = "SELECT id FROM `" . $table . "` WHERE 1=1 ";
-
-
 
                 if (!empty($this->_keys[$table])) {
                     foreach ($data[$table] as $key => $value) {
@@ -284,8 +282,6 @@ abstract class Sql
                         }
                     }
                 }
-                
-                
                 $res = $this->sql_query($sql, $table, "SELECT");
                 $tab = $this->sql_to_array($res);
 
@@ -294,6 +290,8 @@ abstract class Sql
                 } else {
                     $this->error[] = $sql;
                     $this->error[] = "impossible to select the right row plz have a look on date('c')";
+                    
+                    throw new \Exception('GLI-031 : Impossible to fine last id inserted in case of insert ignore');
                 }
             }
 
@@ -400,7 +398,7 @@ abstract class Sql
         $filename = TMP . "keys/" . $this->_name . "_index_unique.txt";
 
         if (file_exists($filename)) {
-            $this->_keys = file_get_contents($filename);
+            $this->_keys = json_decode(file_get_contents($filename),true);
         } else {
             $listTable = $this->getListTable();
 
@@ -411,11 +409,9 @@ abstract class Sql
 
             $this->_keys = $list_index;
             $json = json_encode($list_index);
-            if (!file_put_contents(TMP . "keys/default_index_unique.txt", $json)) {
+            if (!file_put_contents(TMP . "keys/" . $this->_name . "_index_unique.txt", $json)) {
                 trigger_error("make sure is writable : " . $filename, E_USER_NOTICE);
             }
-
-            //
         }
     }
 
@@ -425,8 +421,8 @@ abstract class Sql
             try {
                 $this->_table[$table] = unserialize(file_get_contents(TMP . "database" . DS . $table . ".table.txt"));
                 return $this->_table[$table];
-            } catch (Exception $e) {
-                throw new Exception("GLI-010 : This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
+            } catch (\Exception $e) {
+                throw new \Exception("GLI-010 : This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
             }
         }
     }

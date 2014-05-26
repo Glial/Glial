@@ -25,6 +25,7 @@ class Mysql extends Sql
     public function sql_connect($host, $login, $password, $dbname, $port=3306)
     {
         $this->link = mysqli_connect($host, $login, $password, $dbname, $port);
+        $this->db = $dbname;
         
         if (! $this->link)
         {
@@ -185,9 +186,13 @@ class Mysql extends Sql
     public function getIndexUnique($table_name)
     {
         $sql = "show keys from `" . $table_name . "` in " . $this->db;
-
         $res = $this->_query($sql);
 
+        if(! $res)
+        {
+            throw new \Exception("GLI-030 : problem with this query : '".$sql."'");
+        }
+        
         $index = array();
         while ($ob = $this->sql_fetch_object($res)) {
 

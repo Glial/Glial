@@ -72,21 +72,24 @@ trait Administration {
         $this->layout_name = false;
         $this->view = false;
 
-        $listTable = $this->di['db']->sql('default')->getListTable();
+        foreach ($this->di['db']->connectAll() as $key => $db) {
+            $listTable = $db->getListTable();
 
-        $list_index = array();
-        foreach ($listTable['table'] as $table_name) {
-            $list_index[$table_name] = $this->di['db']->sql('default')->getIndexUnique($table_name);
+            $list_index = array();
+            foreach ($listTable['table'] as $table_name) {
+                $list_index[$table_name] = $db->getIndexUnique($table_name);
+            }
+
+            $json = json_encode($list_index);
+
+            if (is_writable(TMP . "keys/")) {
+                file_put_contents(TMP . "keys/".$key."_index_unique.txt", $json);
+            } else {
+                throw new \Exception("GLI-016 : This directory should be writable : " . TMP . "keys/", 16);
+            }
         }
 
-        $json = json_encode($list_index);
 
-
-        if (is_writable(TMP . "keys/")) {
-            file_put_contents(TMP . "keys/default_index_unique.txt", $json);
-        } else {
-            throw new \Exception("GLI-016 : This directory should be writable : " . TMP . "keys/", 16);
-        }
 
         //exit(95);
     }
@@ -200,7 +203,7 @@ trait Administration {
     }
 
     public function test() {
-        
+
         $this->view = false;
         echo "trait";
     }
