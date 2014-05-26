@@ -71,7 +71,7 @@ class MasterSlave {
      */
     public function isSlave() {
 
-        if (version_compare($this->getVersion(), 10, '>')) {
+        if (version_compare($this->instance->getVersion(), 10, '>')) {
             $sql = "SHOW all SLAVES STATUS";
         } else {
             $sql = "SHOW SLAVE STATUS";
@@ -97,34 +97,6 @@ class MasterSlave {
 
     public function getSlaveStatus() {
         return isSlave($this->instance);
-    }
-
-    /**
-     * This method return the number of mysql/mariadb/percona version
-     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
-     * @license GNU/GPL
-     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
-     * @param string name of connection
-     * @return string
-     * @description if the connection exist return the instance else it create it 
-     * @access public
-     * @package Sgbd/
-     * @since 3.0a First time this was introduced.
-     * @version 3.0.1a
-     */
-    
-    public function getVersion() {
-        $sql = "SHOW GLOBAL VARIABLES LIKE 'version'";
-        $res = $this->instance->sql_query($sql);
-        $data = $this->instance->sql_fetch_array($res, MYSQLI_ASSOC);
-
-        if (strpos($data['Value'], "-")) {
-            $version = strstr($data['Value'], '-', true);
-        } else {
-            $version = $data['Value'];
-        }
-
-        return $version;
     }
 
 }
