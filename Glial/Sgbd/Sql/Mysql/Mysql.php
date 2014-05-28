@@ -252,4 +252,28 @@ class Mysql extends Sql {
         return $this->server_type;
     }
 
+    public function sql_fetch_yield($sql, $resulttype = MYSQLI_ASSOC) {
+        $res = $this->sql_query($sql);
+
+        while ($ob = $this->sql_fetch_array($res, $resulttype)) {
+            yield $ob;
+        }
+    }
+
+    public function sql_fetch_all($sql, $resulttype = MYSQLI_ASSOC) {
+        $res = $this->sql_query($sql);
+
+        $data = array();
+
+        while ($ob = $this->sql_fetch_array($res, $resulttype)) {
+            $data[] = $ob;
+        }
+
+        return $data;
+    }
+
+    public function sql_multi_query($sql) {
+        return mysqli_multi_query($this->link, $sql);
+    }
+
 }

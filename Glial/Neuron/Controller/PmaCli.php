@@ -209,9 +209,9 @@ trait PmaCli {
 
                 if ($server_on) {
 
- 
 
-                    $data['mysql_replication_stats']['version'] = $dblink->getServerType() ." : ".$dblink->getVersion();
+
+                    $data['mysql_replication_stats']['version'] = $dblink->getServerType() . " : " . $dblink->getVersion();
                     $data['mysql_replication_stats']['date'] = date("Y-m-d H:i:s");
                     $data['mysql_replication_stats']['is_master'] = ($master) ? 1 : 0;
                     $data['mysql_replication_stats']['is_slave'] = ($slave) ? 1 : 0;
@@ -225,7 +225,7 @@ trait PmaCli {
 
                     $data['mysql_replication_stats']['databases'] = implode(',', $dblist);
 
-                
+
 
                     if ($master) {
                         $data['mysql_replication_stats']['file'] = $master['File'];
@@ -330,6 +330,40 @@ trait PmaCli {
 
         $this->replicationUpdate();
         $this->replicationDrawGraph(ROOT . '/tmp/img/replication.svg');
+        $this->backupDeleteOld();
+    }
+
+    public function backupDeleteOld() {
+        $sql = "SELECT * FROM `mysql_dump` WHERE  day(now()) - day(`date_end`) > 10 and is_available = 1 order by date_end;";
+
+        $this->layout_name = false;
+        $this->view = false;
+
+        $db = $this->di['db']->sql("default");
+        $sqls = '';
+
+        foreach ($db->sql_fetch_yield($sql) as $backup) {
+
+            $file = $backup['file_name'];
+            if ($backup['is_gziped'] === '1') {
+                $file = $file . ".gz";
+            }
+
+
+            try {
+                if (!unlink($file)) {
+                    throw new \Exception('GLI-040 Impossible to delete file : "' . $file . '"');
+                }
+            } catch (\Exception $ex) {
+                echo $ex->getMessage().PHP_EOL;
+            }
+
+            $sqls = "UPDATE `mysql_dump` SET is_available =0 WHERE id=" . $backup['id'] . ";";
+            $db->sql_query($sqls);
+        }
+        
+        //shell_exec('find /data/backup* -mtime +15 -exec rm {} \;');
+
     }
 
 }
