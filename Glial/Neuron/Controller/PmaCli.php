@@ -5,6 +5,7 @@ namespace Glial\Neuron\Controller;
 use Glial\Cli\Table;
 use Glial\Cli\Window;
 use \Glial\Sgbd\Sql\Mysql\MasterSlave;
+use \Glial\Security\Crypt\Crypt;
 
 trait PmaCli {
 
@@ -66,9 +67,11 @@ trait PmaCli {
         $type = $path_parts['extension'];
         $file = $path_parts['filename'];
 
-        if (file_exists($file_name)) {
-            unlink($file_name);
-        }
+
+        /*
+          if (file_exists($file_name)) {
+          unlink($file_name);
+          } */
 
         if ($fp = fopen($path . '/' . $file . '.dot', "w")) {
 
@@ -109,21 +112,51 @@ trait PmaCli {
                 $ip [$ob->ip] = $ob->id;
             }
 
-            $sql = "SELECT a.`id`,a.ip,c.`master_host`,c.thread_io,c.thread_sql,c.time_behind,c.id as id_thread FROM `mysql_server` a
+            $sql = "SELECT a.`id`,a.ip,c.`master_host`,c.thread_io,c.thread_sql,c.time_behind,c.id as id_thread, c.last_sql_error, c.last_io_error,c.last_sql_errno, c.last_io_errno
+                FROM `mysql_server` a
                     INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server
                     INNER JOIN mysql_replication_thread c ON b.id = c.id_mysql_replication_stats";
             $res = $db->sql_query($sql);
 
             while ($ob = $db->sql_fetch_object($res)) {
 
+
+                $label = "";
                 if ($ob->thread_io && $ob->thread_sql && $ob->time_behind === "0") {
                     $color = "green";
-                } elseif ($ob->thread_io === "0" && $ob->thread_sql === "0") {
-                    $color = "blue";
-                } else {
+                } elseif ($ob->thread_io === "1" && $ob->thread_sql === "1" && $ob->time_behind !== "0") {
+
+                    $delay = $this->secToTime($ob->time_behind);
+
+                    $label = "Delay : " . $delay . " sec";
+                    $color = "orange";
+                } elseif (($ob->last_io_error !== "" || $ob->last_sql_error !== "") && ($ob->thread_io === "1" || $ob->thread_sql === "1")) {
+
+                    $error = '';
+                    $error .= empty($ob->last_sql_errno) ? '' : $ob->last_sql_errno . " ";
+                    $error .= empty($ob->last_io_errno) ? '' : $ob->last_io_errno;
+
+                    $label = "Error : " . $error;
+
+                    //$label = "Error : " . $ob->last_sql_errno . $ob->last_io_errno;
                     $color = "#DA6200";
+                } elseif ($ob->thread_io === "0" && $ob->thread_sql === "0" && ($ob->last_io_error !== "" && $ob->last_sql_error !== "")) {
+                    $color = "black";
+
+                    if ($ob->last_sql_errno !== $ob->last_io_errno) {
+                        $error = '';
+                        $error .= empty($ob->last_sql_errno) ? '' : $ob->last_sql_errno . " ";
+                        $error .= empty($ob->last_io_errno) ? '' : $ob->last_io_errno;
+
+                        $label = "Error : " . $error;
+                    } else {
+                        $label = "Error : " . $ob->last_sql_errno;
+                    }
+                } else {
+                    $label = "Not started";
+                    $color = "blue";
                 }
-                fwrite($fp, "" . $ip[$ob->master_host] . " -> " . $ob->id . '[ arrowsize="2" penwidth="2" color ="' . $color . '" label = ""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
+                fwrite($fp, "" . $ip[$ob->master_host] . " -> " . $ob->id . '[ arrowsize="2" penwidth="2" fontsize=8 color ="' . $color . '" label ="' . $label . '"  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
             }
 
             fwrite($fp, "}");
@@ -168,7 +201,6 @@ trait PmaCli {
 
         $sql = "DELETE FROM mysql_replication_stats";
         $default->sql_query($sql);
-
 
         $sql = "ALTER TABLE mysql_replication_stats AUTO_INCREMENT = 1";
         $default->sql_query($sql);
@@ -260,6 +292,13 @@ trait PmaCli {
                         $data['mysql_replication_thread']['time_behind'] = $thread['Seconds_Behind_Master'];
                         $data['mysql_replication_thread']['master_host'] = $thread['Master_Host'];
 
+                        //suuport for mysql 5.0
+                        $data['mysql_replication_thread']['last_sql_error'] = empty($thread['Last_SQL_Error']) ? $thread['Last_Error'] : $thread['Last_SQL_Error'];
+                        $data['mysql_replication_thread']['last_io_error'] = empty($thread['Last_IO_Error']) ? $thread['Last_Error'] : $thread['Last_IO_Error'];
+
+                        $data['mysql_replication_thread']['last_sql_errno'] = empty($thread['Last_SQL_Errno']) ? $thread['Last_Errno'] : $thread['Last_SQL_Errno'];
+                        $data['mysql_replication_thread']['last_io_errno'] = empty($thread['Last_IO_Errno']) ? $thread['Last_Errno'] : $thread['Last_IO_Errno'];
+
                         $id_mysql_replication_thread = $default->sql_save($data);
 
                         if (!$id_mysql_replication_thread) {
@@ -328,7 +367,15 @@ trait PmaCli {
     public function daemon() {
         $this->view = false;
 
+
+        $previous_data = $this->sql_to_array();
+
         $this->replicationUpdate();
+
+        $actual_data = $this->sql_to_array();
+        $this->monitoring($previous_data, $actual_data);
+
+
         $this->replicationDrawGraph(ROOT . '/tmp/img/replication.svg');
         $this->backupDeleteOld();
     }
@@ -355,15 +402,177 @@ trait PmaCli {
                     throw new \Exception('GLI-040 Impossible to delete file : "' . $file . '"');
                 }
             } catch (\Exception $ex) {
-                echo $ex->getMessage().PHP_EOL;
+                echo $ex->getMessage() . PHP_EOL;
             }
 
             $sqls = "UPDATE `mysql_dump` SET is_available =0 WHERE id=" . $backup['id'] . ";";
             $db->sql_query($sqls);
         }
-        
-        //shell_exec('find /data/backup* -mtime +15 -exec rm {} \;');
 
+        //shell_exec('find /data/backup* -mtime +15 -exec rm {} \;');
+    }
+
+    public function updateServerList() {
+
+        $this->view = false;
+
+        $db = $this->di['db']->sql('default');
+
+        Crypt::$key = 'photobox';
+
+        foreach ($this->di['db']->getAll() as $server) {
+
+            $info_server = $this->di['db']->getParam($server);
+
+            $data['mysql_server']['name'] = $server;
+            $data['mysql_server']['ip'] = $info_server['hostname'];
+            $data['mysql_server']['login'] = $info_server['user'];
+            $data['mysql_server']['passwd'] = Crypt::encrypt($info_server['password']);
+            $data['mysql_server']['port'] = empty($info_server['port']) ? 3306 : $info_server['port'];
+
+            if (!$db->sql_save($data)) {
+                debug($data);
+                debug($db->sql_error());
+                exit;
+            } else {
+                echo $data['mysql_server']['name'] . PHP_EOL;
+            }
+        }
+    }
+
+    private function compare($tab_from = array(), $tab_to) {
+        $tab_update = array_intersect_key($tab_from, $tab_to);
+        foreach ($tab_update as $key => $value) {
+            if ($tab_from[$key] != $tab_to[$key]) {
+                $update[$key] = $tab_to[$key];
+                $update2[$key] = $tab_from[$key];
+            }
+        }
+        foreach ($tab_to as $key => $value) {
+            if (!isset($tab_update[$key])) {
+                $add[$key] = $value;
+            }
+        }
+        foreach ($tab_from as $key => $value) {
+            if (!isset($tab_update[$key])) {
+                $del[$key] = $value;
+            }
+        }
+
+        $finale = array();
+        empty($add) ? "" : $finale['add'] = $add;
+        empty($delete) ? "" : $finale['delete'] = $del;
+        empty($update) ? "" : $finale['update'] = $update;
+        empty($update2) ? "" : $finale2['update'] = $update2;
+
+        $param['up'] = $finale;
+        empty($finale2) ? $param['down'] = array() : $param['down'] = $finale2;
+
+        return ($param);
+    }
+
+    private function sql_to_array() {
+
+
+        $sql = "SELECT a.`id`,a.ip,a.port,c.`master_host`,c.thread_io,c.thread_sql,c.time_behind,c.id as id_thread, c.last_sql_error,
+            c.last_io_error,c.last_sql_errno, c.last_io_errno
+                FROM `mysql_server` a
+                    INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server
+                    INNER JOIN mysql_replication_thread c ON b.id = c.id_mysql_replication_stats";
+
+        $db = $this->di['db']->sql('default');
+        $arr = $db->sql_fetch_all($sql);
+
+        $data = array();
+        foreach ($arr as $tab) {
+
+            $data[$tab['ip'] . "-" . $tab['master_host']] = $tab;
+        }
+
+        return $data;
+    }
+
+    private function monitoring($previous_data, $actual_data) {
+        $db = $this->di['db']->sql('default');
+
+        foreach ($previous_data as $key => $tab) {
+            $cmp = $this->compare($previous_data[$key], $actual_data[$key]);
+
+            if (count($cmp['up']) !== 0 && count($cmp['down']) !== 0) {
+
+                debug($cmp);
+                
+                if ($behind = $this->checkTimeBehind($cmp, $previous_data[$key], $actual_data[$key])) {
+                    
+                    
+                    
+                    
+                    
+                    
+                    $behind['message'] = sprintf ($behind['message'],$tab['master_host'],$tab['ip']);
+                    
+                    
+                    debug($behind);
+                    
+                    $data = array();
+                    $data['mysql_event']['id_mysql_server'] = $tab['id'];
+                    $data['mysql_event']['date'] = date("Y-m-d H:i:s");
+                    $data['mysql_event']['id_mysql_status'] = $behind['id_mysql_status'];
+                    $data['mysql_event']['message'] = $behind['message'];
+                    $data['mysql_event']['serialized'] = serialize($cmp);
+                    
+
+                    if (!$db->sql_save($data)) {
+                        debug($data);
+                        debug($db->sql_error());
+                    }
+                }
+            }
+        }
+    }
+
+    private function checkTimeBehind($cmp, $previous, $actual) {
+        if (empty($cmp['up']['update']['time_behind'])) {
+            return false;
+        }
+
+        if ($cmp['up']['update']['time_behind'] <= self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] <= self::TIME_BEHING_MAX) {
+            return false;
+        }
+
+        $delay_before = $this->secToTime($cmp['up']['update']['time_behind']);
+        $delay_after = $this->secToTime($cmp['down']['update']['time_behind']);
+
+        if ($cmp['up']['update']['time_behind'] > self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] <= self::TIME_BEHING_MAX) {
+            $data['id_mysql_status'] = 1;
+            $data['message'] = "The replication between %s and %s is now up to date";
+        } elseif ($cmp['up']['update']['time_behind'] <= self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] > self::TIME_BEHING_MAX) {
+            $data['id_mysql_status'] = 5;
+            $data['message'] = "The replication between %s:%s and %s:%s is out to date (" . $delay_after . " sec)";
+        } else {
+            if ($cmp['up']['update']['time_behind'] < $cmp['down']['update']['time_behind']) {
+
+                $data['id_mysql_status'] = 4;
+                $data['message'] = "The replication between %s and %s is still increasing (" . $delay_before . " to " . $delay_after . ")";
+            } else {
+                //case where decreasing
+                $data['id_mysql_status'] = 3;
+                $data['message'] = "The replication between %s and %s is still decreasing (" . $delay_before . " to " . $delay_after . ")";
+            }
+        }
+
+        return $data;
+    }
+
+    private function secToTime($time_behind) {
+        if ($time_behind > 3600) {
+            $format = 'G:i:s';
+        } elseif ($time_behind > 60) {
+            $format = 'i:s';
+        } else {
+            $format = 's';
+        }
+        return date($format, $time_behind);
     }
 
 }
