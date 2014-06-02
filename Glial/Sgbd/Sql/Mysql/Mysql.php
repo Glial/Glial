@@ -22,13 +22,12 @@ class Mysql extends Sql
      * @alias make the same as mysqli::select_db and init charset connection in utf-8
      */
 
-    public function sql_connect($host, $login, $password, $dbname, $port=3306)
+    public function sql_connect($host, $login, $password, $dbname, $port = 3306)
     {
         $this->link = mysqli_connect($host, $login, $password, $dbname, $port);
-        
-        if (! $this->link)
-        {
-            throw new \Exception('GLI-012 : Impossible to connect to : '.$host.":".$port);
+
+        if (!$this->link) {
+            throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . ":" . $port);
         }
 
         mysqli_set_charset($this->link, 'utf8');
@@ -199,6 +198,33 @@ class Mysql extends Sql
             }
         }
         return $index;
+    }
+
+    public function sql_fetch_yield($sql, $resulttype = MYSQLI_ASSOC)
+    {
+        $res = $this->sql_query($sql);
+
+        while ($ob = $this->sql_fetch_array($res, $resulttype)) {
+            yield $ob;
+        }
+    }
+
+    public function sql_fetch_all($sql, $resulttype = MYSQLI_ASSOC)
+    {
+        $res = $this->sql_query($sql);
+
+        $data = array();
+
+        while ($ob = $this->sql_fetch_array($res, $resulttype)) {
+            $data[] = $ob;
+        }
+
+        return $data;
+    }
+
+    public function sql_multi_query($sql)
+    {
+        return mysqli_multi_query ($this->link,  $sql );
     }
 
 }
