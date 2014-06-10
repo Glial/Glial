@@ -9,6 +9,8 @@ use \Glial\Security\Crypt\Crypt;
 
 trait PmaCli {
 
+    use \Glial\Neuron\Controller\PmaCliBackup;
+
     public function load($param) {
 
         $this->view = false;
@@ -501,26 +503,22 @@ trait PmaCli {
             if (count($cmp['up']) !== 0 && count($cmp['down']) !== 0) {
 
                 debug($cmp);
-                
+
                 if ($behind = $this->checkTimeBehind($cmp, $previous_data[$key], $actual_data[$key])) {
-                    
-                    
-                    
-                    
-                    
-                    
-                    $behind['message'] = sprintf ($behind['message'],$tab['master_host'],$tab['ip']);
-                    
-                    
+
+
+                    $behind['message'] = sprintf($behind['message'], $tab['master_host'], $tab['ip']);
+
+
                     debug($behind);
-                    
+
                     $data = array();
                     $data['mysql_event']['id_mysql_server'] = $tab['id'];
                     $data['mysql_event']['date'] = date("Y-m-d H:i:s");
                     $data['mysql_event']['id_mysql_status'] = $behind['id_mysql_status'];
                     $data['mysql_event']['message'] = $behind['message'];
                     $data['mysql_event']['serialized'] = serialize($cmp);
-                    
+
 
                     if (!$db->sql_save($data)) {
                         debug($data);
@@ -565,7 +563,10 @@ trait PmaCli {
     }
 
     private function secToTime($time_behind) {
-        if ($time_behind > 3600) {
+
+        if ($time_behind > 86400) {
+            $format = 'd:G:i:s';
+        } elseif ($time_behind > 3600) {
             $format = 'G:i:s';
         } elseif ($time_behind > 60) {
             $format = 'i:s';

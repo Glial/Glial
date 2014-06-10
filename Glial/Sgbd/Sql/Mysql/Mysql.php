@@ -278,4 +278,28 @@ class Mysql extends Sql {
         return mysqli_multi_query ($this->link,  $sql );
     }
 
+    /**
+     * Returns true or false is the server support multi master 
+     * MariaDB >= 10.x
+     * 
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @return boolean
+     * @since 3.0 First time this was introduced.
+     * @version 3.0
+     */
+    
+    public function isMultiMaster()
+    {
+        if ($this->getServerType() === "MariaDB" && version_compare($this->getVersion(), "10", ">="))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+        
+    }
 }
