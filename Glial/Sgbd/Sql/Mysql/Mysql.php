@@ -11,6 +11,10 @@ class Mysql extends Sql {
     public $server_type;
     public $version = '';
     public $version_full = '';
+    public $status = array();
+    public $variables = array();
+    public $host;
+    public $port;
 
     function __construct($name, $elem) {
         $this->setName($name, $elem);
@@ -18,24 +22,44 @@ class Mysql extends Sql {
 
     /*
      * @since Glial 1.0
+     * @version 3.1
      * @return Returns an object which represents the connection to a MySQL Server.
      * @parameters dbname The database name.
      * @alias make the same as mysqli::select_db and init charset connection in utf-8
      */
 
     public function sql_connect($host, $login, $password, $dbname, $port = 3306) {
-        $this->link = mysqli_connect($host, $login, $password, $dbname, $port);
-        $this->db = $dbname;
 
-        if (!$this->link) {
-            throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . ":" . $port);
+
+        if (empty($port)) {
+            $port = 3306;
         }
 
-        mysqli_set_charset($this->link, 'utf8');
-        $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
-        $this->_query("SET NAMES 'utf8'");
+        $this->host = $host;
+        $this->port = $port;
 
-        return $this->link;
+
+
+        try {
+            $this->link = mysqli_connect($host, $login, $password, $dbname, $port);
+            $this->db = $dbname;
+
+            if (!$this->link) {
+                throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . ":" . $port);
+            }
+
+            mysqli_set_charset($this->link, 'utf8');
+            $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
+            $this->_query("SET NAMES 'utf8'");
+
+            return $this->link;
+        } catch (\Exception $ex) {
+            echo $ex->getMessage(), "\n";
+            
+            return false;
+        }
+        
+        
     }
 
     /*
@@ -260,8 +284,7 @@ class Mysql extends Sql {
         }
     }
 
-    public function sql_fetch_all($sql, $resulttype = MYSQLI_ASSOC)
-    {
+    public function sql_fetch_all($sql, $resulttype = MYSQLI_ASSOC) {
         $res = $this->sql_query($sql);
 
         $data = array();
@@ -273,9 +296,8 @@ class Mysql extends Sql {
         return $data;
     }
 
-    public function sql_multi_query($sql)
-    {
-        return mysqli_multi_query ($this->link,  $sql );
+    public function sql_multi_query($sql) {
+        return mysqli_multi_query($this->link, $sql);
     }
 
     /**
@@ -289,17 +311,117 @@ class Mysql extends Sql {
      * @since 3.0 First time this was introduced.
      * @version 3.0
      */
-    
-    public function isMultiMaster()
-    {
-        if ($this->getServerType() === "MariaDB" && version_compare($this->getVersion(), "10", ">="))
-        {
+    public function isMultiMaster() {
+        if ($this->getServerType() === "MariaDB" && version_compare($this->getVersion(), "10", ">=")) {
             return true;
-        }
-        else
-        {
+        } else {
             return false;
         }
-        
     }
+
+    /**
+     * This method return the number of mysql/mariadb/percona version
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @param string name of connection
+     * @return string
+     * @description if the connection exist return the instance else it create it 
+     * @access public
+     * @package Sgbd/
+     * @since 3.0 First time this was introduced.
+     * @version 3.0.1
+     */
+    public function getVariable() {
+
+        if (empty($this->version)) {
+
+            $sql = "SHOW GLOBAL VARIABLES LIKE 'UpTime'";
+
+            $res = $this->sql_query($sql);
+            $data = $this->sql_fetch_array($res, MYSQLI_ASSOC);
+
+            $version = $data['Value'];
+            $this->version_full = $version;
+
+            if (strpos($version, "-")) {
+                $this->version = strstr($version, '-', true);
+            } else {
+                $this->version = $version;
+            }
+        }
+
+        return $this->version;
+    }
+
+    /**
+     * This method return the global status of server MySQL, if one var is specified return this if exist else it doesn't exist return false.
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @param string name of connection
+     * @return string
+     * @description if the connection exist return the instance else it create it 
+     * @access public
+     * @package Sgbd
+     * @since 3.0.2 First time this was introduced.
+     * @version 3.0.2
+     */
+    public function getStatus($var = '') {
+
+        if (empty($this->status)) {
+            $sql = "SHOW GLOBAL STATUS";
+            $res = $this->sql_query($sql);
+
+            while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+                $this->status[$data['Variable_name']] = $data['Value'];
+            }
+        }
+
+        if (empty($var)) {
+            return $this->status;
+        } else {
+            if (!empty($this->status[$var])) {
+                return $this->status[$var];
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * This method return the global status of server MySQL, if one var is specified return this if exist else it doesn't exist return false.
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @param string name of connection
+     * @return string
+     * @description if the connection exist return the instance else it create it 
+     * @access public
+     * @package Sgbd
+     * @since 3.0.2 First time this was introduced.
+     * @version 3.0.2
+     */
+    public function getVariables($var = '') {
+
+        if (empty($this->variables)) {
+            $sql = "SHOW GLOBAL variables ";
+            $res = $this->sql_query($sql);
+
+            while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+                $this->variables[$data['Variable_name']] = $data['Value'];
+            }
+        }
+
+        if (empty($var)) {
+            return $this->variables;
+        } else {
+            if (!empty($this->variables[$var])) {
+                return $this->variables[$var];
+            } else {
+                return false;
+            }
+        }
+    }
+
 }

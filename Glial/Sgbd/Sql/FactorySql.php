@@ -28,15 +28,13 @@ class FactorySql {
         $driver = '\Glial\Sgbd\Sql\\' . ucwords(strtolower($elem['driver'])) . '\\' . ucwords(strtolower($elem['driver']));
 
         $addr = $elem['hostname'];
-		$dbname = $elem['database'];
+        $dbname = $elem['database'];
 
         if (!empty($elem['port']) && is_numeric($elem['port'])) {
             $port = $elem['port'];
+        } else {
+            $port = null;
         }
-		else
-		{
-			$port = null;
-		}
 
         self::$db[$name] = new $driver($name, $elem);
 
@@ -44,7 +42,7 @@ class FactorySql {
             return false;
         }
 
-        self::$db[$name]->sql_connect($addr, $elem['user'], $elem['password'], $dbname,$port);
+        self::$db[$name]->sql_connect($addr, $elem['user'], $elem['password'], $dbname, $port);
 
         return self::$db[$name];
     }

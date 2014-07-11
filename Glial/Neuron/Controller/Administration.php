@@ -121,7 +121,7 @@ trait Administration {
 
                 $table = $table_name;
 
-                $model_name = "Identifier" . Inflector::camelize($key);
+                $model_name = "Identifier" . Inflector::camelize(str_replace('-','_',$key));
                 $dir = APP_DIR . "/model/" . $key;
 
                 if (!is_dir($dir)) {
@@ -149,8 +149,8 @@ trait Administration {
 
                     $i = 0;
 
-                    unset($data);
-                    unset($field);
+                    $data = array();
+                    $field = array();
 
                     while ($ob = $dbLink->sql_fetch_object($res3)) {
                         $field[] = "\"" . $ob->Field . "\"";
@@ -178,7 +178,7 @@ trait Administration {
                             if (mb_strstr($field['type'], "int")) {
                                 $text .= "\t'" . $field['field'] . "' => array(\n\t\t'numeric' => array('This must be an int.')\n\t),\n";
                             } elseif (mb_strstr($field['type'], "datetime")) {
-                                $text .= "\t'" . $field['field'] . "' => array(\n\t\t'datetime' => array('This must be a date time.')\n\t),\n";
+                                $text .= "\t'" . $field['field'] . "' => array(\n\t\t'dateTime' => array('This must be a datetime.')\n\t),\n";
                             } elseif (mb_strstr($field['type'], "time")) {
                                 $text .= "\t'" . $field['field'] . "' => array(\n\t\t'time' => array('This must be a time.')\n\t),\n";
                             } elseif (mb_strstr($field['type'], "date")) {
@@ -186,7 +186,7 @@ trait Administration {
                             } elseif (mb_strstr($field['type'], "float")) {
                                 $text .= "\t'" . $field['field'] . "' => array(\n\t\t'decimal' => array('This must be a float.')\n\t),\n";
                             } else {
-                                $text .= "\t'" . $field['field'] . "' => array(\n\t\t'not_empty' => array('This field is requiered.')\n\t),\n";
+                                //$text .= "\t'" . $field['field'] . "' => array(\n\t\t'not_empty' => array('This field is requiered.')\n\t),\n";
                             }
                         }
                     }

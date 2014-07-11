@@ -6,10 +6,15 @@ use Glial\Cli\Table;
 use Glial\Cli\Window;
 use \Glial\Sgbd\Sql\Mysql\MasterSlave;
 use \Glial\Security\Crypt\Crypt;
+use \Glial\Date\Date;
 
 trait PmaCli {
 
     use \Glial\Neuron\Controller\PmaCliBackup;
+
+use \Glial\Neuron\Controller\PmaCliCluster;
+
+use \Glial\Neuron\Controller\PmaCliArray;
 
     public function load($param) {
 
@@ -79,20 +84,33 @@ trait PmaCli {
 
             $db = $this->di['db']->sql("default");
 
-            fwrite($fp, "digraph G { rankdir = LR; " . PHP_EOL);
+            fwrite($fp, "digraph Replication { rankdir = LR; " . PHP_EOL);
             //fwrite($fp, "\t size=\"10,1000\";");
 
             fwrite($fp, "\t edge [color=green];" . PHP_EOL);
             fwrite($fp, "\t node [color=green shape=rect style=filled fontsize=8 ranksep=0 concentrate=true splines=true overlap=false];" . PHP_EOL);
             //fwrite($fp, "\t node [color=none shape=rect fontsize=8 ranksep=4 concentrate=false splines=false overlap=false];");
 
-            $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date` FROM `mysql_server` a
+
+
+            $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date`,b.`uptime`, b.`time_zone`, c.node_connected
+            FROM `mysql_server` a
             INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server 
-            order by ip";
+            LEFT JOIN link__mysql_cluster__mysql_server c ON c.id_mysql_server = a.id
+            WHERE node_connected is null
+            order by node_connected";
             $res = $db->sql_query($sql);
 
             $ip = array();
+
+            $cluster_name = "";
+
+
+
+            // display server alone
+            $nb_cluster = 0;
             while ($ob = $db->sql_fetch_object($res)) {
+
 
                 if (empty($ob->version)) {
                     fwrite($fp, "\t node [color=red];" . PHP_EOL);
@@ -100,9 +118,12 @@ trait PmaCli {
                     fwrite($fp, "\t node [color=green];" . PHP_EOL);
                 }
                 // shape=Mrecord
-                fwrite($fp, '  "' . $ob->id . '" [style="" penwidth="3" fillcolor="yellow" fontname="Courier New" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="1" bgcolor="white"><tr><td bgcolor="black" align="center"><font color="white">' . str_replace('_', '-', $ob->name) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $ob->ip . ':' . $ob->port . '</td></tr>');
+                fwrite($fp, '  "' . $ob->id . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center"><font color="white">' . str_replace('_', '-', $ob->name) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $ob->ip . ':' . $ob->port . '</td></tr>');
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $ob->version . '</td></tr>' . PHP_EOL);
-                //fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $ob->date.'</td></tr>');
+                fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($ob->uptime) . '</td></tr>');
+                fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $ob->date . ') : ' . $ob->time_zone . '</td></tr>');
+                //fwrite($fp, '<tr><td bgcolor="red" align="left">Date : <b>' . $ob->date.'</b></td></tr>');
+
 
                 $databases = explode(',', $ob->databases);
 
@@ -111,8 +132,89 @@ trait PmaCli {
                 }
 
                 fwrite($fp, '</table>> ];' . PHP_EOL);
-                $ip [$ob->ip] = $ob->id;
+
+                $ip[$ob->ip] = $ob->id;
             }
+
+
+
+            // display cluster
+
+            $sql = "SELECT * FROM mysql_cluster";
+            $res2 = $db->sql_query($sql);
+
+            while ($cluster = $db->sql_fetch_object($res2)) {
+
+
+                fwrite($fp, 'subgraph cluster_0 {');
+                fwrite($fp, '
+		color=black;
+                fontname="arial";');
+                fwrite($fp, 'label = "Galera cluster : ' . $cluster->name . '";');
+
+
+
+
+                $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date`,b.`uptime`, b.`time_zone`, c.node_connected
+            FROM `mysql_server` a
+            INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server 
+            INNER JOIN link__mysql_cluster__mysql_server c ON c.id_mysql_server = a.id
+            WHERE id_mysql_cluster = " . $cluster->id . "
+            order by node_connected";
+                $res = $db->sql_query($sql);
+
+
+
+                $nb_cluster = 0;
+                $nodes = array();
+
+                while ($ob = $db->sql_fetch_object($res)) {
+
+
+                    if (empty($ob->version)) {
+                        fwrite($fp, "\t node [color=red];" . PHP_EOL);
+                    } else {
+                        fwrite($fp, "\t node [color=green];" . PHP_EOL);
+                    }
+                    // shape=Mrecord
+                    fwrite($fp, '  "' . $ob->id . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center"><font color="white">' . str_replace('_', '-', $ob->name) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $ob->ip . ':' . $ob->port . '</td></tr>');
+                    fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $ob->version . '</td></tr>' . PHP_EOL);
+                    fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($ob->uptime) . '</td></tr>');
+                    fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $ob->date . ') : ' . $ob->time_zone . '</td></tr>');
+                    //fwrite($fp, '<tr><td bgcolor="red" align="left">Date : <b>' . $ob->date.'</b></td></tr>');
+
+
+                    $databases = explode(',', $ob->databases);
+
+                    foreach ($databases as $database) {
+                        fwrite($fp, '<tr><td bgcolor="#dddddd" align="left">' . $database . '</td></tr>' . PHP_EOL);
+                    }
+
+                    fwrite($fp, '</table>> ];' . PHP_EOL);
+
+
+
+                    $ip[$ob->ip] = $ob->id;
+
+                    $nodes[] = $ob->id;
+
+
+                    foreach ($nodes as $node) {
+
+                        if ($node !== $ob->id) {
+                            fwrite($fp, "" . $node . " -> " . $ob->id . '[dir=both arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
+                            //fwrite($fp, "" . $ob->id . " -> " . $node . '[ arrowsize="2" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
+                        }
+                    }
+                }
+
+                fwrite($fp, '}');
+            }
+
+
+
+
+
 
             $sql = "SELECT a.`id`,a.ip,c.`master_host`,c.thread_io,c.thread_sql,c.time_behind,c.id as id_thread, c.last_sql_error, c.last_io_error,c.last_sql_errno, c.last_io_errno
                 FROM `mysql_server` a
@@ -158,7 +260,7 @@ trait PmaCli {
                     $label = "Not started";
                     $color = "blue";
                 }
-                fwrite($fp, "" . $ip[$ob->master_host] . " -> " . $ob->id . '[ arrowsize="2" penwidth="2" fontsize=8 color ="' . $color . '" label ="' . $label . '"  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
+                fwrite($fp, "" . $ip[$ob->master_host] . " -> " . $ob->id . '[ arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="' . $color . '" label ="' . $label . '"  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
             }
 
             fwrite($fp, "}");
@@ -200,13 +302,19 @@ trait PmaCli {
         $masters = array();
         $i = 0;
 
-
         $sql = "DELETE FROM mysql_replication_stats";
+        $default->sql_query($sql);
+
+        $sql = "DELETE FROM mysql_cluster";
         $default->sql_query($sql);
 
         $sql = "ALTER TABLE mysql_replication_stats AUTO_INCREMENT = 1";
         $default->sql_query($sql);
         $sql = "ALTER TABLE mysql_replication_thread AUTO_INCREMENT = 1";
+        $default->sql_query($sql);
+        $sql = "ALTER TABLE mysql_cluster AUTO_INCREMENT = 1";
+        $default->sql_query($sql);
+        $sql = "ALTER TABLE link__mysql_cluster__mysql_server AUTO_INCREMENT = 1";
         $default->sql_query($sql);
 
 
@@ -223,7 +331,7 @@ trait PmaCli {
                 $master = $MS->isMaster();
                 $slave = $MS->isSlave();
             } catch (\Exception $ex) {
-                $server_on = false;
+                $server_on = 0;
                 $master = false;
                 $slave = false;
             }
@@ -242,14 +350,23 @@ trait PmaCli {
                 $data['mysql_replication_stats']['ping'] = $server_on;
 
                 if ($server_on) {
+                    $sql = "SELECT now() as date_time";
+                    $res = $dblink->sql_query($sql);
+                    $date_time = $dblink->sql_fetch_object($res);                  
 
-
+                    if (version_compare($dblink->getVersion(), '10.0') >= 0) {
+                        $this->clusterGalera($dblink);
+                    }
 
                     $data['mysql_replication_stats']['version'] = $dblink->getServerType() . " : " . $dblink->getVersion();
-                    $data['mysql_replication_stats']['date'] = date("Y-m-d H:i:s");
+                    $data['mysql_replication_stats']['date'] = $date_time->date_time;
                     $data['mysql_replication_stats']['is_master'] = ($master) ? 1 : 0;
                     $data['mysql_replication_stats']['is_slave'] = ($slave) ? 1 : 0;
-
+                    $data['mysql_replication_stats']['uptime'] = ($dblink->getStatus('Uptime')) ? $dblink->getStatus('Uptime') : '-1';
+                    $data['mysql_replication_stats']['time_zone'] = ($dblink->getVariables('system_time_zone')) ? $dblink->getVariables('system_time_zone') : '-1';
+                    $data['mysql_replication_stats']['ping'] = 1;
+                    $data['mysql_replication_stats']['last_sql_error'] = '';
+                    
                     $sql = "SHOW databases";
                     $dblist = array();
                     $res3 = $dblink->sql_query($sql);
@@ -285,7 +402,6 @@ trait PmaCli {
                         $data['mysql_replication_thread']['thread_io'] = ($thread['Slave_IO_Running'] === 'Yes') ? 1 : 0;
                         $data['mysql_replication_thread']['thread_sql'] = ($thread['Slave_SQL_Running'] === 'Yes') ? 1 : 0;
 
-
                         //only for MariaDB 10
                         if (version_compare($dblink->getVersion(), "10", ">=")) {
                             $data['mysql_replication_thread']['thread_name'] = $thread['Connection_name'];
@@ -293,6 +409,7 @@ trait PmaCli {
 
                         $data['mysql_replication_thread']['time_behind'] = $thread['Seconds_Behind_Master'];
                         $data['mysql_replication_thread']['master_host'] = $thread['Master_Host'];
+                        $data['mysql_replication_thread']['master_port'] = $thread['Master_Port'];
 
                         //suuport for mysql 5.0
                         $data['mysql_replication_thread']['last_sql_error'] = empty($thread['Last_SQL_Error']) ? $thread['Last_Error'] : $thread['Last_SQL_Error'];
@@ -369,7 +486,6 @@ trait PmaCli {
     public function daemon() {
         $this->view = false;
 
-
         $previous_data = $this->sql_to_array();
 
         $this->replicationUpdate();
@@ -377,9 +493,7 @@ trait PmaCli {
         $actual_data = $this->sql_to_array();
         $this->monitoring($previous_data, $actual_data);
 
-
         $this->replicationDrawGraph(ROOT . '/tmp/img/replication.svg');
-        $this->backupDeleteOld();
     }
 
     public function backupDeleteOld() {
@@ -502,7 +616,7 @@ trait PmaCli {
 
             if (count($cmp['up']) !== 0 && count($cmp['down']) !== 0) {
 
-                debug($cmp);
+                //debug($cmp);
 
                 if ($behind = $this->checkTimeBehind($cmp, $previous_data[$key], $actual_data[$key])) {
 
@@ -538,8 +652,8 @@ trait PmaCli {
             return false;
         }
 
-        $delay_before = $this->secToTime($cmp['up']['update']['time_behind']);
-        $delay_after = $this->secToTime($cmp['down']['update']['time_behind']);
+        $delay_before = Date::secToTime($cmp['up']['update']['time_behind']);
+        $delay_after = Date::secToTime($cmp['down']['update']['time_behind']);
 
         if ($cmp['up']['update']['time_behind'] > self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] <= self::TIME_BEHING_MAX) {
             $data['id_mysql_status'] = 1;
