@@ -25,15 +25,21 @@ class Oracle extends Sql {
             $port = 1521;
         }
 
-        $this->link = oci_connect("host=" . $host . " port=" . $port . " dbname=" . $database . " user=" . $login . " password=" . $password . " options='--client_encoding=UTF8'");
+         $string = '//'.$host.':'.$port.'/'.$database;
+         
+         
+        $this->link = oci_connect($login,$password, $string);
 
+       
+        
+        
+        
         if (!$this->link) {
-            throw new \Exception('GLI-012 : Impossible to connect to : ' . $host);
+            throw new \Exception('GLI-012 : Impossible to connect to : ' . $host. 'string : '.$string);
         }
 
         return $this->link;
     }
-
     /*
      * @since Glial 1.0
      * @return Returns TRUE on success or FALSE on failure.
