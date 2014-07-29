@@ -685,7 +685,7 @@ namespace Glial\I18n {
                 self::$countNumberElemAtLoading[self::$_md5File] = count(self::$_translations[self::$_md5File]);
             } else {
 //chargement du fichier de cache en fonction de la BDD
-                $sql = "SELECT * FROM `translation_" . strtolower(self::$_language) . "` WHERE file_found ='" . self::$file . "'";
+                $sql = "SELECT * FROM translation_" . strtolower(self::$_language) . " WHERE file_found ='" . self::$file . "'";
                 
              
                 
