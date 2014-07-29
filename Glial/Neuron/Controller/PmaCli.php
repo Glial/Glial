@@ -8,7 +8,8 @@ use \Glial\Sgbd\Sql\Mysql\MasterSlave;
 use \Glial\Security\Crypt\Crypt;
 use \Glial\Date\Date;
 
-trait PmaCli {
+trait PmaCli
+{
 
     use \Glial\Neuron\Controller\PmaCliBackup;
 
@@ -16,7 +17,8 @@ use \Glial\Neuron\Controller\PmaCliCluster;
 
 use \Glial\Neuron\Controller\PmaCliArray;
 
-    public function load($param) {
+    public function load($param)
+    {
 
         $this->view = false;
 
@@ -66,7 +68,8 @@ use \Glial\Neuron\Controller\PmaCliArray;
      * @since 3.0 First time this was introduced.
      * @version 3.0
      */
-    public function replicationDrawGraph($file_name) {
+    public function replicationDrawGraph($file_name)
+    {
 
         $path_parts = pathinfo($file_name);
 
@@ -91,25 +94,49 @@ use \Glial\Neuron\Controller\PmaCliArray;
             fwrite($fp, "\t node [color=green shape=rect style=filled fontsize=8 ranksep=0 concentrate=true splines=true overlap=false];" . PHP_EOL);
             //fwrite($fp, "\t node [color=none shape=rect fontsize=8 ranksep=4 concentrate=false splines=false overlap=false];");
 
-
+            $ip_sand_box = array();
+            $sql = "select a.`ip`, count(1) as cpt 
+            FROM `mysql_server` a
+            INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server
+            GROUP BY a.ip HAVING count(1) > 1";
+            $res = $db->sql_query($sql);
+            while ($ob = $db->sql_fetch_object($res)) {
+                $ip_sand_box[] = $ob->ip;
+            }
 
             $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date`,b.`uptime`, b.`time_zone`, c.node_connected
             FROM `mysql_server` a
             INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server 
             LEFT JOIN link__mysql_cluster__mysql_server c ON c.id_mysql_server = a.id
             WHERE node_connected is null
-            order by node_connected";
+            order by a.`ip`";
             $res = $db->sql_query($sql);
 
             $ip = array();
 
-            $cluster_name = "";
-
-
 
             // display server alone
             $nb_cluster = 0;
+            $sandbox = "";
+            $sandbox_open = false;
+
+            $elem = 1;
             while ($ob = $db->sql_fetch_object($res)) {
+
+                if ($sandbox_open && $sandbox != $ob->ip) {
+                    fwrite($fp, "}\n");
+                    $sandbox_open = false;
+                }
+
+                if (in_array($ob->ip, $ip_sand_box) && !$sandbox_open) {
+                    fwrite($fp, 'subgraph cluster_' . $elem . ' {');
+                    fwrite($fp, 'color=black;fontname="arial";rankdir = TB;');
+                    fwrite($fp, 'label = "Sandbox : ' . $ob->ip . '";');
+
+                    $sandbox_open = true;
+                    $elem++;
+                }
+                $sandbox = $ob->ip;
 
 
                 if (empty($ob->version)) {
@@ -147,6 +174,7 @@ use \Glial\Neuron\Controller\PmaCliArray;
 
 
                 fwrite($fp, 'subgraph cluster_0 {');
+                fwrite($fp, 'rankdir="LR";');
                 fwrite($fp, '
 		color=black;
                 fontname="arial";');
@@ -155,16 +183,21 @@ use \Glial\Neuron\Controller\PmaCliArray;
 
 
 
-                $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date`,b.`uptime`, b.`time_zone`, c.node_connected
+            $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date`,b.`uptime`, b.`time_zone`, c.node_connected
             FROM `mysql_server` a
             INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server 
-            INNER JOIN link__mysql_cluster__mysql_server c ON c.id_mysql_server = a.id
-            WHERE id_mysql_cluster = " . $cluster->id . "
+            INNER JOIN mysql_cluster_node d  ON d.id_mysql_server = a.id
+            LEFT JOIN link__mysql_cluster__mysql_server c ON c.id_mysql_server = a.id
+            WHERE d.id_mysql_cluster = " . $cluster->id . "
             order by node_connected";
+            
+            
+            
+            //echo $sql;
+            
                 $res = $db->sql_query($sql);
 
-
-
+                
                 $nb_cluster = 0;
                 $nodes = array();
 
@@ -191,21 +224,22 @@ use \Glial\Neuron\Controller\PmaCliArray;
                     }
 
                     fwrite($fp, '</table>> ];' . PHP_EOL);
-
-
-
+                    
                     $ip[$ob->ip] = $ob->id;
 
+                    
                     $nodes[] = $ob->id;
 
-
+                    
+                    /*
                     foreach ($nodes as $node) {
 
                         if ($node !== $ob->id) {
-                            fwrite($fp, "" . $node . " -> " . $ob->id . '[dir=both arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
-                            //fwrite($fp, "" . $ob->id . " -> " . $node . '[ arrowsize="2" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
+                            fwrite($fp, "" . $node . " -> " . $ob->id . '[ dir=both arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
+                            //fwrite($fp, "" . $ob->id . " -> " . $node . '[ arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
                         }
                     }
+                    /***/
                 }
 
                 fwrite($fp, '}');
@@ -230,7 +264,7 @@ use \Glial\Neuron\Controller\PmaCliArray;
                     $color = "green";
                 } elseif ($ob->thread_io === "1" && $ob->thread_sql === "1" && $ob->time_behind !== "0") {
 
-                    $delay = $this->secToTime($ob->time_behind);
+                    $delay = Date::secToTime($ob->time_behind);
 
                     $label = "Delay : " . $delay . " sec";
                     $color = "orange";
@@ -289,7 +323,8 @@ use \Glial\Neuron\Controller\PmaCliArray;
      * @since 3.0 First time this was introduced.
      * @version 3.0
      */
-    public function replicationUpdate() {
+    public function replicationUpdate()
+    {
 
         $this->layout_name = false;
         $this->view = false;
@@ -320,21 +355,34 @@ use \Glial\Neuron\Controller\PmaCliArray;
 
         foreach ($this->di['db']->getAll() as $db) {
             $i++;
-            //$server_config = $this->di['db']->sql($db)->getParams();
+            $server_config = $this->di['db']->getParam($db);
 
-            $server_on = true;
+            $server_on = 1;
 
-            try {
-                $dblink = $this->di['db']->sql($db);
+
+            $server_config['port'] = empty($server_config['port']) ? 3306 : $server_config['port'];
+
+
+            $dblink = $this->di['db']->sql($db);
+
+
+
+
+            if ($dblink->is_connected) {
+
 
                 $MS->setInstance($dblink);
                 $master = $MS->isMaster();
                 $slave = $MS->isSlave();
-            } catch (\Exception $ex) {
+            } else {
+
                 $server_on = 0;
                 $master = false;
                 $slave = false;
+
+                echo " server Mysql : " . $server_config['hostname'] . " is down\n";
             }
+
 
 
             $sql = "SELECT id FROM mysql_server WHERE name = '" . $db . "'";
@@ -344,15 +392,20 @@ use \Glial\Neuron\Controller\PmaCliArray;
 
             while ($ob = $default->sql_fetch_object($res)) {
 
+
                 $data = array();
                 $data['mysql_replication_stats']['id_mysql_server'] = $ob->id;
                 $data['mysql_replication_stats']['date'] = date("Y-m-d H:i:s");
                 $data['mysql_replication_stats']['ping'] = $server_on;
 
-                if ($server_on) {
+
+
+                if ($server_on === 1) {
                     $sql = "SELECT now() as date_time";
                     $res = $dblink->sql_query($sql);
-                    $date_time = $dblink->sql_fetch_object($res);                  
+                    $date_time = $dblink->sql_fetch_object($res);
+
+
 
                     if (version_compare($dblink->getVersion(), '10.0') >= 0) {
                         $this->clusterGalera($dblink);
@@ -366,7 +419,7 @@ use \Glial\Neuron\Controller\PmaCliArray;
                     $data['mysql_replication_stats']['time_zone'] = ($dblink->getVariables('system_time_zone')) ? $dblink->getVariables('system_time_zone') : '-1';
                     $data['mysql_replication_stats']['ping'] = 1;
                     $data['mysql_replication_stats']['last_sql_error'] = '';
-                    
+
                     $sql = "SHOW databases";
                     $dblist = array();
                     $res3 = $dblink->sql_query($sql);
@@ -384,6 +437,8 @@ use \Glial\Neuron\Controller\PmaCliArray;
                     }
                 }
 
+
+
                 $id_mysql_replication_stats = $default->sql_save($data);
 
                 if (!$id_mysql_replication_stats) {
@@ -392,7 +447,11 @@ use \Glial\Neuron\Controller\PmaCliArray;
                     throw new \Exception("GLI-031 : Impossible to get id_mysql_replication_stats");
                 }
 
+
+
+
                 if ($slave) {
+
                     foreach ($slave as $thread) {
                         $data = array();
 
@@ -423,7 +482,7 @@ use \Glial\Neuron\Controller\PmaCliArray;
                         if (!$id_mysql_replication_thread) {
                             debug($default->sql_error());
                             debug($data);
-                            throw new \Exception("GLI-032 : Impossible to save row in mysql_replication_thread");
+                            //throw new \Exception("GLI-032 : Impossible to save row in mysql_replication_thread");
                         }
                     }
                 }
@@ -445,7 +504,8 @@ use \Glial\Neuron\Controller\PmaCliArray;
      * @since 3.0 First time this was introduced.
      * @version 3.0
      */
-    public function install() {
+    public function install()
+    {
 
 
         $sql = "CREATE TABLE `mysql_replication_stats` (
@@ -479,11 +539,13 @@ use \Glial\Neuron\Controller\PmaCliArray;
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8  COMMENT='3.0'";
     }
 
-    public function uninstall() {
+    public function uninstall()
+    {
         
     }
 
-    public function daemon() {
+    public function daemon()
+    {
         $this->view = false;
 
         $previous_data = $this->sql_to_array();
@@ -496,7 +558,8 @@ use \Glial\Neuron\Controller\PmaCliArray;
         $this->replicationDrawGraph(ROOT . '/tmp/img/replication.svg');
     }
 
-    public function backupDeleteOld() {
+    public function backupDeleteOld()
+    {
         $sql = "SELECT * FROM `mysql_dump` WHERE  day(now()) - day(`date_end`) > 10 and is_available = 1 order by date_end;";
 
         $this->layout_name = false;
@@ -528,7 +591,8 @@ use \Glial\Neuron\Controller\PmaCliArray;
         //shell_exec('find /data/backup* -mtime +15 -exec rm {} \;');
     }
 
-    public function updateServerList() {
+    public function updateServerList()
+    {
 
         $this->view = false;
 
@@ -556,7 +620,8 @@ use \Glial\Neuron\Controller\PmaCliArray;
         }
     }
 
-    private function compare($tab_from = array(), $tab_to) {
+    private function compare($tab_from = array(), $tab_to)
+    {
         $tab_update = array_intersect_key($tab_from, $tab_to);
         foreach ($tab_update as $key => $value) {
             if ($tab_from[$key] != $tab_to[$key]) {
@@ -587,7 +652,8 @@ use \Glial\Neuron\Controller\PmaCliArray;
         return ($param);
     }
 
-    private function sql_to_array() {
+    private function sql_to_array()
+    {
 
 
         $sql = "SELECT a.`id`,a.ip,a.port,c.`master_host`,c.thread_io,c.thread_sql,c.time_behind,c.id as id_thread, c.last_sql_error,
@@ -597,6 +663,7 @@ use \Glial\Neuron\Controller\PmaCliArray;
                     INNER JOIN mysql_replication_thread c ON b.id = c.id_mysql_replication_stats";
 
         $db = $this->di['db']->sql('default');
+
         $arr = $db->sql_fetch_all($sql);
 
         $data = array();
@@ -608,7 +675,8 @@ use \Glial\Neuron\Controller\PmaCliArray;
         return $data;
     }
 
-    private function monitoring($previous_data, $actual_data) {
+    private function monitoring($previous_data, $actual_data)
+    {
         $db = $this->di['db']->sql('default');
 
         foreach ($previous_data as $key => $tab) {
@@ -616,9 +684,7 @@ use \Glial\Neuron\Controller\PmaCliArray;
 
             if (count($cmp['up']) !== 0 && count($cmp['down']) !== 0) {
 
-                //debug($cmp);
-
-                if ($behind = $this->checkTimeBehind($cmp, $previous_data[$key], $actual_data[$key])) {
+                if ($behind = $this->checkDelay($cmp)) {
 
 
                     $behind['message'] = sprintf($behind['message'], $tab['master_host'], $tab['ip']);
@@ -643,24 +709,38 @@ use \Glial\Neuron\Controller\PmaCliArray;
         }
     }
 
-    private function checkTimeBehind($cmp, $previous, $actual) {
-        if (empty($cmp['up']['update']['time_behind'])) {
-            return false;
-        }
+    private function checkTimeBehind($cmp, $previous, $actual)
+    {
 
-        if ($cmp['up']['update']['time_behind'] <= self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] <= self::TIME_BEHING_MAX) {
-            return false;
-        }
 
         $delay_before = Date::secToTime($cmp['up']['update']['time_behind']);
         $delay_after = Date::secToTime($cmp['down']['update']['time_behind']);
+
+
+        if ($delay_before < self::TIME_BEHING_MAX && $delay_after < self::TIME_BEHING_MAX) {
+            return false;
+        }
+
+
+
+
+        /*
+          if (empty($cmp['up']['update']['time_behind'])) {
+          return false;
+          }
+
+          if ($cmp['up']['update']['time_behind'] < self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] < self::TIME_BEHING_MAX) {
+          return false;
+          } */
+
+
 
         if ($cmp['up']['update']['time_behind'] > self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] <= self::TIME_BEHING_MAX) {
             $data['id_mysql_status'] = 1;
             $data['message'] = "The replication between %s and %s is now up to date";
         } elseif ($cmp['up']['update']['time_behind'] <= self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] > self::TIME_BEHING_MAX) {
             $data['id_mysql_status'] = 5;
-            $data['message'] = "The replication between %s:%s and %s:%s is out to date (" . $delay_after . " sec)";
+            $data['message'] = "The replication between %s and %s is out to date (" . $delay_after . " sec)";
         } else {
             if ($cmp['up']['update']['time_behind'] < $cmp['down']['update']['time_behind']) {
 
@@ -672,22 +752,46 @@ use \Glial\Neuron\Controller\PmaCliArray;
                 $data['message'] = "The replication between %s and %s is still decreasing (" . $delay_before . " to " . $delay_after . ")";
             }
         }
-
         return $data;
     }
 
-    private function secToTime($time_behind) {
+    private function checkDelay($data)
+    {
 
-        if ($time_behind > 86400) {
-            $format = 'd:G:i:s';
-        } elseif ($time_behind > 3600) {
-            $format = 'G:i:s';
-        } elseif ($time_behind > 60) {
-            $format = 'i:s';
-        } else {
-            $format = 's';
+
+
+        if (!isset($data['down']['update']['time_behind']) || !isset($data['down']['update']['time_behind'])) {
+            return false;
         }
-        return date($format, $time_behind);
+
+
+
+        // TIME_BEHING_MAX =1        
+        $delay_last = $data['down']['update']['time_behind'];
+        $delay_current = $data['up']['update']['time_behind'];
+
+        $delay_before = Date::secToTime($delay_last);
+        $delay_after = Date::secToTime($delay_current);
+
+
+
+        /*
+          if ($delay_before < self::TIME_BEHING_MAX && $delay_after < self::TIME_BEHING_MAX) {
+          return false;
+          } */
+
+        if ($delay_last >= self::TIME_BEHING_MAX && $delay_current < self::TIME_BEHING_MAX) {
+            $data['id_mysql_status'] = 1;
+            $data['message'] = "The replication between %s and %s is now up to date [$delay_last:$delay_current]";
+        } elseif ($delay_last < self::TIME_BEHING_MAX && $delay_last >= self::TIME_BEHING_MAX) {
+            $data['id_mysql_status'] = 5;
+            $data['message'] = "The replication between %s and %s is out to date (" . $delay_after . " sec) [$delay_last:$delay_current]";
+        } else {
+            $data['id_mysql_status'] = 3;
+            $data['message'] = "The replication between %s and %s is (" . $delay_after . " sec) [$delay_last:$delay_current]";
+        }
+
+        return $data;
     }
 
 }

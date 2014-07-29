@@ -28,6 +28,7 @@ abstract class Sql
     private $_name = '';
     private $_keys = array();
     private $_param = array();
+    public $is_connected = false;
 
     //to be surcharged
     public function get_table_to_history()

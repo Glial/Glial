@@ -58,11 +58,11 @@ trait PmaCliCluster {
             } else {
 
                 $sql = "SELECT id FROM mysql_server WHERE ip = '" . $dblink->host . "' AND port= '" . $dblink->port . "'";
-                
+
                 $res = $default->sql_query($sql);
 
                 if ($default->sql_num_rows($res) !== 1) {
-                     throw new \Exception('GLI-050 : Impossible to select the right MySQL serveur ! '."\n".$sql);
+                    throw new \Exception('GLI-050 : Impossible to select the right MySQL serveur ! ' . "\n" . $sql);
                 } else {
 
                     $ob = $default->sql_fetch_object($res);
@@ -73,7 +73,21 @@ trait PmaCliCluster {
                     $data['link__mysql_cluster__mysql_server']['cluster_size'] = count(explode(',', $out['address']));
                     $data['link__mysql_cluster__mysql_server']['node_connected'] = $out['address'];
 
-                    if (!$id_cluster = $default->sql_save($data)) {
+                    if ($default->sql_save($data)) {
+
+                        debug($data);
+                        debug($default->sql_error());
+                    }
+
+                    $data = array();
+                    $data['mysql_cluster_node']['id_mysql_server'] = $ob->id;
+                    $data['mysql_cluster_node']['id_mysql_cluster'] = $id_cluster;
+
+
+                    debug($data);
+
+
+                    if ($default->sql_save($data)) {
 
                         debug($data);
                         debug($default->sql_error());
