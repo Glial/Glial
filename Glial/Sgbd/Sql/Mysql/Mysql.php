@@ -39,25 +39,25 @@ class Mysql extends Sql {
         $this->port = $port;
 
 
-
-        try {
+        
             $this->link = mysqli_connect($host, $login, $password, $dbname, $port);
             $this->db = $dbname;
 
             if (!$this->link) {
-                throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . ":" . $port);
+                return false;
+                //throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . ":" . $port);
             }
 
+
+            
+            $this->is_connected = true;
+            
             mysqli_set_charset($this->link, 'utf8');
             $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
             $this->_query("SET NAMES 'utf8'");
 
             return $this->link;
-        } catch (\Exception $ex) {
-            echo $ex->getMessage(), "\n";
-            
-            return false;
-        }
+
         
         
     }
@@ -422,6 +422,17 @@ class Mysql extends Sql {
                 return false;
             }
         }
+    }
+    
+    
+    public function getGrants()
+    {
+        $sql ="show grants for current_user;";
+        $res = $this->sql_query($sql);
+        $data = $this->sql_fetch_array($res, MYSQLI_NUM);
+        
+        preg_match("/GRANT ([\w ,]+) ON /", $data[0], $output_array);
+        return explode(', ',$output_array[1]);
     }
 
 }
