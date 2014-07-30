@@ -7,8 +7,14 @@ use \Glial\Sgbd\Sql\Sql;
 class Oracle extends Sql
 {
 
+    const ESC ='"';
+    const HISTORY_ACTIVE = false;
+    
+    public $ESC = '';
     public $db;
     public $link;
+    private $login;
+    protected $stid;
 
     function __construct($name, $elem)
     {
@@ -30,12 +36,8 @@ class Oracle extends Sql
 
         $string = '//' . $host . ':' . $port . '/' . $database;
 
-
+        $this->login = $login;
         $this->link = oci_connect($login, $password, $string);
-
-
-
-
 
         if (!$this->link) {
             throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . 'string : ' . $string);
@@ -54,7 +56,7 @@ class Oracle extends Sql
     public function sql_select_db($dbname)
     {
         $this->db = $dbname;
-        return oci_select_db($this->link, $dbname);
+        //return oci_select_db($this->link, $dbname);
     }
 
     /*
@@ -69,8 +71,37 @@ class Oracle extends Sql
     public function _query($sql)
     {
 
-        $stid = oci_parse($this->link, $sql);
-        return oci_execute($stid);
+        $this->stid = oci_parse($this->link, $sql);
+        if ($this->stid != false) {
+            // parsing empty query != false 
+            if (oci_execute($this->stid)) {
+                
+                return $this->stid;
+                // executing empty query != false 
+
+                /*
+                  if (oci_fetch_all($this->stid, $data, 0, -1, OCI_FETCHSTATEMENT_BY_ROW) == false) {
+                  // but fetching executed empty query results in error (ORA-24338: statement handle not executed)
+                  $e = oci_error($this->stid);
+                  echo $e['message'];
+                  } */
+            } else {
+                $e = oci_error($this->stid);
+                echo $e['message'];
+                
+                return false;
+            }
+        } else {
+            $e = oci_error($this->link);
+            echo $e['message'];
+            
+            return false;
+        }
+
+        //$stid = oci_parse();
+        //oci_execute($stid);
+
+        return $this->stid;
     }
 
     public function sql_num_rows($res)
@@ -85,12 +116,18 @@ class Oracle extends Sql
 
     public function sql_affected_rows()
     {
-        return oci_affected_rows($this->link);
+        return oci_num_rows($this->stid);
+
+
+        //TODO : have to use in case of SELECT, removed here coz not performent at all
+        $res = '';
+        return oci_fetch_all($this->stid, $res);
     }
 
     public function sql_real_escape_string($data)
     {
-        return oci_real_escape_string($this->link, $data);
+        return addslashes($data);
+        
     }
 
     public function sql_insert_id()
@@ -100,7 +137,8 @@ class Oracle extends Sql
 
     public function _insert_id()
     {
-        return oci_insert_id($this->link);
+        return 0;
+        //return oci_insert_id($this->link);
     }
 
     public function _error()
@@ -108,7 +146,7 @@ class Oracle extends Sql
         return oci_error($this->link);
     }
 
-    public function sql_fetch_array($res, $resulttype = oci_BOTH)
+    public function sql_fetch_array($res, $resulttype = OCI_BOTH)
     {
         return oci_fetch_array($res, $resulttype);
     }
@@ -118,7 +156,6 @@ class Oracle extends Sql
         $rep = array();
 
         while ($tab = oci_fetch_array($res, MYSQL_ASSOC)) {
-
             $rep[] = $tab;
         }
 
@@ -167,7 +204,7 @@ class Oracle extends Sql
      */
     public function getListTable()
     {
-        $sql = "SHOW FULL TABLES";
+        $sql = "select table_name from dba_tables where owner = '" . strtoupper($this->login) . "' ORDER BY table_name";
 
         $res = $this->_query($sql);
 
@@ -176,15 +213,10 @@ class Oracle extends Sql
 
 
         while ($ar = $this->sql_fetch_array($res)) {
-            if ($ar['Table_type'] === "VIEW") {
-                $view[] = $ar[0];
-            } else {
-                $table[] = $ar[0];
-            }
+            $table[] = $ar[0];
         }
 
         $ret['table'] = $table;
-        $ret['view'] = $view;
 
 
         return $ret;
@@ -192,21 +224,62 @@ class Oracle extends Sql
 
     public function getIndexUnique($table_name)
     {
-        $sql = "show keys from `" . $table_name . "` in " . $this->db;
+        
+        
+        $sql = "SELECT cols.column_name as column_name FROM all_constraints cons, all_cons_columns cols
+                WHERE cols.table_name = '".$table_name."' "
+                . "AND cons.constraint_type = 'P' "
+                . "AND cons.constraint_name = cols.constraint_name "
+                . "AND cons.owner = cols.owner "
+                . "AND cons.owner = '" . strtoupper($this->login) . "' "
+                . "ORDER BY cols.table_name, cols.position";
+        
+        
 
-        $res = $this->_query($sql);
+        $res = $this->sql_query($sql);
 
         $index = array();
         while ($ob = $this->sql_fetch_object($res)) {
-
-            if ($ob->Key_name === "PRIMARY") {
-                continue;
-            }
-            if ($ob->Non_unique === "0") {
-                $index[] = $ob->Column_name;
-            }
+            
+           
+            $index[] = $ob->COLUMN_NAME;
         }
         return $index;
+    }
+
+    public function getCreateTable($table, $schema = '')
+    {
+        if (empty($schema)) {
+            $schema = $this->login;
+        }
+
+        $sql = "select dbms_metadata.get_ddl( 'TABLE', '" . $table . "', '" . strtoupper($schema) . "' ) as data from dual";
+
+        $res = $this->sql_query($sql);
+
+        while ($ar = $this->sql_fetch_object($res)) {
+
+            //debug($ar);
+            //$table = $ar[0];
+        }
+
+        return 'CREATE TABLE ...';
+    }
+
+    public function getDescription($table)
+    {
+        $sql = "select column_name as Field,data_type as Type,data_length as  Length  from user_tab_columns where table_name = '" . $table . "' order by column_id";
+        return $sql;
+
+
+        /**
+         * SELECT 
+         * column_name "Name",
+         * nullable "Null?",
+         * concat(concat(concat(data_type,'('),data_length),')') "Type"
+         * FROM user_tab_columns
+         * WHERE table_name='TABLE_NAME_TO_DESCRIBE';
+         */
     }
 
 }

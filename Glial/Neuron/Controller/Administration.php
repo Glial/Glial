@@ -10,9 +10,11 @@ namespace Glial\Neuron\Controller;
 
 use \Glial\Utility\Inflector;
 
-trait Administration {
+trait Administration
+{
 
-    function admin_table() {
+    function admin_table()
+    {
 
         if (IS_CLI) {
 
@@ -44,19 +46,19 @@ trait Administration {
                     }
                 }
 
-                $sql = "SHOW TABLES";
-                $res = $this->di['db']->sql('default')->sql_query($sql);
-                while ($table = $this->di['db']->sql('default')->sql_fetch_array($res)) {
-                    echo $table[0] . "\n";
+                $tables = $this->di['db']->sql('default')->getListTable();
 
+                foreach ($tables['table'] as $table) {
+                    echo $table . "\n";
 
-                    $fp = fopen(TMP . "/database/" . $table[0] . ".table.txt", "w");
-                    $sql = "DESCRIBE `" . $table[0] . "`";
+                    $fp = fopen(TMP . "/database/" . $table . ".table.txt", "w");
+
+                    $sql = $this->di['db']->sql('default')->getDescription($table);
+
                     $res2 = $this->di['db']->sql('default')->sql_query($sql);
                     while ($ob = $this->di['db']->sql('default')->sql_fetch_object($res2)) {
-                        $data['field'][] = $ob->Field;
+                        $data['field'][] = $ob->FIELD;
                     }
-
                     $data = serialize($data);
                     fwrite($fp, $data);
                     fclose($fp);
@@ -68,7 +70,8 @@ trait Administration {
         return $module;
     }
 
-    function admin_index_unique() {
+    function admin_index_unique()
+    {
         $this->layout_name = false;
         $this->view = false;
 
@@ -83,33 +86,35 @@ trait Administration {
             $json = json_encode($list_index);
 
             if (is_writable(TMP . "keys/")) {
-                file_put_contents(TMP . "keys/".$key."_index_unique.txt", $json);
+                file_put_contents(TMP . "keys/" . $key . "_index_unique.txt", $json);
             } else {
                 throw new \Exception("GLI-016 : This directory should be writable : " . TMP . "keys/", 16);
             }
         }
-
-
-
+        
         //exit(95);
     }
 
-    function all() {
+    function all()
+    {
         $this->admin_index_unique();
         $this->admin_table();
         $this->generate_model();
     }
 
-    function install() {
+    function install()
+    {
         $this->all();
     }
 
-    function generate_model() {
+    function generate_model()
+    {
 
         //php index.php administration generate_model
 
         $this->layout_name = false;
         $this->view = false;
+
 
         foreach ($this->di['db']->getAll() as $key) {
 
@@ -117,12 +122,14 @@ trait Administration {
 
             $tab_object = $dbLink->getListTable();
 
+
+
             foreach ($tab_object['table'] as $table_name) {
 
                 $table = $table_name;
 
-                $model_name = "Identifier" . Inflector::camelize(str_replace('-','_',$key));
-                $dir = APP_DIR . "/model/" . $key;
+                $model_name = "Identifier" . Inflector::camelize(str_replace('-', '_', $key));
+                $dir = APP_DIR . "/model/Identifier" . ucfirst(strtolower($key));
 
                 if (!is_dir($dir)) {
                     mkdir($dir);
@@ -139,13 +146,12 @@ trait Administration {
                     $text .= "use \Glial\Synapse\Model;\n";
                     $text .= "class " . $table . " extends Model\n{\nvar \$schema = \"";
 
-                    $sql = "SHOW CREATE TABLE `" . $table . "`";
-                    $res2 = $dbLink->sql_query($sql);
+                    $create_table = $dbLink->getCreateTable($table);
 
-                    $array = $dbLink->sql_fetch_array($res2);
 
-                    $sql = "DESCRIBE `" . $table . "`";
-                    $res3 = $dbLink->sql_query($sql);
+                    $des_table = $dbLink->getDescription($table);
+
+                    $res3 = $dbLink->sql_query($des_table);
 
                     $i = 0;
 
@@ -153,14 +159,16 @@ trait Administration {
                     $field = array();
 
                     while ($ob = $dbLink->sql_fetch_object($res3)) {
-                        $field[] = "\"" . $ob->Field . "\"";
 
-                        $data[$table][$i]['field'] = $ob->Field;
-                        $data[$table][$i]['type'] = $ob->Type;
+                        $field[] = "\"" . $ob->FIELD . "\"";
+
+                        $data[$table][$i]['field'] = $ob->FIELD;
+                        $data[$table][$i]['type'] = $ob->TYPE;
+                        $data[$table][$i]['length'] = $ob->LENGTH;
                         $i++;
                     }
 
-                    $text .= $array[1];
+                    $text .= $create_table;
                     $text .= "\";\n\nvar \$field = array(" . implode(",", $field) . ");\n\nvar \$validate = array(\n";
 
                     foreach ($data[$table] as $field) {
@@ -177,14 +185,18 @@ trait Administration {
 
                             if (mb_strstr($field['type'], "int")) {
                                 $text .= "\t'" . $field['field'] . "' => array(\n\t\t'numeric' => array('This must be an int.')\n\t),\n";
-                            } elseif (mb_strstr($field['type'], "datetime")) {
+                            } elseif (mb_stristr($field['type'], "datetime")) {
                                 $text .= "\t'" . $field['field'] . "' => array(\n\t\t'dateTime' => array('This must be a datetime.')\n\t),\n";
-                            } elseif (mb_strstr($field['type'], "time")) {
+                            } elseif (mb_stristr($field['type'], "time")) {
                                 $text .= "\t'" . $field['field'] . "' => array(\n\t\t'time' => array('This must be a time.')\n\t),\n";
-                            } elseif (mb_strstr($field['type'], "date")) {
+                            } elseif (mb_stristr($field['type'], "date")) {
                                 $text .= "\t'" . $field['field'] . "' => array(\n\t\t'date' => array('This must be a date.')\n\t),\n";
-                            } elseif (mb_strstr($field['type'], "float")) {
+                            } elseif (mb_stristr($field['type'], "float")) {
                                 $text .= "\t'" . $field['field'] . "' => array(\n\t\t'decimal' => array('This must be a float.')\n\t),\n";
+                            } elseif (mb_stristr($field['type'], "VARCHAR2")) {
+                                $text .= "\t'" . $field['field'] . "' => array(\n\t\t'maxLength' => array('You execed the max length (" . $field['length'] . " chars)', " . $field['length'] . ")\n\t),\n";
+                            } elseif (mb_stristr($field['type'], "NUMBER")) {
+                                $text .= "\t'" . $field['field'] . "' => array(\n\t\t'numeric' => array('This must be an int.')\n\t),\n";
                             } else {
                                 //$text .= "\t'" . $field['field'] . "' => array(\n\t\t'not_empty' => array('This field is requiered.')\n\t),\n";
                             }
@@ -202,7 +214,8 @@ trait Administration {
         }
     }
 
-    public function test() {
+    public function test()
+    {
 
         $this->view = false;
         echo "trait";
