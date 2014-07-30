@@ -25,7 +25,7 @@ class Oracle extends Sql {
             $port = 1521;
         }
 
-        $this->link = oci_connect("host=" . $host . " port=" . $port . " dbname=" . $database . " user=" . $login . " password=" . $password . " options='--client_encoding=UTF8'");
+        $this->link = oci_connect("//".$host.":".$port."/service_name");
 
         if (!$this->link) {
             throw new \Exception('GLI-012 : Impossible to connect to : ' . $host);

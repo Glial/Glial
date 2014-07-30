@@ -64,7 +64,7 @@ class Config
     function get($filename)
     {
         if (empty($this->data[$filename])) {
-            trigger_error("This ini file wasn't loaded", E_USER_ERROR);
+            throw new \Exception("GLI-051 This ini file \"".$filename."\" wasn't loaded");
         }
 
         return $this->data[$filename];
