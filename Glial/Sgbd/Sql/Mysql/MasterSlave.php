@@ -39,20 +39,27 @@ class MasterSlave {
      * @access public
      * @package Sgbd
      * @since 3.0a First time this was introduced.
-     * @version 3.0.1a
+     * @version 3.1 add testAccess
      */
     public function isMaster() {
-        $sql = "SHOW MASTER STATUS";
 
-        $res = $this->instance->sql_query($sql);
+        $grants = $this->instance->getGrants();
 
-        if ($this->instance->sql_num_rows($res) === 0) {
-            return false;
-        } elseif ($this->instance->sql_num_rows($res) !== 1) {
-            throw new \Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
+        if ($this->testAccess()) {
+
+            $sql = "SHOW MASTER STATUS";
+            $res = $this->instance->sql_query($sql);
+
+            if ($this->instance->sql_num_rows($res) === 0) {
+                return false;
+            } elseif ($this->instance->sql_num_rows($res) !== 1) {
+                throw new \Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
+            }
+
+
+            return $this->instance->sql_fetch_array($res, MYSQLI_ASSOC);
         }
-
-        return $this->instance->sql_fetch_array($res, MYSQLI_ASSOC);
+        return false;
     }
 
     /**
@@ -67,27 +74,30 @@ class MasterSlave {
      * @example echo $this->di['db']->sql('defaul');
      * @package Sgbd
      * @since 3.0a First time this was introduced.
-     * @version 3.0.1a
+     * @version 3.1 add testAccess
      */
     public function isSlave() {
 
-        if (version_compare($this->instance->getVersion(), 10, '>')) {
-            $sql = "SHOW all SLAVES STATUS";
-        } else {
-            $sql = "SHOW SLAVE STATUS";
-        }
+        if ($this->testAccess()) {
 
-        $res = $this->instance->sql_query($sql);
-
-        if ($this->instance->sql_num_rows($res) === 0) {
-            return false;
-        } else {
-
-            $tab_ret = array();
-            while ($arr = $this->instance->sql_fetch_array($res, MYSQLI_ASSOC)) {
-                $tab_ret[] = $arr;
+            if (version_compare($this->instance->getVersion(), 10, '>')) {
+                $sql = "SHOW all SLAVES STATUS";
+            } else {
+                $sql = "SHOW SLAVE STATUS";
             }
-            return $tab_ret;
+
+            $res = $this->instance->sql_query($sql);
+
+            if ($this->instance->sql_num_rows($res) === 0) {
+                return false;
+            } else {
+
+                $tab_ret = array();
+                while ($arr = $this->instance->sql_fetch_array($res, MYSQLI_ASSOC)) {
+                    $tab_ret[] = $arr;
+                }
+                return $tab_ret;
+            }
         }
     }
 
@@ -97,6 +107,27 @@ class MasterSlave {
 
     public function getSlaveStatus() {
         return isSlave($this->instance);
+    }
+
+    /**
+     * This method return true or false
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @return boolean
+     * @description if access is enough return true else false
+     * @access public
+     * @package Sgbd
+     * @since 3.1 First time this was introduced.
+     * @version 3.1 add testAccess
+     */
+    public function testAccess() {
+
+        $grants = $this->instance->getGrants();
+        if (in_array("ALL PRIVILEGES", $grants) || (in_array("SUPER", $grants) || in_array("REPLICATION CLIENT", $grants))) {
+            return true;
+        }
+        return false;
     }
 
 }

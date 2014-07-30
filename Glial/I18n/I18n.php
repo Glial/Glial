@@ -6,7 +6,7 @@ namespace Glial\I18n {
 
     class I18n
     {
-
+        
 // to prevent kick or/and ban from google
         private static $nb_google_call = 0;
         private static $_SQL;
@@ -295,23 +295,26 @@ namespace Glial\I18n {
         private static function initiate($iso)
         {
 
-
-            $sql = "CREATE TABLE IF NOT EXISTS `translation_" . mb_strtolower($iso) . "` (
-		`id` int(11) NOT NULL auto_increment,
-		`id_history_etat` int NOT NULL,
-		`key` char(40) NOT NULL,
-		`source` char(2) NOT NULL,
-		`text` text NOT NULL,
-		`date_inserted` datetime NOT NULL,
-		`date_updated` datetime NOT NULL,
-		`translate_auto` int(11) NOT NULL,
-		`file_found` varchar(255) NOT NULL,
-		`line_found` int NOT NULL,
-		PRIMARY KEY  (`id`),
-		UNIQUE KEY `key` (`key`,`file_found`),
-		INDEX `id_history_etat` (`id_history_etat`)
+              /*
+            $sql = "CREATE TABLE IF NOT EXISTS ".self::$_SQL->sql('default')->ESC."translation_" . mb_strtolower($iso) . "".self::$_SQL->sql('default')->ESC." (
+		".self::$_SQL->sql('default')->ESC."id".self::$_SQL->sql('default')->ESC." int(11) NOT NULL auto_increment,
+		".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC." int NOT NULL,
+		".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." char(40) NOT NULL,
+		".self::$_SQL->sql('default')->ESC."source".self::$_SQL->sql('default')->ESC." char(2) NOT NULL,
+		".self::$_SQL->sql('default')->ESC."text".self::$_SQL->sql('default')->ESC." text NOT NULL,
+		".self::$_SQL->sql('default')->ESC."date_inserted".self::$_SQL->sql('default')->ESC." datetime NOT NULL,
+		".self::$_SQL->sql('default')->ESC."date_updated".self::$_SQL->sql('default')->ESC." datetime NOT NULL,
+		".self::$_SQL->sql('default')->ESC."translate_auto".self::$_SQL->sql('default')->ESC." int(11) NOT NULL,
+		".self::$_SQL->sql('default')->ESC."file_found".self::$_SQL->sql('default')->ESC." varchar(255) NOT NULL,
+		".self::$_SQL->sql('default')->ESC."line_found".self::$_SQL->sql('default')->ESC." int NOT NULL,
+		PRIMARY KEY  (".self::$_SQL->sql('default')->ESC."id".self::$_SQL->sql('default')->ESC."),
+		UNIQUE KEY ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." (".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC.",".self::$_SQL->sql('default')->ESC."file_found".self::$_SQL->sql('default')->ESC."),
+		INDEX ".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC." (".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC.")
 		);";
             self::$_SQL->sql('default')->sql_query($sql);
+                
+               
+               */
         }
 
         /**
@@ -330,7 +333,7 @@ namespace Glial\I18n {
 
             $translate_auto = 1;
 
-            $sql = "SELECT text,translate_auto from translation_main WHERE `key` ='" . $key . "' and `destination` = '" . $to . "'";
+            $sql = "SELECT text,translate_auto from translation_main WHERE ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." ='" . $key . "' and ".self::$_SQL->sql('default')->ESC."destination".self::$_SQL->sql('default')->ESC." = '" . $to . "'";
             $res = self::$_SQL->sql('default')->sql_query($sql);
 
 
@@ -447,16 +450,16 @@ namespace Glial\I18n {
         private static function insert_db($iso, $source, $text, $key, $translate_auto)
         {
 
-            $sql = "INSERT IGNORE INTO `translation_" . mb_strtolower($iso) . "`
-		SET `key` ='" . $key . "',
-		`source` = '" . self::$_SQL->sql('default')->sql_real_escape_string($source) . "',
-		`text` = '" . self::$_SQL->sql('default')->sql_real_escape_string($text) . "',
-		`date_inserted` = now(),
-		`date_updated` = now(),
-		`translate_auto` = '" . $translate_auto . "',
-		`file_found` = '" . self::$file . "',
-		`id_history_etat` = 1,
-		`line_found` ='" . self::$line . "'";
+            $sql = "INSERT IGNORE INTO ".self::$_SQL->sql('default')->ESC."translation_" . mb_strtolower($iso) . "".self::$_SQL->sql('default')->ESC."
+		SET ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." ='" . $key . "',
+		".self::$_SQL->sql('default')->ESC."source".self::$_SQL->sql('default')->ESC." = '" . self::$_SQL->sql('default')->sql_real_escape_string($source) . "',
+		".self::$_SQL->sql('default')->ESC."text".self::$_SQL->sql('default')->ESC." = '" . self::$_SQL->sql('default')->sql_real_escape_string($text) . "',
+		".self::$_SQL->sql('default')->ESC."date_inserted".self::$_SQL->sql('default')->ESC." = now(),
+		".self::$_SQL->sql('default')->ESC."date_updated".self::$_SQL->sql('default')->ESC." = now(),
+		".self::$_SQL->sql('default')->ESC."translate_auto".self::$_SQL->sql('default')->ESC." = '" . $translate_auto . "',
+		".self::$_SQL->sql('default')->ESC."file_found".self::$_SQL->sql('default')->ESC." = '" . self::$file . "',
+		".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC." = 1,
+		".self::$_SQL->sql('default')->ESC."line_found".self::$_SQL->sql('default')->ESC." ='" . self::$line . "'";
 
             self::$_SQL->sql('default')->sql_query($sql);
         }
@@ -685,7 +688,7 @@ namespace Glial\I18n {
                 self::$countNumberElemAtLoading[self::$_md5File] = count(self::$_translations[self::$_md5File]);
             } else {
 //chargement du fichier de cache en fonction de la BDD
-                $sql = "SELECT * FROM `translation_" . strtolower(self::$_language) . "` WHERE file_found ='" . self::$file . "'";
+                $sql = "SELECT * FROM translation_" . strtolower(self::$_language) . " WHERE file_found ='" . self::$file . "'";
                 
              
                 
@@ -711,23 +714,27 @@ namespace Glial\I18n {
 
         function install()
         {
-            $sql = "CREATE TABLE IF NOT EXISTS `translation_main` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_history_etat` int(11) NOT NULL,
-  `key` char(40) NOT NULL,
-  `source` char(5) NOT NULL,
-  `destination` char(5) NOT NULL,
-  `text` text NOT NULL,
-  `date_inserted` datetime NOT NULL,
-  `date_updated` datetime NOT NULL,
-  `translate_auto` int(11) NOT NULL,
-  `file_found` varchar(255) NOT NULL,
-  `line_found` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `key` (`key`,`destination`)
+            
+            /*
+            $sql = "CREATE TABLE IF NOT EXISTS ".self::$_SQL->sql('default')->ESC."translation_main".self::$_SQL->sql('default')->ESC." (
+  ".self::$_SQL->sql('default')->ESC."id".self::$_SQL->sql('default')->ESC." int(11) NOT NULL AUTO_INCREMENT,
+  ".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC." int(11) NOT NULL,
+  ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." char(40) NOT NULL,
+  ".self::$_SQL->sql('default')->ESC."source".self::$_SQL->sql('default')->ESC." char(5) NOT NULL,
+  ".self::$_SQL->sql('default')->ESC."destination".self::$_SQL->sql('default')->ESC." char(5) NOT NULL,
+  ".self::$_SQL->sql('default')->ESC."text".self::$_SQL->sql('default')->ESC." text NOT NULL,
+  ".self::$_SQL->sql('default')->ESC."date_inserted".self::$_SQL->sql('default')->ESC." datetime NOT NULL,
+  ".self::$_SQL->sql('default')->ESC."date_updated".self::$_SQL->sql('default')->ESC." datetime NOT NULL,
+  ".self::$_SQL->sql('default')->ESC."translate_auto".self::$_SQL->sql('default')->ESC." int(11) NOT NULL,
+  ".self::$_SQL->sql('default')->ESC."file_found".self::$_SQL->sql('default')->ESC." varchar(255) NOT NULL,
+  ".self::$_SQL->sql('default')->ESC."line_found".self::$_SQL->sql('default')->ESC." int(11) NOT NULL,
+  PRIMARY KEY (".self::$_SQL->sql('default')->ESC."id".self::$_SQL->sql('default')->ESC."),
+  UNIQUE KEY ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." (".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC.",".self::$_SQL->sql('default')->ESC."destination".self::$_SQL->sql('default')->ESC.")
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=32601 ; ";
 
             self::$_SQL->sql('default')->sql_query($sql);
+            */
+            
         }
 
         public static function write_ini_file($assoc_arr, $path, $has_sections = false)

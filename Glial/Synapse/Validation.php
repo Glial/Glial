@@ -657,7 +657,10 @@ class Validation
      */
     function maxLength($check, $max)
     {
-        $length = mb_strlen($check);
+        
+        
+        
+        $length = mb_strlen($check['value']);
         return ($length <= $max);
     }
 

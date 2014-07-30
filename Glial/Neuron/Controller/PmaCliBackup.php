@@ -44,6 +44,7 @@ trait PmaCliBackup {
         }
     }
 
+
     public function backupCompress() {
         $sql = "SELECT file_name FROM mysql_dump where is_gziped=0";
 
@@ -64,7 +65,4 @@ trait PmaCliBackup {
         $sql = "UPDATE mysql_dump SET is_gziped=1 where is_gziped=0";
         $db->sql_query($sql);
     }
-    
-    
-
 }

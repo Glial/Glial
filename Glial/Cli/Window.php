@@ -74,8 +74,6 @@ class Window
 
 
           echo "\033[H";
-         * *
-         */
 
         return $value;
     }

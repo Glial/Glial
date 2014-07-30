@@ -9,7 +9,6 @@
 namespace Glial\Neuron\Controller;
 
 trait Test {
-
     function win() {
         $this->view = false;
         $win = new Window('Test windows', "SFRHSFGH x xfhg xfgh xfgh xgfh gxfh xfxgfh x xfgh xfgh xfgh xfgh : failed to open stream: No such file or directory in \n"
@@ -18,5 +17,4 @@ trait Test {
                 . "[[INPUT]]"
                 . "\n");
     }
-
 }

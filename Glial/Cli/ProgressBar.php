@@ -9,6 +9,7 @@ namespace Glial\Cli;
   echo color::getColoredString("Testing Colors class, this is purple string on yellow background.", "purple", "yellow") . "\n";
  */
 
+
 class ProgressBar
 {
 
