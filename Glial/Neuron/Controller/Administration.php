@@ -51,7 +51,7 @@ trait Administration
                 foreach ($tables['table'] as $table) {
                     echo $table . "\n";
 
-                    $fp = fopen(TMP . "/database/" . $table . ".table.txt", "w");
+                    $fp = fopen(TMP . "/database/" . strtolower($table) . ".table.txt", "w");
 
                     $sql = $this->di['db']->sql('default')->getDescription($table);
 
@@ -135,7 +135,7 @@ trait Administration
                     mkdir($dir);
                 }
 
-                $file = $dir . "/" . $table . ".php";
+                $file = $dir . "/" . strtolower($table) . ".php";
 
                 if (!file_exists($file)) {
                     $fp = fopen($file, "w");

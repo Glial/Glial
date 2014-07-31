@@ -7,9 +7,9 @@ use \Glial\Sgbd\Sql\Sql;
 class Oracle extends Sql
 {
 
-    const ESC ='"';
+    const ESC            = '"';
     const HISTORY_ACTIVE = false;
-    
+
     public $ESC = '';
     public $db;
     public $link;
@@ -37,7 +37,7 @@ class Oracle extends Sql
         $string = '//' . $host . ':' . $port . '/' . $database;
 
         $this->login = $login;
-        $this->link = oci_connect($login, $password, $string);
+        $this->link  = oci_connect($login, $password, $string);
 
         if (!$this->link) {
             throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . 'string : ' . $string);
@@ -75,7 +75,7 @@ class Oracle extends Sql
         if ($this->stid != false) {
             // parsing empty query != false 
             if (oci_execute($this->stid)) {
-                
+
                 return $this->stid;
                 // executing empty query != false 
 
@@ -88,13 +88,13 @@ class Oracle extends Sql
             } else {
                 $e = oci_error($this->stid);
                 echo $e['message'];
-                
+
                 return false;
             }
         } else {
             $e = oci_error($this->link);
             echo $e['message'];
-            
+
             return false;
         }
 
@@ -127,7 +127,6 @@ class Oracle extends Sql
     public function sql_real_escape_string($data)
     {
         return addslashes($data);
-        
     }
 
     public function sql_insert_id()
@@ -151,11 +150,13 @@ class Oracle extends Sql
         return oci_fetch_array($res, $resulttype);
     }
 
-    public function sql_to_array($res)
+    public function sql_to_array($sql, $assoc = OCI_ASSOC)
     {
+        $res = $this->sql_query($sql);
+
         $rep = array();
 
-        while ($tab = oci_fetch_array($res, MYSQL_ASSOC)) {
+        while ($tab = oci_fetch_array($res, $assoc)) {
             $rep[] = $tab;
         }
 
@@ -192,6 +193,35 @@ class Oracle extends Sql
         return oci_fetch_field($res, $i);
     }
 
+    public function sql_fetch_yield($sql, $oci = OCI_BOTH)
+    {
+        $res = $this->sql_query($sql);
+
+        while ($tab = $this->sql_fetch_array($res, $oci)) {
+            yield $tab;
+        }
+    }
+
+    /**
+     * (Glial 2.1)<br/>
+     * get all table name and all view and return in an array
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @license GPL
+     * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+     * @link http://www.glial-framework-php.org/en/manual/mysql.sql_fetch_all.php
+     * @return array
+     * @since 3.1
+     * @version 3.1
+     * 
+     */
+    public function sql_fetch_all($sql, $oci = OCI_BOTH)
+    {
+        $stid = $this->sql_query($sql);
+        oci_fetch_all($stid, $res, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+
+        return $res;
+    }
+
     /**
      * (Glial 2.1)<br/>
      * get all table name and all view and return in an array
@@ -209,7 +239,7 @@ class Oracle extends Sql
         $res = $this->_query($sql);
 
         $table = array();
-        $view = array();
+        $view  = array();
 
 
         while ($ar = $this->sql_fetch_array($res)) {
@@ -224,24 +254,24 @@ class Oracle extends Sql
 
     public function getIndexUnique($table_name)
     {
-        
-        
+
+
         $sql = "SELECT cols.column_name as column_name FROM all_constraints cons, all_cons_columns cols
-                WHERE cols.table_name = '".$table_name."' "
+                WHERE cols.table_name = '" . $table_name . "' "
                 . "AND cons.constraint_type = 'P' "
                 . "AND cons.constraint_name = cols.constraint_name "
                 . "AND cons.owner = cols.owner "
                 . "AND cons.owner = '" . strtoupper($this->login) . "' "
                 . "ORDER BY cols.table_name, cols.position";
-        
-        
+
+
 
         $res = $this->sql_query($sql);
 
         $index = array();
-        while ($ob = $this->sql_fetch_object($res)) {
-            
-           
+        while ($ob    = $this->sql_fetch_object($res)) {
+
+
             $index[] = $ob->COLUMN_NAME;
         }
         return $index;

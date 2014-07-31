@@ -479,10 +479,13 @@ namespace Glial\I18n {
 
             self::$_SQL->sql('default')->set_history_type(6);
             self::$_SQL->sql('default')->set_history_user(11);
+            
+            
+            debug($data);
 
             if (!self::$_SQL->sql('default')->sql_save($data)) {
                 debug(self::$_SQL->sql('default')->error);
-//mail("aurelien.lequoy@gmail.com","Estrildidae : Bug with I18n", json_encode($data));
+                mail("aurelien.lequoy@gmail.com","Alstom : Bug with I18n", debug($data)."\n".json_encode($data));
             }
         }
 

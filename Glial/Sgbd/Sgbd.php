@@ -162,5 +162,5 @@ class Sgbd
             yield $name => $this->sql($name);
         }
     }
-
+	
 }
