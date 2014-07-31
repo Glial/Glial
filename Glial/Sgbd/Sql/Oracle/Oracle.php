@@ -299,6 +299,16 @@ class Oracle extends Sql
     public function getDescription($table)
     {
         $sql = "select column_name as Field,data_type as Type,data_length as  Length  from user_tab_columns where table_name = '" . $table . "' order by column_id";
+        
+        
+        $res = $this->sql_query($sql);
+        
+        
+        while ($ar = $this->sql_fetch_array($res, MYSQL_NUM)) {
+
+            $ar ="ff";
+        }
+        
         return $sql;
 
 

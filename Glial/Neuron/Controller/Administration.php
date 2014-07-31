@@ -122,8 +122,6 @@ trait Administration
 
             $tab_object = $dbLink->getListTable();
 
-
-
             foreach ($tab_object['table'] as $table_name) {
 
                 $table = $table_name;
@@ -147,26 +145,22 @@ trait Administration
                     $text .= "class " . $table . " extends Model\n{\nvar \$schema = \"";
 
                     $create_table = $dbLink->getCreateTable($table);
-
-
                     $des_table = $dbLink->getDescription($table);
 
-                    $res3 = $dbLink->sql_query($des_table);
-
+                  
                     $i = 0;
 
                     $data = array();
                     $field = array();
 
-                    while ($ob = $dbLink->sql_fetch_object($res3)) {
-
-                        $field[] = "\"" . $ob->FIELD . "\"";
-
-                        $data[$table][$i]['field'] = $ob->FIELD;
-                        $data[$table][$i]['type'] = $ob->TYPE;
-                        $data[$table][$i]['length'] = $ob->LENGTH;
+                    foreach ($des_table as $tab) {
+                        $field[] = "\"" . $tab[0] . "\"";
+                        $data[$table][$i]['field'] = $tab[0];
+                        $data[$table][$i]['type'] = $tab[1];
+                        $data[$table][$i]['length'] = $tab[2];
                         $i++;
                     }
+
 
                     $text .= $create_table;
                     $text .= "\";\n\nvar \$field = array(" . implode(",", $field) . ");\n\nvar \$validate = array(\n";
