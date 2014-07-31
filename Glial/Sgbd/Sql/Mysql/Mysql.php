@@ -466,4 +466,43 @@ class Mysql extends Sql
         return explode(', ', $output_array[1]);
     }
 
+    public function getCreateTable($table, $schema = '')
+    {
+
+        $sql = "SHOW CREATE TABLE `" . $table . "`";
+
+        $res = $this->sql_query($sql);
+
+
+        while ($data = $this->sql_fetch_array($res, MYSQLI_NUM)) {
+            $elem = $data[1];
+        }
+
+
+        if (empty($elem)) {
+            throw new \Exception("GLI-101 : couldn't find the table : '" . $table . "'");
+        }
+
+
+        return $elem;
+    }
+
+    public function getDescription($table)
+    {
+        $sql = "SELECT COLUMN_NAME, DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '".$table."' ORDER BY `COLUMNS`.`CHARACTER_MAXIMUM_LENGTH` ASC";
+
+
+        $res = $this->sql_query($sql);
+
+        $table = array();
+        while ($ar = $this->sql_fetch_array($res, MYSQL_NUM)) {
+
+            $table[] = $ar;
+        }
+
+        return $table;
+    }
+
 }
+
+
