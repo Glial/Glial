@@ -27,7 +27,7 @@ abstract class Sql
     private $_table = '';
     private $_name = '';
     private $_keys = array();
-    private $_param = array();
+    public $_param = array();
     public $is_connected = false;
 
     //to be surcharged
@@ -478,5 +478,17 @@ abstract class Sql
     {
         return $this->_param;
     }
+    
+    /*
+     *
+     * @since glial 3.1.1
+     * @param void
+     * @return the driver used for this connection (oracle|mysql|sybase|pgsql)
+     */
 
+
+    public function getDriver()
+    {
+        return $this->_param['driver'];
+    }
 }
