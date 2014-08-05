@@ -16,7 +16,7 @@
     "require": {
         "php": ">=5.5.0",
         "hoa/console" : "dev-master",
-        "monolog/monolog": "1.9.*"
+        "monolog/monolog": "1.10.*"
 
     },
     "require-dev": {
