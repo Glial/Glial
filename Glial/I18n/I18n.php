@@ -6,7 +6,9 @@ namespace Glial\I18n {
 
     class I18n
     {
-        
+
+        const DATABASE = "default";
+
 // to prevent kick or/and ban from google
         private static $nb_google_call = 0;
         private static $_SQL;
@@ -291,30 +293,29 @@ namespace Glial\I18n {
          * @access public
          * @param string $string
          * @return string
+         * @since 1.0
+         * @deprecated since version 3.1.1
          */
         private static function initiate($iso)
         {
 
-              /*
-            $sql = "CREATE TABLE IF NOT EXISTS ".self::$_SQL->sql('default')->ESC."translation_" . mb_strtolower($iso) . "".self::$_SQL->sql('default')->ESC." (
-		".self::$_SQL->sql('default')->ESC."id".self::$_SQL->sql('default')->ESC." int(11) NOT NULL auto_increment,
-		".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC." int NOT NULL,
-		".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." char(40) NOT NULL,
-		".self::$_SQL->sql('default')->ESC."source".self::$_SQL->sql('default')->ESC." char(2) NOT NULL,
-		".self::$_SQL->sql('default')->ESC."text".self::$_SQL->sql('default')->ESC." text NOT NULL,
-		".self::$_SQL->sql('default')->ESC."date_inserted".self::$_SQL->sql('default')->ESC." datetime NOT NULL,
-		".self::$_SQL->sql('default')->ESC."date_updated".self::$_SQL->sql('default')->ESC." datetime NOT NULL,
-		".self::$_SQL->sql('default')->ESC."translate_auto".self::$_SQL->sql('default')->ESC." int(11) NOT NULL,
-		".self::$_SQL->sql('default')->ESC."file_found".self::$_SQL->sql('default')->ESC." varchar(255) NOT NULL,
-		".self::$_SQL->sql('default')->ESC."line_found".self::$_SQL->sql('default')->ESC." int NOT NULL,
-		PRIMARY KEY  (".self::$_SQL->sql('default')->ESC."id".self::$_SQL->sql('default')->ESC."),
-		UNIQUE KEY ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." (".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC.",".self::$_SQL->sql('default')->ESC."file_found".self::$_SQL->sql('default')->ESC."),
-		INDEX ".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC." (".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC.")
-		);";
-            self::$_SQL->sql('default')->sql_query($sql);
-                
-               
-               */
+
+            $sql = "CREATE TABLE IF NOT EXISTS `translation_" . mb_strtolower($iso) . "` (
+              `id` int(11) NOT NULL auto_increment,
+              `id_history_etat` int NOT NULL,
+              `key` char(40) NOT NULL,
+              `source` char(2) NOT NULL,
+              `text` text NOT NULL,
+              `date_inserted` datetime NOT NULL,
+              `date_updated` datetime NOT NULL,
+              `translate_auto` int(11) NOT NULL,
+              `file_found` varchar(255) NOT NULL,
+              `line_found` int NOT NULL,
+              PRIMARY KEY  (`id`),
+              UNIQUE KEY `key` (`key`,`file_found`),
+              INDEX `id_history_etat` (`id_history_etat`)
+              );";
+            self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
         }
 
         /**
@@ -333,15 +334,15 @@ namespace Glial\I18n {
 
             $translate_auto = 1;
 
-            $sql = "SELECT text,translate_auto from translation_main WHERE ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." ='" . $key . "' and ".self::$_SQL->sql('default')->ESC."destination".self::$_SQL->sql('default')->ESC." = '" . $to . "'";
-            $res = self::$_SQL->sql('default')->sql_query($sql);
+            $sql = "SELECT text,translate_auto from translation_main WHERE " . self::$_SQL->sql(I18n::DATABASE)->ESC . "key" . self::$_SQL->sql(I18n::DATABASE)->ESC . " ='" . $key . "' and " . self::$_SQL->sql(I18n::DATABASE)->ESC . "destination" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . $to . "'";
+            $res = self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
 
 
-            if (self::$_SQL->sql('default')->sql_num_rows($res) == 1) {
-                $ob = self::$_SQL->sql('default')->sql_fetch_object($res);
+            if (self::$_SQL->sql(I18n::DATABASE)->sql_num_rows($res) == 1) {
+                $ob = self::$_SQL->sql(I18n::DATABASE)->sql_fetch_object($res);
                 $rep = $ob->text;
                 $translate_auto = $ob->translate_auto;
-            } else if (self::$_SQL->sql('default')->sql_num_rows($res) == 0) {
+            } else if (self::$_SQL->sql(I18n::DATABASE)->sql_num_rows($res) == 0) {
 
                 self::$_to_translate[$from][$key]['val'] = $text;
                 self::$_to_translate[$from][$key]['file'] = self::$file;
@@ -372,7 +373,7 @@ namespace Glial\I18n {
 
 
             if (!empty(self::$_to_translate)) {
-                self::testTable(self::$_language);
+                //self::testTable(self::$_language);
             }
 
             foreach (self::$_to_translate as $from => $tab) {
@@ -450,26 +451,26 @@ namespace Glial\I18n {
         private static function insert_db($iso, $source, $text, $key, $translate_auto)
         {
 
-            $sql = "INSERT IGNORE INTO ".self::$_SQL->sql('default')->ESC."translation_" . mb_strtolower($iso) . "".self::$_SQL->sql('default')->ESC."
-		SET ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." ='" . $key . "',
-		".self::$_SQL->sql('default')->ESC."source".self::$_SQL->sql('default')->ESC." = '" . self::$_SQL->sql('default')->sql_real_escape_string($source) . "',
-		".self::$_SQL->sql('default')->ESC."text".self::$_SQL->sql('default')->ESC." = '" . self::$_SQL->sql('default')->sql_real_escape_string($text) . "',
-		".self::$_SQL->sql('default')->ESC."date_inserted".self::$_SQL->sql('default')->ESC." = now(),
-		".self::$_SQL->sql('default')->ESC."date_updated".self::$_SQL->sql('default')->ESC." = now(),
-		".self::$_SQL->sql('default')->ESC."translate_auto".self::$_SQL->sql('default')->ESC." = '" . $translate_auto . "',
-		".self::$_SQL->sql('default')->ESC."file_found".self::$_SQL->sql('default')->ESC." = '" . self::$file . "',
-		".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC." = 1,
-		".self::$_SQL->sql('default')->ESC."line_found".self::$_SQL->sql('default')->ESC." ='" . self::$line . "'";
+            $sql = "INSERT IGNORE INTO " . self::$_SQL->sql(I18n::DATABASE)->ESC . "translation_" . mb_strtolower($iso) . "" . self::$_SQL->sql(I18n::DATABASE)->ESC . "
+		SET " . self::$_SQL->sql(I18n::DATABASE)->ESC . "key" . self::$_SQL->sql(I18n::DATABASE)->ESC . " ='" . $key . "',
+		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "source" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($source) . "',
+		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "text" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($text) . "',
+		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "date_inserted" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = now(),
+		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "date_updated" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = now(),
+		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "translate_auto" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . $translate_auto . "',
+		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "file_found" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . self::$file . "',
+		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "id_history_etat" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = 1,
+		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "line_found" . self::$_SQL->sql(I18n::DATABASE)->ESC . " ='" . self::$line . "'";
 
-            self::$_SQL->sql('default')->sql_query($sql);
+            self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
         }
 
         private static function save_db($iso, $source, $text, $key, $translate_auto, $file, $line)
         {
             $data = array();
             $data["translation_" . mb_strtolower($iso)]['key'] = $key;
-            $data["translation_" . mb_strtolower($iso)]['source'] = self::$_SQL->sql('default')->sql_real_escape_string($source);
-            $data["translation_" . mb_strtolower($iso)]['text'] = self::$_SQL->sql('default')->sql_real_escape_string($text);
+            $data["translation_" . mb_strtolower($iso)]['source'] = self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($source);
+            $data["translation_" . mb_strtolower($iso)]['text'] = self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($text);
             $data["translation_" . mb_strtolower($iso)]['date_inserted'] = date("Y-m-d H:i:s");
             $data["translation_" . mb_strtolower($iso)]['date_updated'] = date("Y-m-d H:i:s");
             $data["translation_" . mb_strtolower($iso)]['translate_auto'] = intval($translate_auto);
@@ -477,27 +478,27 @@ namespace Glial\I18n {
             $data["translation_" . mb_strtolower($iso)]['id_history_etat'] = 1;
             $data["translation_" . mb_strtolower($iso)]['line_found'] = intval($line);
 
-            self::$_SQL->sql('default')->set_history_type(6);
-            self::$_SQL->sql('default')->set_history_user(11);
-            
-            
+            self::$_SQL->sql(I18n::DATABASE)->set_history_type(6);
+            self::$_SQL->sql(I18n::DATABASE)->set_history_user(11);
+
+
             debug($data);
 
-            if (!self::$_SQL->sql('default')->sql_save($data)) {
-                debug(self::$_SQL->sql('default')->error);
-                mail("aurelien.lequoy@gmail.com","Alstom : Bug with I18n", debug($data)."\n".json_encode($data));
+            if (!self::$_SQL->sql(I18n::DATABASE)->sql_save($data)) {
+                debug(self::$_SQL->sql(I18n::DATABASE)->error);
+                mail("aurelien.lequoy@gmail.com", "Alstom : Bug with I18n", debug($data) . "\n" . json_encode($data));
             }
         }
 
         public static function testTable($iso)
         {
 
-            $ret = self::$_SQL->sql('default')->getListTable();
+            $ret = self::$_SQL->sql(I18n::DATABASE)->getListTable();
 
             if (in_array("translation_" . strtolower($iso), $ret['table'])) {
                 true;
             } else {
-                self::initiate($iso);
+                //self::initiate($iso);
                 return false;
             }
         }
@@ -628,7 +629,7 @@ namespace Glial\I18n {
 
         public static function get_answer_from_google($string, $from)
         {
-           
+
 
 //debug("We calling google ...");
 //$url ="http://translate.google.fr/translate_t?text=Traduction%20automatique%20de%20pages%20web%0Aceci%20est%20un%20test&hl=fr&langpair=fr|en&tbb=1&ie=utf-8";
@@ -659,7 +660,7 @@ namespace Glial\I18n {
 
 //we check that we have same number of input and output
             if (count($nb) != count($out)) {
-                throw new \Exception("GLI-009 : Problem with machine translation".trim($string).PHP_EOL.var_dump($out));
+                throw new \Exception("GLI-009 : Problem with machine translation" . trim($string) . PHP_EOL . var_dump($out));
                 return false;
             }
 
@@ -692,11 +693,11 @@ namespace Glial\I18n {
             } else {
 //chargement du fichier de cache en fonction de la BDD
                 $sql = "SELECT * FROM translation_" . strtolower(self::$_language) . " WHERE file_found ='" . self::$file . "'";
-                
-             
-                
-                $res23 = self::$_SQL->sql('default')->sql_query($sql);
-                while ($ob = self::$_SQL->sql('default')->sql_fetch_object($res23)) {
+
+
+
+                $res23 = self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
+                while ($ob = self::$_SQL->sql(I18n::DATABASE)->sql_fetch_object($res23)) {
                     self::$_translations[self::$_md5File][$ob->key] = $ob->text;
                 }
 
@@ -715,29 +716,17 @@ namespace Glial\I18n {
             }
         }
 
-        function install()
+        static public function install()
         {
-            
-            /*
-            $sql = "CREATE TABLE IF NOT EXISTS ".self::$_SQL->sql('default')->ESC."translation_main".self::$_SQL->sql('default')->ESC." (
-  ".self::$_SQL->sql('default')->ESC."id".self::$_SQL->sql('default')->ESC." int(11) NOT NULL AUTO_INCREMENT,
-  ".self::$_SQL->sql('default')->ESC."id_history_etat".self::$_SQL->sql('default')->ESC." int(11) NOT NULL,
-  ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." char(40) NOT NULL,
-  ".self::$_SQL->sql('default')->ESC."source".self::$_SQL->sql('default')->ESC." char(5) NOT NULL,
-  ".self::$_SQL->sql('default')->ESC."destination".self::$_SQL->sql('default')->ESC." char(5) NOT NULL,
-  ".self::$_SQL->sql('default')->ESC."text".self::$_SQL->sql('default')->ESC." text NOT NULL,
-  ".self::$_SQL->sql('default')->ESC."date_inserted".self::$_SQL->sql('default')->ESC." datetime NOT NULL,
-  ".self::$_SQL->sql('default')->ESC."date_updated".self::$_SQL->sql('default')->ESC." datetime NOT NULL,
-  ".self::$_SQL->sql('default')->ESC."translate_auto".self::$_SQL->sql('default')->ESC." int(11) NOT NULL,
-  ".self::$_SQL->sql('default')->ESC."file_found".self::$_SQL->sql('default')->ESC." varchar(255) NOT NULL,
-  ".self::$_SQL->sql('default')->ESC."line_found".self::$_SQL->sql('default')->ESC." int(11) NOT NULL,
-  PRIMARY KEY (".self::$_SQL->sql('default')->ESC."id".self::$_SQL->sql('default')->ESC."),
-  UNIQUE KEY ".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC." (".self::$_SQL->sql('default')->ESC."key".self::$_SQL->sql('default')->ESC.",".self::$_SQL->sql('default')->ESC."destination".self::$_SQL->sql('default')->ESC.")
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=32601 ; ";
+            switch (self::$_SQL->sql(I18n::DATABASE)->getDriver()) {
+                case 'mysql':
+                    self::installMysql();
+                    break;
 
-            self::$_SQL->sql('default')->sql_query($sql);
-            */
-            
+                case 'oracle':
+                    self::installOracle();
+                    break;
+            }
         }
 
         public static function write_ini_file($assoc_arr, $path, $has_sections = false)
@@ -779,6 +768,110 @@ namespace Glial\I18n {
             }
             fclose($handle);
             return true;
+        }
+
+        static public function installMysql()
+        {
+            $lang = self::$languages;
+            unset($lang['auto']);
+            $lang['main'] = 'true';
+
+            foreach ($lang as $iso => $libelle) {
+
+                $sql = "CREATE TABLE IF NOT EXISTS `translation_" . mb_strtolower($iso) . "` (
+              `id` int(11) NOT NULL auto_increment,
+              `id_history_etat` int NOT NULL,
+              `key` char(40) NOT NULL,
+              `source` char(5) NOT NULL,
+              `destination` char(5),
+              `text` text NOT NULL,
+              `date_inserted` datetime NOT NULL,
+              `date_updated` datetime NOT NULL,
+              `translate_auto` int(11) NOT NULL,
+              `file_found` varchar(255) NOT NULL,
+              `line_found` int NOT NULL,
+              PRIMARY KEY  (`id`),
+              UNIQUE KEY `key` (`key`,`file_found`),
+              INDEX `id_history_etat` (`id_history_etat`)
+              )ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+
+
+                self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
+            }
+        }
+
+        static public function installOracle()
+        {
+
+            $lang = self::$languages;
+            unset($lang['auto']);
+            $lang['main'] = 'true';
+
+            foreach ($lang as $iso => $libelle) {
+
+                $sql = "CREATE TABLE translation_" . mb_strtolower($iso) . " (
+ id NUMBER(11) NOT NULL ,
+ id_history_etat NUMBER(11) NOT NULL,
+ key varchar2(40) NOT NULL,
+ source varchar2(5) NOT NULL,
+ destination varchar2(5) NOT NULL,
+ text nvarchar2(2000) NOT NULL,
+ date_inserted date NOT NULL,
+ date_updated date NOT NULL,
+ translate_auto NUMBER(11) NOT NULL,
+ file_found varchar2(255) NOT NULL,
+ line_found NUMBER(11) NOT NULL,
+ PRIMARY KEY (id)
+);
+
+CREATE SEQUENCE translation_" . mb_strtolower($iso) . "_seq START WITH 1 INCREMENT BY 1;
+
+
+CREATE OR REPLACE TRIGGER trx_translation_" . mb_strtolower($iso) . "
+BEFORE INSERT ON translation_" . mb_strtolower($iso) . "
+FOR EACH ROW
+
+BEGIN
+  SELECT translation_" . mb_strtolower($iso) . "_seq.NEXTVAL
+  INTO   :new.id
+  FROM   dual;
+END;
+/";
+
+                self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
+            }
+        }
+
+        static public function unInstallMysql()
+        {
+            $lang = self::$languages;
+            unset($lang['auto']);
+            $lang['main'] = 'true';
+
+
+            $tables = self::$_SQL->sql(I18n::DATABASE)->getListTable()['table'];
+
+            foreach ($lang as $iso => $libelle) {
+
+
+                if (in_array("translation_" . mb_strtolower($iso), $tables)) {
+                    $sql = "DROP TABLE `translation_" . mb_strtolower($iso) . "`;";
+                    self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
+                }
+            }
+        }
+
+        static public function unInstall()
+        {
+            switch (self::$_SQL->sql(I18n::DATABASE)->getDriver()) {
+                case 'mysql':
+                    self::unInstallMysql();
+                    break;
+
+                case 'oracle':
+                    self::unInstallOracle();
+                    break;
+            }
         }
 
     }

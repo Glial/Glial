@@ -27,7 +27,7 @@ Simply add a dependency on glial/glial to your project's composer.json file if y
 ```json
 {
     "require": {
-        "glial/glial": "2.1.*"
+        "glial/glial": "3.1.*"
     }
 }
 ```

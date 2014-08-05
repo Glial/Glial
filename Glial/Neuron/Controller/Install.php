@@ -62,6 +62,10 @@ trait Install
         };
         $this->anonymous($fct, "Making tree directory");
 
+        // replace and install lastest jQuery
+        $fct = function ($msg) {
+            $name = "jquery-latest.min.js";
+            $jQuery = $_SERVER['PWD'] . "/application/webroot/js/" . $name;
 
 
         // replace and install lastest jQuery
@@ -104,8 +108,6 @@ trait Install
         $this->cmd("php glial administration generate_model", "Making model with reverse engineering of databases");
 
 
-
-
         $fct = function ($msg) {
             $file = $_SERVER['PWD'] . "/glial";
             $data = file_get_contents($file);
@@ -141,6 +143,13 @@ trait Install
         $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
 
 
+        
+        
+        
+        \Glial\I18n\I18n::install();
+        // \Glial\I18n\I18n::unInstall();
+        
+        
         /*
           shell_exec("find " . $_SERVER['PWD'] . " -type f -exec chmod 740 {} \;;");
           echo $this->out("Setting chmod 440 to all files", "OK");
