@@ -5,143 +5,143 @@ namespace Glial\Neuron\Controller;
 use \Glial\Cli\Glial;
 use \Glial\Cli\Color;
 
-trait Install {
-	
-	function all()
-	{
-		$this->index();
-	}
+trait Install
+{
 
-    function index() {
+    function all()
+    {
+        $this->index();
+    }
+
+    function index()
+    {
         //remove view 
         $this->view = false;
 
-		//to make sexy install ?
-		
+        //to make sexy install ?
         //header
         echo PHP_EOL . Glial::header() . PHP_EOL;
 
 
 //		ini_set('display_errors', '0');
         $drivers = $this->testDatabases();
-		ini_set('display_errors', '1');
-		
-		$map_driver_with_ext = array(
-		"mysql" => "mysqli",
-		"pgsql" => "pgsql",
-		"sybase" => "sybase",
-		"oracle" => "oci8");
-		
-		$ext = array();
-		foreach($drivers as $driver)
-		{
-			$ext[] = $map_driver_with_ext[$driver];
-		}
-		
+        ini_set('display_errors', '1');
+
+        $map_driver_with_ext = array(
+            "mysql" => "mysqli",
+            "pgsql" => "pgsql",
+            "sybase" => "sybase",
+            "oracle" => "oci8");
+
+        $ext = array();
+        foreach ($drivers as $driver) {
+            $ext[] = $map_driver_with_ext[$driver];
+        }
+
         $this->testPhpComponent($ext);
 
-		
-          //making tree directory
-          $fct = function($msg) {
-          $dirs = array("data", "data/img", "documentation", "tmp/crop", "tmp/documentation", "application/webroot/js",
-          "application/webroot/css", "application/webroot/file", "application/webroot/video", "application/webroot/image");
 
-          $error = array();
-          foreach ($dirs as $dir) {
+        //making tree directory
+        $fct = function($msg) {
+            $dirs = array("data", "data/img", "documentation", "tmp/crop", "tmp/documentation", "application/webroot/js",
+                "application/webroot/css", "application/webroot/file", "application/webroot/video", "application/webroot/image");
 
-          $dir = $_SERVER['PWD'] . "/" . $dir;
+            $error = array();
+            foreach ($dirs as $dir) {
 
-          if (!file_exists($dir)) {
-          if (!mkdir($dir)) {
-          echo $this->out("Impossible to create this directory : " . $key . " ", "KO");
-          }
-          }
-          }
+                $dir = $_SERVER['PWD'] . "/" . $dir;
 
-          return array(true, $msg);
-          };
-          $this->anonymous($fct, "Making tree directory");
+                if (!file_exists($dir)) {
+                    if (!mkdir($dir)) {
+                        echo $this->out("Impossible to create this directory : " . $key . " ", "KO");
+                    }
+                }
+            }
 
-
-
-          // replace and install lastest jQuery
-          $fct = function ($msg) {
-          $name = "jquery-latest.min.js";
-          $jQuery = $_SERVER['PWD'] . "/application/webroot/js/" . $name;
-
-          $old_version = "";
-          if (file_exists($jQuery)) {
-          $data = file_get_contents($jQuery);
-          preg_match("/v[\d]+\.[\d]+\.[\d]+/", $data, $version);
-
-          $old_version = $version[0] . " => ";
-          $this->cmd("rm " . $jQuery, "Delete old jQuery");
-          }
-
-          $this->cmd("cd " . $_SERVER['PWD'] . "/application/webroot/js && wget -q http://code.jquery.com/" . $name, "Download lastest jQuery");
-
-          if (file_exists($jQuery)) {
-          $data = file_get_contents($jQuery);
-
-          preg_match("/v[\d]+\.[\d]+\.[\d]+/", $data, $version);
-
-          $msg = sprintf($msg, $old_version . Color::getColoredString($version[0], "green"));
-
-          return array(true, $msg);
-          } else {
-          $msg = sprintf($msg, "NOT INSTALLED");
-          return array(false, $msg);
-          }
-          };
-          $this->anonymous($fct, "jQuery installed (%s)");
-
-
-          $this->cmd("chown www-data:www-data -R *", "Setting right to www-data:www-data");
-
-
-          $this->cmd("php glial administration admin_index_unique", "Generating DDL cash for index");
-          $this->cmd("php glial administration admin_table", "Generating DDL cash for databases");
-          $this->cmd("php glial administration generate_model", "Making model with reverse engineering of databases");
+            return array(true, $msg);
+        };
+        $this->anonymous($fct, "Making tree directory");
 
 
 
+        // replace and install lastest jQuery
+        $fct = function ($msg) {
+            $name = "jquery-latest.min.js";
+            $jQuery = $_SERVER['PWD'] . "/application/webroot/js/" . $name;
 
-          $fct = function ($msg) {
-          $file = $_SERVER['PWD'] . "/glial";
-          $data = file_get_contents($file);
+            $old_version = "";
+            if (file_exists($jQuery)) {
+                $data = file_get_contents($jQuery);
+                preg_match("/v[\d]+\.[\d]+\.[\d]+/", $data, $version);
 
-          $new_data = str_replace("php application", "php " . $_SERVER['PWD'] . "/application", $data);
-          if (!file_put_contents($file, $new_data)) {
-          return array(false, $msg);
-          }
-          return array(true, $msg);
-          };
+                $old_version = $version[0] . " => ";
+                $this->cmd("rm " . $jQuery, "Delete old jQuery");
+            }
 
-          $this->anonymous($fct, "Replace relative path by full path in Glial exec");
+            $this->cmd("cd " . $_SERVER['PWD'] . "/application/webroot/js && wget -q http://code.jquery.com/" . $name, "Download lastest jQuery");
 
-          $fct = function ($msg) {
+            if (file_exists($jQuery)) {
+                $data = file_get_contents($jQuery);
 
-          $file = $_SERVER['PWD'] . "/glial";
-          $path_to_php = exec("which php", $res, $code);
+                preg_match("/v[\d]+\.[\d]+\.[\d]+/", $data, $version);
 
-          if ($code !== 0) {
-          return array(false, $msg . " $code:$path_to_php: can't find php");
-          }
+                $msg = sprintf($msg, $old_version . Color::getColoredString($version[0], "green"));
 
-          $data = file($file);
-          $data[0] = "#!" . $path_to_php . PHP_EOL;
-          file_put_contents($file, implode("", $data));
+                return array(true, $msg);
+            } else {
+                $msg = sprintf($msg, "NOT INSTALLED");
+                return array(false, $msg);
+            }
+        };
+        $this->anonymous($fct, "jQuery installed (%s)");
 
-          return array(true, $msg);
-          };
 
-          $this->anonymous($fct, "get full path of php");
+        $this->cmd("chown www-data:www-data -R *", "Setting right to www-data:www-data");
 
-          $this->cmd("chmod +x glial", "Setting chmod +x to executable 'glial'");
-          $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
 
-		  
-          /*
+        $this->cmd("php glial administration admin_index_unique", "Generating DDL cash for index");
+        $this->cmd("php glial administration admin_table", "Generating DDL cash for databases");
+        $this->cmd("php glial administration generate_model", "Making model with reverse engineering of databases");
+
+
+
+
+        $fct = function ($msg) {
+            $file = $_SERVER['PWD'] . "/glial";
+            $data = file_get_contents($file);
+
+            $new_data = str_replace("php application", "php " . $_SERVER['PWD'] . "/application", $data);
+            if (!file_put_contents($file, $new_data)) {
+                return array(false, $msg);
+            }
+            return array(true, $msg);
+        };
+
+        $this->anonymous($fct, "Replace relative path by full path in Glial exec");
+
+        $fct = function ($msg) {
+
+            $file = $_SERVER['PWD'] . "/glial";
+            $path_to_php = exec("which php", $res, $code);
+
+            if ($code !== 0) {
+                return array(false, $msg . " $code:$path_to_php: can't find php");
+            }
+
+            $data = file($file);
+            $data[0] = "#!" . $path_to_php . PHP_EOL;
+            file_put_contents($file, implode("", $data));
+
+            return array(true, $msg);
+        };
+
+        $this->anonymous($fct, "get full path of php");
+
+        $this->cmd("chmod +x glial", "Setting chmod +x to executable 'glial'");
+        $this->cmd("cp -a glial /usr/local/bin/glial", "Copy glial to /usr/local/bin/");
+
+
+        /*
           shell_exec("find " . $_SERVER['PWD'] . " -type f -exec chmod 740 {} \;;");
           echo $this->out("Setting chmod 440 to all files", "OK");
 
@@ -164,19 +164,21 @@ trait Install {
         //echo $this->di['db'];
     }
 
-    public function composer() {
+    public function composer()
+    {
         $this->view = false;
         echo PHP_EOL . Glial::header() . PHP_EOL;
-		
+
         echo "Source files successfully imported !" . PHP_EOL;
-		echo "To add databases edit the file : '".$_SERVER['PWD']."/configuration/db.config.ini.php'".PHP_EOL;
-        echo "To finish install run : '" . Color::getColoredString("cd ".$_SERVER['PWD']."; php glial install all", "purple") . "'" . PHP_EOL;
+        echo "To add databases edit the file : '" . $_SERVER['PWD'] . "/configuration/db.config.ini.php'" . PHP_EOL;
+        echo "To finish install run : '" . Color::getColoredString("cd " . $_SERVER['PWD'] . "; php glial install all", "purple") . "'" . PHP_EOL;
     }
 
-    public function out($msg, $type) {
+    public function out($msg, $type)
+    {
         switch ($type) {
             case 'OK':
-				$status = Color::getColoredString("OK", "green");
+                $status = Color::getColoredString("OK", "green");
                 break;
 
             case 'KO':
@@ -193,13 +195,12 @@ trait Install {
 
 
         $msg .= " ";
-        
+
         $size = strlen(Color::strip($msg));
-        if ($size < 0)
-        {
-        	$size =0;
+        if ($size < 0) {
+            $size = 0;
         }
-        
+
         $ret = $msg . str_repeat(".", 80 - $size) . " [ " . $status . " ]" . PHP_EOL;
 
 
@@ -211,14 +212,16 @@ trait Install {
         return $ret;
     }
 
-    public function onError() {
+    public function onError()
+    {
 
-        echo PHP_EOL . "To understand what happen : " . Color::getColoredString($_SERVER['PWD']."/tmp/log/error_php.log", "cyan") . PHP_EOL;
+        echo PHP_EOL . "To understand what happen : " . Color::getColoredString($_SERVER['PWD'] . "/tmp/log/error_php.log", "cyan") . PHP_EOL;
         echo "To resume the setup : " . Color::getColoredString("php composer.phar update", "cyan") . PHP_EOL;
         exit(10);
     }
 
-    public function cmd($cmd, $msg) {
+    public function cmd($cmd, $msg)
+    {
         $code_retour = 0;
 
 
@@ -236,13 +239,15 @@ trait Install {
         echo $this->out($msg, $fine);
     }
 
-    public function anonymous($function, $msg) {
+    public function anonymous($function, $msg)
+    {
         list($fine, $message) = $function($msg);
 
         echo $this->out($message, $fine);
     }
 
-    function testPhpComponent($ext) {
+    function testPhpComponent($ext)
+    {
 
         // test php version
         $fct = function($msg) {
@@ -271,10 +276,11 @@ trait Install {
         }
     }
 
-    public function testDatabases() {
-		
-		$drivers = array();
-	
+    public function testDatabases()
+    {
+
+        $drivers = array();
+
         foreach ($this->di['db']->getAll() as $name) {
             try {
                 $ret = $this->di['db']->sql($name);
@@ -282,12 +288,12 @@ trait Install {
             } catch (\Exception $ex) {
                 echo $this->out($ex->getMessage(), "KO");
             }
-			
-			$drivers[] = $this->di['db']->getParam($name)['driver'];
+
+            $drivers[] = $this->di['db']->getParam($name)['driver'];
         }
-		
-		$drivers = array_unique($drivers);
-		return $drivers;
+
+        $drivers = array_unique($drivers);
+        return $drivers;
     }
 
 }

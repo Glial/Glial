@@ -8,9 +8,11 @@
 
 namespace Glial\Neuron\Controller;
 
-trait PmaCliCluster {
+trait PmaCliCluster
+{
 
-    public function clusterGalera($dblink) {
+    public function clusterGalera($dblink)
+    {
 
         $out = array();
 
@@ -65,32 +67,47 @@ trait PmaCliCluster {
                     throw new \Exception('GLI-050 : Impossible to select the right MySQL serveur ! ' . "\n" . $sql);
                 } else {
 
+
+
                     $ob = $default->sql_fetch_object($res);
 
-                    $data = array();
-                    $data['link__mysql_cluster__mysql_server']['id_mysql_server'] = $ob->id;
-                    $data['link__mysql_cluster__mysql_server']['id_mysql_cluster'] = $id_cluster;
-                    $data['link__mysql_cluster__mysql_server']['cluster_size'] = count(explode(',', $out['address']));
-                    $data['link__mysql_cluster__mysql_server']['node_connected'] = $out['address'];
 
-                    if ($default->sql_save($data)) {
+                    $sql = "select count(1) as cpt FROM link__mysql_cluster__mysql_server where id_mysql_server= '" . $ob->id . "' AND id_mysql_cluster = '" . $id_cluster . "'";
+                    $res10 = $default->sql_query($sql);
 
-                        debug($data);
-                        debug($default->sql_error());
+                    while ($ob10 = $default->sql_fetch_object($res10)) {
+                        if ($ob10->cpt === "0") {
+
+                            $data = array();
+                            $data['link__mysql_cluster__mysql_server']['id_mysql_server'] = $ob->id;
+                            $data['link__mysql_cluster__mysql_server']['id_mysql_cluster'] = $id_cluster;
+                            $data['link__mysql_cluster__mysql_server']['cluster_size'] = count(explode(',', $out['address']));
+                            $data['link__mysql_cluster__mysql_server']['node_connected'] = $out['address'];
+
+                            if (!$default->sql_save($data)) {
+
+                                debug($data);
+                                debug($default->sql_error());
+                            }
+                        }
                     }
 
-                    $data = array();
-                    $data['mysql_cluster_node']['id_mysql_server'] = $ob->id;
-                    $data['mysql_cluster_node']['id_mysql_cluster'] = $id_cluster;
 
+                    $sql = "select count(1) as cpt FROM mysql_cluster_node where id_mysql_server= '" . $ob->id . "' AND id_mysql_cluster = '" . $id_cluster . "'";
+                    $res11 = $default->sql_query($sql);
 
-                    debug($data);
+                    while ($ob11 = $default->sql_fetch_object($res11)) {
+                        if ($ob11->cpt === "0") {
 
+                            $data = array();
+                            $data['mysql_cluster_node']['id_mysql_server'] = $ob->id;
+                            $data['mysql_cluster_node']['id_mysql_cluster'] = $id_cluster;
+                            if (!$default->sql_save($data)) {
 
-                    if ($default->sql_save($data)) {
-
-                        debug($data);
-                        debug($default->sql_error());
+                                debug($data);
+                                debug($default->sql_error());
+                            }
+                        }
                     }
                 }
             }

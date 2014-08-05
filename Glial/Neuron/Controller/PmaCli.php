@@ -183,21 +183,21 @@ use \Glial\Neuron\Controller\PmaCliArray;
 
 
 
-            $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date`,b.`uptime`, b.`time_zone`, c.node_connected
+                $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date`,b.`uptime`, b.`time_zone`, c.node_connected
             FROM `mysql_server` a
             INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server 
             INNER JOIN mysql_cluster_node d  ON d.id_mysql_server = a.id
             LEFT JOIN link__mysql_cluster__mysql_server c ON c.id_mysql_server = a.id
             WHERE d.id_mysql_cluster = " . $cluster->id . "
             order by node_connected";
-            
-            
-            
-            //echo $sql;
-            
+
+
+
+                //echo $sql;
+
                 $res = $db->sql_query($sql);
 
-                
+
                 $nb_cluster = 0;
                 $nodes = array();
 
@@ -224,22 +224,22 @@ use \Glial\Neuron\Controller\PmaCliArray;
                     }
 
                     fwrite($fp, '</table>> ];' . PHP_EOL);
-                    
+
                     $ip[$ob->ip] = $ob->id;
 
-                    
+
                     $nodes[] = $ob->id;
 
-                    
-                    /*
-                    foreach ($nodes as $node) {
 
-                        if ($node !== $ob->id) {
-                            fwrite($fp, "" . $node . " -> " . $ob->id . '[ dir=both arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
-                            //fwrite($fp, "" . $ob->id . " -> " . $node . '[ arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
-                        }
-                    }
-                    /***/
+                    /*
+                      foreach ($nodes as $node) {
+
+                      if ($node !== $ob->id) {
+                      fwrite($fp, "" . $node . " -> " . $ob->id . '[ dir=both arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
+                      //fwrite($fp, "" . $ob->id . " -> " . $node . '[ arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="green" label =""  edgetarget="http://www.google.fr" edgeURL="http://www.google.fr"];' . PHP_EOL);
+                      }
+                      }
+                      /** */
                 }
 
                 fwrite($fp, '}');
@@ -548,14 +548,21 @@ use \Glial\Neuron\Controller\PmaCliArray;
     {
         $this->view = false;
 
-        $previous_data = $this->sql_to_array();
+        while (true) {
+            $previous_data = $this->sql_to_array();
 
-        $this->replicationUpdate();
+            $this->replicationUpdate();
 
-        $actual_data = $this->sql_to_array();
-        $this->monitoring($previous_data, $actual_data);
+            $actual_data = $this->sql_to_array();
+            $this->monitoring($previous_data, $actual_data);
 
-        $this->replicationDrawGraph(ROOT . '/tmp/img/replication.svg');
+            $this->replicationDrawGraph(ROOT . '/tmp/img/replication.svg');
+            
+            
+            //$this->saveVariable();
+
+            sleep(5);
+        }
     }
 
     public function backupDeleteOld()
@@ -690,7 +697,7 @@ use \Glial\Neuron\Controller\PmaCliArray;
                     $behind['message'] = sprintf($behind['message'], $tab['master_host'], $tab['ip']);
 
 
-                    debug($behind);
+                    //debug($behind);
 
                     $data = array();
                     $data['mysql_event']['id_mysql_server'] = $tab['id'];
@@ -721,9 +728,6 @@ use \Glial\Neuron\Controller\PmaCliArray;
             return false;
         }
 
-
-
-
         /*
           if (empty($cmp['up']['update']['time_behind'])) {
           return false;
@@ -732,8 +736,6 @@ use \Glial\Neuron\Controller\PmaCliArray;
           if ($cmp['up']['update']['time_behind'] < self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] < self::TIME_BEHING_MAX) {
           return false;
           } */
-
-
 
         if ($cmp['up']['update']['time_behind'] > self::TIME_BEHING_MAX && $cmp['down']['update']['time_behind'] <= self::TIME_BEHING_MAX) {
             $data['id_mysql_status'] = 1;
@@ -758,13 +760,9 @@ use \Glial\Neuron\Controller\PmaCliArray;
     private function checkDelay($data)
     {
 
-
-
         if (!isset($data['down']['update']['time_behind']) || !isset($data['down']['update']['time_behind'])) {
             return false;
         }
-
-
 
         // TIME_BEHING_MAX =1        
         $delay_last = $data['down']['update']['time_behind'];
@@ -794,4 +792,45 @@ use \Glial\Neuron\Controller\PmaCliArray;
         return $data;
     }
 
+    private function saveVariable()
+    {
+        $default = $this->di['db']->sql('default');
+
+        $sql = "SELECT id,name FROM mysql_server";
+                
+        foreach ($default->sql_fetch_yield($sql) as $tab) {
+
+            $db = $tab['name'];
+
+            $server_config = $this->di['db']->getParam($db);
+
+            if ($server_config['driver'] === "mysql") {
+
+                $dblink = $this->di['db']->sql($db);
+
+                if ($dblink->is_connected) {
+
+                    $sql = "(SELECT VARIABLE_NAME,VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES) ";
+                    $sql .= " UNION (SELECT VARIABLE_NAME,VARIABLE_VALUE FROM INFORMATION_SCHEMA.GLOBAL_STATUS)  order by VARIABLE_NAME";
+
+                    $res2 = $dblink->sql_query($sql);
+
+                    while ($ob2 = $dblink->sql_fetch_object($res2)) {
+                        
+                        $data = array();
+                        $data['mysql_variable']['id_mysql_server'] = $tab['id'];
+                        $data['mysql_variable']['date'] = date("c");
+                        $data['mysql_variable']['name'] = $ob2->VARIABLE_NAME;
+                        $data['mysql_variable']['value'] = $ob2->VARIABLE_VALUE;
+                        
+                        if (!$default->sql_query($data))
+                        {
+                            debug($data);
+                            die();
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
