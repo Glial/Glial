@@ -9,6 +9,8 @@
 namespace Glial\Neuron\Controller;
 
 use \Glial\Utility\Inflector;
+use \Glial\Synapse\Basic;
+
 
 trait Administration
 {
@@ -27,7 +29,7 @@ trait Administration
         $module['name'] = __("Tables");
         $module['description'] = __("Make the dictionary of field");
 
-        if (from() !== "administration.controller.php") {
+        if (Basic::from() !== "administration.controller.php") {
 
             if (true) { //ENVIRONEMENT
                 $dir = TMP . "database/";
