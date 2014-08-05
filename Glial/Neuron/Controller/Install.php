@@ -62,11 +62,6 @@ trait Install
         };
         $this->anonymous($fct, "Making tree directory");
 
-        // replace and install lastest jQuery
-        $fct = function ($msg) {
-            $name = "jquery-latest.min.js";
-            $jQuery = $_SERVER['PWD'] . "/application/webroot/js/" . $name;
-
 
         // replace and install lastest jQuery
         $fct = function ($msg) {
