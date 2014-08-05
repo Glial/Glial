@@ -50,17 +50,18 @@ trait Administration
 
                 $tables = $this->di['db']->sql('default')->getListTable();
 
+                
+                
                 foreach ($tables['table'] as $table) {
-                    echo $table . "\n";
-
+                    //echo $table . "\n";
                     $fp = fopen(TMP . "/database/" . strtolower($table) . ".table.txt", "w");
+                    $description = $this->di['db']->sql('default')->getDescription($table);
+                    $data = array();
 
-                    $sql = $this->di['db']->sql('default')->getDescription($table);
-
-                    $res2 = $this->di['db']->sql('default')->sql_query($sql);
-                    while ($ob = $this->di['db']->sql('default')->sql_fetch_object($res2)) {
-                        $data['field'][] = $ob->FIELD;
+                    foreach ($description as $line) {
+                        $data['field'][] = $line[0];
                     }
+
                     $data = serialize($data);
                     fwrite($fp, $data);
                     fclose($fp);

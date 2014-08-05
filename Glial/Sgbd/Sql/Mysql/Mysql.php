@@ -489,8 +489,11 @@ class Mysql extends Sql
 
     public function getDescription($table)
     {
-        $sql = "SELECT COLUMN_NAME, DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '".$table."' ORDER BY `COLUMNS`.`CHARACTER_MAXIMUM_LENGTH` ASC";
+        $sql = "SELECT COLUMN_NAME, DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE table_name = '".$table."' AND TABLE_SCHEMA = database()
+                ORDER BY `COLUMNS`.`CHARACTER_MAXIMUM_LENGTH` ASC";
 
+        //have to switch TABLE_SCHEMA = database() by something else in future if needed
 
         $res = $this->sql_query($sql);
 
