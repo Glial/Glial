@@ -87,7 +87,7 @@ class Mysql extends Sql
      * @see mysqli_query http://php.net/manual/en/mysqli.query.php
      */
 
-    public function _query($sql)
+    protected function _query($sql)
     {
         return mysqli_query($this->link, $sql);
     }
@@ -505,6 +505,7 @@ class Mysql extends Sql
 
         return $table;
     }
+
 
 }
 

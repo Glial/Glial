@@ -81,16 +81,21 @@ abstract class Sql
         if (IS_CLI) { //to save memory with crawler & bot
             $this->serializeQuery();
         }
-
+        
+        if (! is_string($sql))
+        {
+            throw new \Exception('GLI-056 : the var $sql must be a string in sql_query !');
+        }
+        
         $this->res = "";
         $this->stid = "";
 
         $called_from = debug_backtrace();
         $startmtime = microtime(true);
 
-
-
         if (!$res = $this->_query($sql)) {
+            
+            
             //error
             echo "SQL : $sql<br /><b>" . $this->_error() . "</b>" .
             "<br />FILE : " . $called_from[0]['file'] . " LINE : " . $called_from[0]['line'];
@@ -111,17 +116,6 @@ abstract class Sql
         $this->query[$this->number_of_query]['rows'] = $this->rows_affected;
         $this->query[$this->number_of_query]['last_id'] = $this->_insert_id();
 
-
-
-        /* $sql_bis = "insert into gliale_audit_query
-          SET
-          ".static::ESC."date".static::ESC."=now(),
-          ".static::ESC."query".static::ESC."='".$this->sql_real_escape_string($sql)."',
-          ".static::ESC."time_execution".static::ESC."='".$totaltime."',
-          ".static::ESC."affected_rows".static::ESC."='".$this->rows_affected."',
-          ".static::ESC."user".static::ESC." ='".@$_SITE['IdUser']."'";
-
-          $this->_query($sql_bis); */
 
         $this->number_of_query++;
 
