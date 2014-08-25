@@ -5,6 +5,8 @@ namespace Glial\Sgbd\Sql;
 use \Glial\Synapse\Singleton;
 use \Glial\Synapse\Validation;
 use \Glial\Utility\Inflector;
+use \Glial\Cli\Color;
+
 
 abstract class Sql
 {
@@ -81,12 +83,11 @@ abstract class Sql
         if (IS_CLI) { //to save memory with crawler & bot
             $this->serializeQuery();
         }
-        
-        if (! is_string($sql))
-        {
+
+        if (!is_string($sql)) {
             throw new \Exception('GLI-056 : the var $sql must be a string in sql_query !');
         }
-        
+
         $this->res = "";
         $this->stid = "";
 
@@ -94,11 +95,21 @@ abstract class Sql
         $startmtime = microtime(true);
 
         if (!$res = $this->_query($sql)) {
-            
+
+            $indice = 0;
+            if (strstr($called_from[0]['file'],  "/Sgbd/Sql/Sql.php"))
+            {
+                $indice = 1;
+            }
             
             //error
-            echo "SQL : $sql<br /><b>" . $this->_error() . "</b>" .
-            "<br />FILE : " . $called_from[0]['file'] . " LINE : " . $called_from[0]['line'];
+            if (IS_CLI) {
+                echo "SQL : ".Color::getColoredString($sql,"yellow")."\n" . Color::getColoredString($this->_error(),"grey","red") . "" .
+                "\nFILE : " . $called_from[$indice]['file'] . " LINE : " . $called_from[$indice]['line']."\n";
+            } else {
+                echo "SQL : $sql<br /><b>" . $this->_error() . "</b>" .
+                "<br />FILE : " . $called_from[$indice]['file'] . ":" . $called_from[$indice]['line']."<br />";
+            }
         }
 
         $this->res = $res;
@@ -224,12 +235,12 @@ abstract class Sql
             }
         }
 
-        
-        
-        
+
+
+
         if (count($this->error) == 0) {
-            
-            
+
+
             if ($this->_history_active) { //traitement specifique
                 if (strstr($this->_table_to_history, $table)) {
 
@@ -284,9 +295,9 @@ abstract class Sql
                 //case where ignore insert 0 line and we need the id inserted with these infos, focus on index unique
                 $this->last_id = $this->query[$this->number_of_query - 1]['last_id'];
                 if ($this->last_id == 0) {
-                    
-                    
-                    
+
+
+
                     $sql = "SELECT id FROM " . static::ESC . "" . $table . "" . static::ESC . " WHERE 1=1 ";
 
                     if (!empty($this->_keys[$table])) {
@@ -298,10 +309,10 @@ abstract class Sql
                             }
                         }
                     }
-                    
-                    
-                    debug($sql);
-                    
+
+
+                    //debug($sql);
+
                     $res = $this->sql_query($sql, $table, "SELECT");
                     $tab = $this->sql_to_array($res);
 
@@ -337,13 +348,10 @@ abstract class Sql
             }
 
             //return $this->query[$this->number_of_query-1]['last_id'];
-            
-            if (static::ESC === '"')
-            {
+
+            if (static::ESC === '"') {
                 return true;
-            }
-            else
-            {
+            } else {
                 return $this->sql_insert_id();
             }
         } else {
@@ -472,7 +480,7 @@ abstract class Sql
     {
         return $this->_param;
     }
-    
+
     /*
      *
      * @since glial 3.1.1
@@ -480,9 +488,9 @@ abstract class Sql
      * @return the driver used for this connection (oracle|mysql|sybase|pgsql)
      */
 
-
     public function getDriver()
     {
         return $this->_param['driver'];
     }
+
 }
