@@ -5,6 +5,8 @@ namespace Glial\Sgbd\Sql;
 use \Glial\Synapse\Singleton;
 use \Glial\Synapse\Validation;
 use \Glial\Utility\Inflector;
+use \Glial\Cli\Color;
+
 
 abstract class Sql
 {
@@ -94,10 +96,24 @@ abstract class Sql
 
         if (!$res = $this->_query($sql)) {
 
+<<<<<<< HEAD
 
+=======
+            $indice = 0;
+            if (strstr($called_from[0]['file'],  "/Sgbd/Sql/Sql.php"))
+            {
+                $indice = 1;
+            }
+            
+>>>>>>> be8a7164c72562fd2b1af0239df5cffdd36ad055
             //error
-            echo "SQL : $sql<br /><b>" . $this->_error() . "</b>" .
-            "<br />FILE : " . $called_from[0]['file'] . " LINE : " . $called_from[0]['line'];
+            if (IS_CLI) {
+                echo "SQL : ".Color::getColoredString($sql,"yellow")."\n" . Color::getColoredString($this->_error(),"grey","red") . "" .
+                "\nFILE : " . $called_from[$indice]['file'] . " LINE : " . $called_from[$indice]['line']."\n";
+            } else {
+                echo "SQL : $sql<br /><b>" . $this->_error() . "</b>" .
+                "<br />FILE : " . $called_from[$indice]['file'] . ":" . $called_from[$indice]['line']."<br />";
+            }
         }
 
         $this->res = $res;
@@ -223,8 +239,17 @@ abstract class Sql
             }
         }
 
+<<<<<<< HEAD
         
         if (count($this->error) == 0) {
+=======
+
+
+
+        if (count($this->error) == 0) {
+
+
+>>>>>>> be8a7164c72562fd2b1af0239df5cffdd36ad055
             if ($this->_history_active) { //traitement specifique
                 if (strstr($this->_table_to_history, $table)) {
 
@@ -279,6 +304,10 @@ abstract class Sql
                 if ($this->last_id == 0) {
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> be8a7164c72562fd2b1af0239df5cffdd36ad055
                     $sql = "SELECT id FROM " . static::ESC . "" . $table . "" . static::ESC . " WHERE 1=1 ";
 
                     if (!empty($this->_keys[$table])) {
@@ -292,7 +321,11 @@ abstract class Sql
                     }
 
 
+<<<<<<< HEAD
                     debug($sql);
+=======
+                    //debug($sql);
+>>>>>>> be8a7164c72562fd2b1af0239df5cffdd36ad055
 
                     $res = $this->sql_query($sql, $table, "SELECT");
                     $tab = $this->sql_to_array($res);
