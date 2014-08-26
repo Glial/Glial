@@ -81,12 +81,11 @@ abstract class Sql
         if (IS_CLI) { //to save memory with crawler & bot
             $this->serializeQuery();
         }
-        
-        if (! is_string($sql))
-        {
+
+        if (!is_string($sql)) {
             throw new \Exception('GLI-056 : the var $sql must be a string in sql_query !');
         }
-        
+
         $this->res = "";
         $this->stid = "";
 
@@ -94,8 +93,8 @@ abstract class Sql
         $startmtime = microtime(true);
 
         if (!$res = $this->_query($sql)) {
-            
-            
+
+
             //error
             echo "SQL : $sql<br /><b>" . $this->_error() . "</b>" .
             "<br />FILE : " . $called_from[0]['file'] . " LINE : " . $called_from[0]['line'];
@@ -225,11 +224,7 @@ abstract class Sql
         }
 
         
-        
-        
         if (count($this->error) == 0) {
-            
-            
             if ($this->_history_active) { //traitement specifique
                 if (strstr($this->_table_to_history, $table)) {
 
@@ -279,14 +274,11 @@ abstract class Sql
 
 
             if (static::ESC === '`') {
-
-
                 //case where ignore insert 0 line and we need the id inserted with these infos, focus on index unique
                 $this->last_id = $this->query[$this->number_of_query - 1]['last_id'];
                 if ($this->last_id == 0) {
-                    
-                    
-                    
+
+
                     $sql = "SELECT id FROM " . static::ESC . "" . $table . "" . static::ESC . " WHERE 1=1 ";
 
                     if (!empty($this->_keys[$table])) {
@@ -298,10 +290,10 @@ abstract class Sql
                             }
                         }
                     }
-                    
-                    
+
+
                     debug($sql);
-                    
+
                     $res = $this->sql_query($sql, $table, "SELECT");
                     $tab = $this->sql_to_array($res);
 
@@ -337,13 +329,10 @@ abstract class Sql
             }
 
             //return $this->query[$this->number_of_query-1]['last_id'];
-            
-            if (static::ESC === '"')
-            {
+
+            if (static::ESC === '"') {
                 return true;
-            }
-            else
-            {
+            } else {
                 return $this->sql_insert_id();
             }
         } else {
@@ -472,7 +461,7 @@ abstract class Sql
     {
         return $this->_param;
     }
-    
+
     /*
      *
      * @since glial 3.1.1
@@ -480,9 +469,105 @@ abstract class Sql
      * @return the driver used for this connection (oracle|mysql|sybase|pgsql)
      */
 
-
     public function getDriver()
     {
         return $this->_param['driver'];
     }
+
+    public function sql_check($data = null)
+    {
+        
+        unset($this->error);
+        $this->error = array();
+
+
+        if (count($this->_keys) === 0) {
+            $this->unserializeKeys();
+        }
+
+
+        $table = array_keys($data);
+        $table = $table[0];
+        $keys = array_keys($data[$table]);
+
+
+        $this->getInfosTable($table);
+
+        $validation = new Validation($this);
+
+        include_once APP_DIR . DS . "model" . DS . "Identifier" . ucwords(strtolower($this->_name)) . DS . $table . ".php";
+
+
+        $model_name = "Identifier" . Inflector::camelize($this->_name);
+        $table2 = str_replace("-", "", $table);
+
+
+        //$my_table = singleton::getInstance('glial\synapse\model\table\\'.$table2);
+        $my_table = Singleton::getInstance('application\\model\\' . $model_name . '\\' . $table2);
+        $validate = $my_table->validate;
+
+        //debug($validate);
+
+        foreach ($keys as $field) {
+            if (!empty($validate[$field])) {
+                foreach ($validate[$field] as $rule => $param) {
+                    if (!empty($rule)) {
+                        $elem['table'] = $table;
+                        $elem['field'] = $field;
+                        $elem['value'] = $data[$table][$field];
+
+                        if (in_array("id", $keys, true)) {
+                            $elem['id'] = "AND id != " . $data[$table]['id'];
+                        }
+
+                        if (!empty($param[0])) {
+                            $msg_error = $param[0];
+                        } else {
+                            $msg_error = NULL;
+                        }
+                        unset($param[0]);
+
+                        if (!empty($param)) {
+                            if (is_array($param)) {
+                                $nb_var = count($param);
+
+                                switch ($nb_var) {
+                                    case 0: $return = $validation->$rule($elem);
+                                        break;
+                                    case 1: $return = $validation->$rule($elem, $param[1]);
+                                        break;
+                                    case 2: $return = $validation->$rule($elem, $param[1], $param[2]);
+                                        break;
+                                    case 3: $return = $validation->$rule($elem, $param[1], $param[2], $param[3]);
+                                        break;
+                                }
+                            } else {
+                                $return = $validation->$rule($elem, $param);
+                            }
+                        } else {
+                            $return = $validation->$rule($elem);
+                        }
+
+                        if ($return === false) {
+                            //$this->error[$table][$field][] = __($param['message']);
+                            $this->error[$table][$field] = $msg_error;
+                        }
+                    }
+                }
+            }
+        }
+
+        
+        if (empty($this->error))
+        {
+            return true;
+        }
+        else
+        {
+            return $this->error;
+        }
+        
+        
+    }
+
 }
