@@ -15,6 +15,7 @@ class Mysql extends Sql
     public $server_type;
     public $version = '';
     public $version_full = '';
+    public $version_comment = '';
     public $status = array();
     public $variables = array();
     public $host;
@@ -35,16 +36,12 @@ class Mysql extends Sql
 
     public function sql_connect($host, $login, $password, $dbname, $port = 3306)
     {
-
-
         if (empty($port)) {
             $port = 3306;
         }
 
         $this->host = $host;
         $this->port = $port;
-
-
 
         $this->link = mysqli_connect($host, $login, $password, $dbname, $port);
         $this->db = $dbname;
@@ -259,7 +256,9 @@ class Mysql extends Sql
             $this->version_full = $version;
 
             if (strpos($version, "-")) {
-                $this->version = strstr($version, '-', true);
+
+
+                $this->version = explode("-", $version)[0];
             } else {
                 $this->version = $version;
             }
@@ -286,15 +285,20 @@ class Mysql extends Sql
             $this->getVersion();
         }
 
+        if (empty($this->version_comment)) {
+            $this->getVersionComment();
+        }
+
+
         if (empty($this->server_type)) {
 
             $this->server_type = 'MySQL';
 
             if (stripos($this->version_full, 'drizzle')) {
                 $this->server_type = 'Drizzle';
-            } else if (stripos($this->version_full, 'mariadb') !== false) {
+            } else if (stripos($this->version_comment, 'mariadb') !== false) {
                 $this->server_type = 'MariaDB';
-            } else if (stripos($this->version_full, 'percona') !== false) {
+            } else if (stripos($this->version_comment, 'percona') !== false) {
                 $this->server_type = 'Percona Server';
             }
         }
@@ -490,7 +494,7 @@ class Mysql extends Sql
     public function getDescription($table)
     {
         $sql = "SELECT COLUMN_NAME, DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE table_name = '".$table."' AND TABLE_SCHEMA = database()
+                WHERE table_name = '" . $table . "' AND TABLE_SCHEMA = database()
                 ORDER BY `COLUMNS`.`CHARACTER_MAXIMUM_LENGTH` ASC";
 
         //have to switch TABLE_SCHEMA = database() by something else in future if needed
@@ -506,7 +510,32 @@ class Mysql extends Sql
         return $table;
     }
 
+    /**
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @return string
+     * @description get version_comment
+     * @access public
+     * @package Sgbd/
+     * @since 3.1.2 First time this was introduced.
+     * @version 3.1.2
+     */
+    public function getVersionComment()
+    {
+
+        if (empty($this->version_comment)) {
+
+            $sql = "SHOW GLOBAL VARIABLES LIKE 'version_comment'";
+
+            $res = $this->sql_query($sql);
+            $data = $this->sql_fetch_array($res, MYSQLI_ASSOC);
+
+            $version = $data['Value'];
+            $this->version_comment = $version;
+        }
+
+        return $this->version_comment;
+    }
 
 }
-
-
