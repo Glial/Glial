@@ -54,8 +54,8 @@ class Sgbd
         }      
         
         if (array_key_exists($name, $this->config)) {
-            if (empty($this->db[$name])) {
 
+            if (empty($this->db[$name]) || $this->db[$name]->is_connected === false) {
                 $this->db[$name] = FactorySql::connect($name, $this->config[$name]);
             }
 

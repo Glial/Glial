@@ -6,3 +6,16 @@
  * and open the template in the editor.
  */
 
+class MenuGet
+{
+    
+    static public function display($id = 1)
+    {
+        
+    }
+    
+    
+    
+    
+    
+}

@@ -97,6 +97,7 @@ class Mysql extends Sql
     public function sql_close()
     {
         $this->link = mysqli_close($this->link);
+        $this->is_connected = false;
     }
 
     public function sql_affected_rows($stid = '')
