@@ -15,7 +15,8 @@
     ],
     "require": {
         "php": ">=5.5.0",
-        "monolog/monolog": "1.10.*"
+        "monolog/monolog": "1.10.*",
+        "jdorn/sql-formatter": "1.2.*"
 
     },
     "require-dev": {
