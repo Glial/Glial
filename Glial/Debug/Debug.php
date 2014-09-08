@@ -17,7 +17,7 @@ class Debug
 
     public function print_table()
     {
-        echo "<table class=\"debug\" width=\"100%\">
+        echo "<table class=\"display-tab table table-condensed\" width=\"100%\">
 <tr><th>Comment text</th><th>Execution time</th><th>Relative memory</th><th>Absolute memory</th><th>Debug</th></tr>";
         for ($i = 0; $i < $this->i; $i++) {
             $adjust = ($i == ($this->i - 1)) ? " style=\"border:0\"" : "";
@@ -31,7 +31,7 @@ class Debug
         }
         echo "</table>";
 
-        echo "memory_get_peak_usage() :<b>" . round(memory_get_peak_usage() / (1024 * 1024), 2) . "</b> Mo<br />";
+        echo "Memory used :<b>" . round(memory_get_peak_usage() / (1024 * 1024), 2) . " Mo</b><br /><br />";
     }
 
     public function save($text = "")
@@ -40,9 +40,9 @@ class Debug
         list($a, $b) = explode(" ", microtime());
         $this->timer[$this->i] = ((float) $a + (float) $b);
         if ($this->i > 0) {
-            if ( isset($this->timer[($this->i - 1)]) ) {
+            if (isset($this->timer[($this->i - 1)])) {
                 $this->memorydiff[$this->i] = ($this->memory[$this->i] - $this->memoryfrom[0]);
-                if ( substr($this->memorydiff[$this->i], 0, 1) != "-" ) {
+                if (substr($this->memorydiff[$this->i], 0, 1) != "-") {
                     $this->memorydiff[$this->i] = "+" . $this->memorydiff[$this->i];
                 }
                 $this->timerdiff[$this->i] = ($this->timer[$this->i] - $this->timer[($this->i - 1)]);

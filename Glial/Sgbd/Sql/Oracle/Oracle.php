@@ -42,6 +42,8 @@ class Oracle extends Sql
         if (!$this->link) {
             throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . 'string : ' . $string);
         }
+        
+        $this->is_connected = true;
 
         return $this->link;
     }
@@ -112,6 +114,7 @@ class Oracle extends Sql
     public function sql_close()
     {
         $this->link = oci_close($this->link);
+        $this->is_connected = false;
     }
 
     public function sql_affected_rows()

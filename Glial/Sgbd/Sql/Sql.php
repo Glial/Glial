@@ -129,6 +129,8 @@ abstract class Sql
 
 
         $this->number_of_query++;
+        
+
 
         return $res;
     }

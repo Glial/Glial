@@ -512,5 +512,10 @@ class Acl
         
         return (!empty($this->alias[$role]))? $this->alias[$role]:$role;
     }
+    
+    public function getResources()
+    {
+        return $this->resources;
+    }
 
 }
