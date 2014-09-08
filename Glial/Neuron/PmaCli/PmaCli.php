@@ -19,6 +19,8 @@ use \Glial\Neuron\PmaCli\PmaCliArray;
 
 use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
+use \Glial\Neuron\PmaCli\PmaCliSwitch;
+
     public function load($param)
     {
 
@@ -136,14 +138,13 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 }
                 $sandbox = $ob->ip;
 
-
                 if (empty($ob->version)) {
                     fwrite($fp, "\t node [color=red];" . PHP_EOL);
                 } else {
                     fwrite($fp, "\t node [color=green];" . PHP_EOL);
                 }
 // shape=Mrecord
-                fwrite($fp, '  "' . $ob->id . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center"><font color="white">' . str_replace('_', '-', $ob->name) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $ob->ip . ':' . $ob->port . '</td></tr>');
+                fwrite($fp, '  "' . $ob->id . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center" href="' . LINK . 'monitoring/query/' . str_replace('_', '-', $ob->name) . '/'  . '"><font color="white">' . str_replace('_', '-', $ob->name) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $ob->ip . ':' . $ob->port . '</td></tr>');
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $ob->version . '</td></tr>' . PHP_EOL);
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($ob->uptime) . '</td></tr>');
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $ob->date . ') : ' . $ob->time_zone . '</td></tr>');
@@ -153,7 +154,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 $databases = explode(',', $ob->databases);
 
                 foreach ($databases as $database) {
-                    fwrite($fp, '<tr><td bgcolor="#dddddd" align="left">' . $database . '</td></tr>' . PHP_EOL);
+                    fwrite($fp, '<tr><td bgcolor="#dddddd" align="left" title="MPD of ' . $database . '" href="' . LINK . 'mysql/mpd/' . str_replace('_', '-', $ob->name) . '/' . $database . '">' . $database . '</td></tr>' . PHP_EOL);
                 }
 
                 fwrite($fp, '</table>> ];' . PHP_EOL);
@@ -165,8 +166,8 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
 // display cluster
 
-            
-            
+
+
             $sql = "SELECT * FROM mysql_cluster";
             $res2 = $db->sql_query($sql);
 
@@ -174,7 +175,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
                 $elem++;
 
-                fwrite($fp, 'subgraph cluster_'.$elem.' {');
+                fwrite($fp, 'subgraph cluster_' . $elem . ' {');
                 fwrite($fp, 'rankdir="LR";');
                 fwrite($fp, 'color=black;fontname="arial";');
                 fwrite($fp, 'label = "Galera cluster : ' . $cluster->name . '";' . PHP_EOL);
@@ -274,7 +275,8 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
 
 
-            $sql = "SELECT a.`id`,a.ip,c.`master_host`,c.thread_io,c.thread_sql,c.time_behind,c.id as id_thread, c.last_sql_error, c.last_io_error,c.last_sql_errno, c.last_io_errno
+            $sql = "SELECT a.`id`,a.`name`,a.ip,c.`master_host`,c.thread_io,c.thread_sql,c.time_behind,c.id as id_thread, c.last_sql_error, c.last_io_error,c.last_sql_errno,
+                c.last_io_errno,c.thread_name
                 FROM `mysql_server` a
                     INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server
                     INNER JOIN mysql_replication_thread c ON b.id = c.id_mysql_replication_stats";
@@ -318,7 +320,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                     $label = "Not started";
                     $color = "blue";
                 }
-                fwrite($fp, "" . $ip[$ob->master_host] . " -> " . $ob->id . '[ arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="' . $color . '" label ="' . $label . '"  edgetarget="" edgeURL=""];' . PHP_EOL);
+                fwrite($fp, "" . $ip[$ob->master_host] . " -> " . $ob->id . '[ arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="' . $color . '" label ="' . $label . '"  edgetarget="'.LINK.'mysql/thread/'.str_replace('_', '-', $ob->name).'/" edgeURL="'.LINK.'mysql/thread/'.str_replace('_', '-', $ob->name).'/'.$ob->thread_name.'"];' . PHP_EOL);
             }
 
             fwrite($fp, "}");
@@ -349,6 +351,9 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
      */
     public function replicationUpdate()
     {
+
+
+
 
         $this->layout_name = false;
         $this->view = false;
@@ -391,9 +396,9 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
             $db = $ob50->name;
 
             $i++;
-            
-            
-            echo "[".date("Y-m-d H:i:s")."] Try to connect to : ".$db."\n";
+
+
+            echo "[" . date("Y-m-d H:i:s") . "] Try to connect to : " . $db . "\n";
             $server_config = $this->di['db']->getParam($db);
 
             $server_on = 1;
@@ -406,10 +411,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
 
 
-
             if ($dblink->is_connected) {
-
-
                 $MS->setInstance($dblink);
                 $master = $MS->isMaster();
                 $slave = $MS->isSlave();
@@ -443,8 +445,6 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                     $sql = "SELECT now() as date_time";
                     $res = $dblink->sql_query($sql);
                     $date_time = $dblink->sql_fetch_object($res);  // can be empty ???????????
-
-
 
                     if (version_compare($dblink->getVersion(), '10.0') >= 0) {
                         $this->clusterGalera($dblink);
@@ -586,7 +586,12 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
     public function all()
     {
         //$this->testDaemon();
+        ini_set('mysql.connect_timeout', '5');
+        ini_set('max_execution_time', '20');
 
+        $this->updateServerList();
+        
+        
         $this->view = false;
         $previous_data = $this->sql_to_array();
 
@@ -598,6 +603,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         $this->replicationDrawGraph(ROOT . '/tmp/img/replication.svg');
 
 
+        $this->deleteBackup();
 //$this->saveVariable();
     }
 
@@ -606,16 +612,15 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         //$this->testDaemon();
 
         $i = 0;
-        
+
         while (true) {
-            
+
             $i++;
             passthru("php /data/www/photobox/application/webroot/index.php pma_cli all");
-            
-            if ($i % 10 === 0)
-            {
+
+            if ($i % 10 === 0) {
                 passthru("php /data/www/photobox/application/webroot/index.php pma_cli updateServerList");
-                $i=0;
+                $i = 0;
             }
 
             sleep(10);
@@ -663,38 +668,34 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
         $sql = "SELECT * FROM `mysql_server`";
         $servers_mysql = $db->sql_fetch_yield($sql);
-        
-        
+
+
         $all_server = array();
-        foreach($servers_mysql as $mysql)
-        {
-            $all_server[$mysql['name']] = $mysql; 
+        foreach ($servers_mysql as $mysql) {
+            $all_server[$mysql['name']] = $mysql;
         }
 
         Crypt::$key = 'photobox';
 
-        
+
         $all = array();
         foreach ($this->di['db']->getAll() as $server) {
 
             $all[] = $server;
-            
+
             $info_server = $this->di['db']->getParam($server);
 
-            
+
             $data = array();
-            
-            if (!empty($all_server[$server]))
-            {
+
+            if (!empty($all_server[$server])) {
                 $data['mysql_server']['id'] = $all_server[$server]['id'];
-                
+
                 unset($all_server[$server]);
+            } else {
+                echo "Add : " . $server . " to monitoring\n";
             }
-            else
-            {
-                echo "Add : ".$server." to monitoring\n";
-            }
-            
+
             $data['mysql_server']['name'] = $server;
             $data['mysql_server']['ip'] = $info_server['hostname'];
             $data['mysql_server']['login'] = $info_server['user'];
@@ -709,20 +710,15 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 //echo $data['mysql_server']['name'] . PHP_EOL;
             }
         }
-       
-        
-        foreach($all_server as $to_delete)
-        {
-            $sql ="DELETE FROM `mysql_server` WHERE id=".$to_delete['id']."";
+
+
+        foreach ($all_server as $to_delete) {
+            $sql = "DELETE FROM `mysql_server` WHERE id=" . $to_delete['id'] . "";
             $db->sql_query($sql);
-            
-            
-            echo "[Warning] Removed : ".$to_delete['name']." from monitoring\n";
-            
+
+
+            echo "[Warning] Removed : " . $to_delete['name'] . " from monitoring\n";
         }
-        
-        
-        
     }
 
     private function compare($tab_from = array(), $tab_to)
@@ -963,5 +959,13 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
           }
           } */
     }
-
+    
+    
+    private function deleteBackup()
+    {
+        
+        $cmd = "find /data/backup/10.*/* -mtime +10 -exec rm {} \;";
+        shell_exec($cmd);
+        
+    }
 }

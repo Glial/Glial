@@ -235,5 +235,18 @@ class Form
 
         return "\n".'<input type="radio" id="' . $value . '" name="' . $table . '[' . $field . ']" value="' . $value . '" '.$checked.' />'."\n";
     }
+    
+    
+    static public function file($table)
+    {
+        
+        $getsize = (int) substr(ini_get("upload_max_filesize"),0,-1) * 1024*1024;
+
+        return '<input type="hidden" name="MAX_FILE_SIZE" value="'.$getsize.'" /><input name="'.$table.'" type="file" /> (Max file size : '.ini_get("upload_max_filesize").')';
+        
+        
+    }
+    
+    
 
 }

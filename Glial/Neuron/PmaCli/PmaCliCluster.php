@@ -139,4 +139,71 @@ trait PmaCliCluster
         return $out;
     }
 
+    public function clusterTest($param)
+    {
+        $this->view = false;
+
+        foreach ($param as $server) {
+            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+
+            $sql = "CREATE DATABASE IF NOT EXISTS `" . $server . "`;";
+            $db->sql_query($sql);
+            echo "[" . date("Y-m-d H:i:s") . "] " . $server . "> " . $sql . PHP_EOL;
+        }
+
+
+        foreach ($param as $server) {
+            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+
+            $sql = "SHOW DATABASES";
+            $databases = $db->sql_fetch_yield($sql);
+
+            $i = 0;
+            foreach ($databases as $database) {
+                if (in_array($database['Database'], $param)) {
+                    
+                    echo "[NOTICE] $server> found : ".$database['Database'].PHP_EOL;
+                    $i++;
+                }
+            }
+
+            if ($i != count($param)) {
+                echo "[ERROR] Only $i DB found !";
+            }
+
+        }
+
+        foreach ($param as $server) {
+            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+
+            $sql = "DROP DATABASE `" . $server . "`;";
+            $db->sql_query($sql);
+            echo "[" . date("Y-m-d H:i:s") . "] " . $server . "> " . $sql . PHP_EOL;
+        }     
+        
+        foreach ($param as $server) {
+            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+
+            $sql = "SHOW DATABASES";
+            $databases = $db->sql_fetch_yield($sql);
+
+            $i = 0;
+            foreach ($databases as $database) {
+                if (in_array($database['Database'], $param)) {
+                    $i++;
+                }
+            }
+
+            if ($i != 0) {
+                echo "[ERROR] $i DB found on $server !".PHP_EOL;
+            }
+            else
+            {
+                echo "[NOTICE] $server> No databases found !".PHP_EOL;
+            }
+        }
+        
+        
+    }
+
 }

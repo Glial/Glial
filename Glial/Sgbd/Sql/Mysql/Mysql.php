@@ -538,4 +538,7 @@ class Mysql extends Sql
         return $this->version_comment;
     }
 
+    
+    
+    
 }
