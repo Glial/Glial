@@ -98,7 +98,8 @@ class Controller
 
         if (!IS_CLI) {
             $this->ajax = $page->ajax;
-            $this->js = $page->getJavascript();
+            //$this->js = $page->getJavascript();
+            $this->js = $this->di['js']->getJavascript();
         }
         
         $this->layout_name = $page->layout_name;
@@ -120,7 +121,7 @@ class Controller
         }
 
 
-        if (!$this->recursive) {
+        if (!$this->recursive) { 
 
             if (!Variable::$_open) {
                 ob_start();
@@ -173,7 +174,9 @@ class Controller
             include APP_DIR . DS . "layout" . DS . $this->layout_name . ".layout.php";
 
             if (!$this->ajax) {
-                echo $this->js;
+                //echo $this->js;
+                echo $this->di['js']->getJavascript();
+                //echo $this->js;
             }
             echo "</html>\n"; //TODO a mettre ailleurs
 
@@ -186,6 +189,8 @@ class Controller
         }
     }
 
+    
+    /*
     final function getJavascript()
     {
         $js = "\n<!-- start library javascript -->\n";
@@ -211,7 +216,7 @@ class Controller
 
 
         return $js;
-    }
+    }*/
 
     final function set($var, $valeur)
     {
@@ -223,6 +228,8 @@ class Controller
         return $this->value;
     }
 
+    
+    /*
     final function addJavascript($js)
     {
         if (is_array($js)) {
@@ -230,7 +237,7 @@ class Controller
         } else {
             $this->javascript[] = $js;
         }
-    }
+    }*/
 
     /*
      * Define if this MVC is the root node
@@ -252,4 +259,9 @@ class Controller
         
     }
 
+    
+    function setJs($js)
+    {
+        $this->js = $js;
+    }
 }

@@ -57,6 +57,11 @@ class FactoryController
         $node->setRootNode();
         $node->getController();
 
+        if (!empty(self::$di['js'])) {
+            $node->setJs(self::$di['js']->getJavascript());
+        }
+        
+        
         if (!$node->layout_name) {
             $node->display();
             return false;
@@ -92,7 +97,7 @@ class FactoryController
         if (empty(self::$di[$name])) {
             self::$di[$name] = $object;
         } else {
-            throw new Exception('GLI-019 : This dependency inection already exist !');
+            throw new Exception('GLI-019 : This dependency injection already exist !');
         }
     }
 
