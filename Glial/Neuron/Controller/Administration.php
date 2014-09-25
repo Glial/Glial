@@ -58,6 +58,8 @@ trait Administration
                     $description = $this->di['db']->sql('default')->getDescription($table);
                     $data = array();
 
+                    debug($description);
+
                     foreach ($description as $line) {
                         $data['field'][] = $line[0];
                     }
