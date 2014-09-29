@@ -8,6 +8,8 @@
 
 namespace Glial\Neuron\PmaCli;
 
+use \Glial\Cli\Color;
+
 trait PmaCliCluster
 {
 
@@ -137,6 +139,70 @@ trait PmaCliCluster
             }
         }
         return $out;
+    }
+
+    public function clusterTest($param)
+    {
+        $this->view = false;
+
+        foreach ($param as $server) {
+            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+
+            $sql = "CREATE DATABASE IF NOT EXISTS `" . $server . "`;";
+            $db->sql_query($sql);
+            echo "[" . date("Y-m-d H:i:s") . "] " . $server . "> " . \SqlFormatter::highlight($sql);
+        }
+
+
+        foreach ($param as $server) {
+            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+
+            $sql = "SHOW DATABASES";
+            $databases = $db->sql_fetch_yield($sql);
+
+            $i = 0;
+            foreach ($databases as $database) {
+                if (in_array($database['Database'], $param)) {
+
+                    echo "[NOTICE] " . $server . "> " . $database['Database'] . " : Found !" . PHP_EOL;
+                    $i++;
+                }
+            }
+
+            if ($i != count($param)) {
+                echo Color::getColoredString("[ERROR] Only $i DB found !", "grey", "red") . PHP_EOL;
+            } else {
+                echo Color::getColoredString("[NOTICE] $server> OK !", "black", "green") . PHP_EOL;
+            }
+        }
+
+        foreach ($param as $server) {
+            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+
+            $sql = "DROP DATABASE `" . $server . "`;";
+            $db->sql_query($sql);
+            echo "[" . date("Y-m-d H:i:s") . "] " . $server . "> " . \SqlFormatter::highlight($sql);
+        }
+
+        foreach ($param as $server) {
+            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+
+            $sql = "SHOW DATABASES";
+            $databases = $db->sql_fetch_yield($sql);
+
+            $i = 0;
+            foreach ($databases as $database) {
+                if (in_array($database['Database'], $param)) {
+                    $i++;
+                }
+            }
+
+            if ($i != 0) {
+                echo Color::getColoredString("[ERROR] $i DB found on $server !", "grey", "red") . PHP_EOL;
+            } else {
+                echo Color::getColoredString("[NOTICE] $server> No databases found !", "black", "green") . PHP_EOL;
+            }
+        }
     }
 
 }
