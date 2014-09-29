@@ -19,11 +19,9 @@ use \Glial\Neuron\PmaCli\PmaCliArray;
 
 use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
-<<<<<<< HEAD
+
 //use \Glial\Neuron\PmaCli\PmaCliSwitch;
-=======
-use \Glial\Neuron\PmaCli\PmaCliSwitch;
->>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
+
 
     public function load($param)
     {
@@ -148,11 +146,9 @@ use \Glial\Neuron\PmaCli\PmaCliSwitch;
                     fwrite($fp, "\t node [color=green];" . PHP_EOL);
                 }
 // shape=Mrecord
-<<<<<<< HEAD
+
                 fwrite($fp, '  "' . $ob->id . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center" href="' . LINK . 'monitoring/query/' . str_replace('_', '-', $ob->name) . '/' . '"><font color="white">' . str_replace('_', '-', $ob->name) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $ob->ip . ':' . $ob->port . '</td></tr>');
-=======
-                fwrite($fp, '  "' . $ob->id . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center" href="' . LINK . 'monitoring/query/' . str_replace('_', '-', $ob->name) . '/'  . '"><font color="white">' . str_replace('_', '-', $ob->name) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $ob->ip . ':' . $ob->port . '</td></tr>');
->>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
+
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $ob->version . '</td></tr>' . PHP_EOL);
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($ob->uptime) . '</td></tr>');
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $ob->date . ') : ' . $ob->time_zone . '</td></tr>');
@@ -328,11 +324,9 @@ use \Glial\Neuron\PmaCli\PmaCliSwitch;
                     $label = "Not started";
                     $color = "blue";
                 }
-<<<<<<< HEAD
+
                 fwrite($fp, "" . $ip[$ob->master_host] . " -> " . $ob->id . '[ arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="' . $color . '" label ="' . $label . '"  edgetarget="' . LINK . 'mysql/thread/' . str_replace('_', '-', $ob->name) . '/" edgeURL="' . LINK . 'mysql/thread/' . str_replace('_', '-', $ob->name) . '/' . $ob->thread_name . '"];' . PHP_EOL);
-=======
-                fwrite($fp, "" . $ip[$ob->master_host] . " -> " . $ob->id . '[ arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="' . $color . '" label ="' . $label . '"  edgetarget="'.LINK.'mysql/thread/'.str_replace('_', '-', $ob->name).'/" edgeURL="'.LINK.'mysql/thread/'.str_replace('_', '-', $ob->name).'/'.$ob->thread_name.'"];' . PHP_EOL);
->>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
+
             }
 
             fwrite($fp, "}");
@@ -600,12 +594,7 @@ use \Glial\Neuron\PmaCli\PmaCliSwitch;
         //$this->testDaemon();
         ini_set('mysql.connect_timeout', '5');
         ini_set('max_execution_time', '20');
-<<<<<<< HEAD
 
-        $this->updateServerList();
-
-=======
->>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
 
         $this->updateServerList();
         
@@ -977,7 +966,7 @@ use \Glial\Neuron\PmaCli\PmaCliSwitch;
           }
           } */
     }
-<<<<<<< HEAD
+
 
     private function deleteBackup()
     {
@@ -986,15 +975,5 @@ use \Glial\Neuron\PmaCli\PmaCliSwitch;
         shell_exec($cmd);
     }
 
-=======
     
-    
-    private function deleteBackup()
-    {
-        
-        $cmd = "find /data/backup/10.*/* -mtime +10 -exec rm {} \;";
-        shell_exec($cmd);
-        
-    }
->>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
 }
