@@ -150,7 +150,11 @@ trait PmaCliCluster
 
             $sql = "CREATE DATABASE IF NOT EXISTS `" . $server . "`;";
             $db->sql_query($sql);
+<<<<<<< HEAD
             echo "[" . date("Y-m-d H:i:s") . "] " . $server . "> " . \SqlFormatter::highlight($sql);
+=======
+            echo "[" . date("Y-m-d H:i:s") . "] " . $server . "> " . $sql . PHP_EOL;
+>>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
         }
 
 
@@ -163,17 +167,28 @@ trait PmaCliCluster
             $i = 0;
             foreach ($databases as $database) {
                 if (in_array($database['Database'], $param)) {
+<<<<<<< HEAD
 
                     echo "[NOTICE] " . $server . "> " . $database['Database'] . " : Found !" . PHP_EOL;
+=======
+                    
+                    echo "[NOTICE] $server> found : ".$database['Database'].PHP_EOL;
+>>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
                     $i++;
                 }
             }
 
             if ($i != count($param)) {
+<<<<<<< HEAD
                 echo Color::getColoredString("[ERROR] Only $i DB found !", "grey", "red") . PHP_EOL;
             } else {
                 echo Color::getColoredString("[NOTICE] $server> OK !", "black", "green") . PHP_EOL;
             }
+=======
+                echo "[ERROR] Only $i DB found !";
+            }
+
+>>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
         }
 
         foreach ($param as $server) {
@@ -181,9 +196,15 @@ trait PmaCliCluster
 
             $sql = "DROP DATABASE `" . $server . "`;";
             $db->sql_query($sql);
+<<<<<<< HEAD
             echo "[" . date("Y-m-d H:i:s") . "] " . $server . "> " . \SqlFormatter::highlight($sql);
         }
 
+=======
+            echo "[" . date("Y-m-d H:i:s") . "] " . $server . "> " . $sql . PHP_EOL;
+        }     
+        
+>>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
         foreach ($param as $server) {
             $db = $this->di['db']->sql(str_replace('-', '_', $server));
 
@@ -198,11 +219,23 @@ trait PmaCliCluster
             }
 
             if ($i != 0) {
+<<<<<<< HEAD
                 echo Color::getColoredString("[ERROR] $i DB found on $server !", "grey", "red") . PHP_EOL;
             } else {
                 echo Color::getColoredString("[NOTICE] $server> No databases found !", "black", "green") . PHP_EOL;
             }
         }
+=======
+                echo "[ERROR] $i DB found on $server !".PHP_EOL;
+            }
+            else
+            {
+                echo "[NOTICE] $server> No databases found !".PHP_EOL;
+            }
+        }
+        
+        
+>>>>>>> fdbdea004d4e65b0aaf6af28816fc80b634568e4
     }
 
 }

@@ -53,7 +53,7 @@ trait Install
 
                 if (!file_exists($dir)) {
                     if (!mkdir($dir)) {
-                        echo $this->out("Impossible to create this directory : " . $key . " ", "KO");
+                        echo $this->out("Impossible to create this directory : " . $dir . " ", "KO");
                     }
                 }
             }
@@ -95,7 +95,7 @@ trait Install
         $this->anonymous($fct, "jQuery installed (%s)");
 
 
-        $this->cmd("chown www-data:www-data -R *", "Setting right to www-data:www-data");
+        //$this->cmd("chown www-data:www-data -R *", "Setting right to www-data:www-data");
 
 
         $this->cmd("php glial administration admin_index_unique", "Generating DDL cash for index");
@@ -194,7 +194,7 @@ trait Install
                 break;
 
             default:
-                throw new \Exception("GLI-024 : Arguement '" . $type . "' not valid {OK|KO|NA}", 21);
+                throw new \Exception("GLI-024 : Arguement '" . $msg. $type . "' not valid {OK|KO|NA}", 21);
         }
 
 
@@ -268,7 +268,7 @@ trait Install
         $this->anonymous($fct, "Check PHP version : " . PHP_VERSION);
 
         //test all extention php required
-        $extentions = array_merge($ext, array('gd', 'curl', 'ssh2', 'phar'));
+        $extentions = array_merge($ext, array('gd', 'curl', 'phar'));
 
         foreach ($extentions as $ext) {
 
