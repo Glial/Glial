@@ -50,7 +50,7 @@ trait Administration
 
                 $tables = $this->di['db']->sql('default')->getListTable();
 
-                
+                //debug($tables);
                 
                 foreach ($tables['table'] as $table) {
                     //echo $table . "\n";
@@ -58,8 +58,7 @@ trait Administration
                     $description = $this->di['db']->sql('default')->getDescription($table);
                     $data = array();
 
-                    debug($description);
-
+                   
                     foreach ($description as $line) {
                         $data['field'][] = $line[0];
                     }

@@ -519,6 +519,9 @@ class Validation
      * @return boolean Success
      * @access public
      */
+    
+    
+    /*
     function decimal($check, $places = null, $regex = null)
     {
         $_this = & Validation::getInstance();
@@ -534,7 +537,7 @@ class Validation
             }
         }
         return $_this->_check();
-    }
+    }*/
 
     /**
      * Validates for an email address.
