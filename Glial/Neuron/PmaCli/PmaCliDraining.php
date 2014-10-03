@@ -129,7 +129,7 @@ class PmaCliDraining
         
         if (empty($this->rows_to_delete[$this->main_table]))
         {
-            //sleep(300);
+            
             return $this->rows_to_delete;
         }
         
