@@ -19,7 +19,6 @@ use \Glial\Neuron\PmaCli\PmaCliArray;
 
 use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
-
 //use \Glial\Neuron\PmaCli\PmaCliSwitch;
 
 
@@ -103,7 +102,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
             $ip_sand_box = $this->getServerWithSandBox($db);
 
 
-            $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date`,b.`uptime`, b.`time_zone`
+            $sql = "SELECT a.`id`,a.`ip`,a.`name`,a.`port`,b.`databases`,b.`version`,b.`date`,b.`uptime`, b.`time_zone`, b.`binlog_format`
             FROM `mysql_server` a
             INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server 
             LEFT JOIN mysql_cluster_node c  ON c.id_mysql_server = a.id
@@ -140,6 +139,30 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 }
                 $sandbox = $ob->ip;
 
+
+
+
+
+
+                /*
+                  $data = [];
+
+
+                  if (empty($ob->version)) {
+                  $data['color'] = "red";
+                  } else {
+                  $data['color'] = "green";
+                  }
+
+                  $data['hostname'] = $ob->name;
+                  $data['ip'] = $ob->ip;
+
+                  $this->displayServer($fp, $data);
+                 */
+//start of tab
+
+
+
                 if (empty($ob->version)) {
                     fwrite($fp, "\t node [color=red];" . PHP_EOL);
                 } else {
@@ -147,21 +170,25 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 }
 // shape=Mrecord
 
-                fwrite($fp, '  "' . $ob->id . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center" href="' . LINK . 'monitoring/query/' . str_replace('_', '-', $ob->name) . '/' . '"><font color="white">' . str_replace('_', '-', $ob->name) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $ob->ip . ':' . $ob->port . '</td></tr>');
-
+                $hostname = str_replace('_', '-', $ob->name);
+                fwrite($fp, '  "' . $ob->id . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center" href="' . LINK . 'monitoring/query/' . $hostname . '/' . '"><font color="white">' . str_replace('_', '-', $ob->name) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $ob->ip . ':' . $ob->port . '</td></tr>');
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $ob->version . '</td></tr>' . PHP_EOL);
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($ob->uptime) . '</td></tr>');
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $ob->date . ') : ' . $ob->time_zone . '</td></tr>');
+                fwrite($fp, '<tr><td bgcolor="grey" align="left">Binlog format : '.$ob->binlog_format.'</td></tr>');
 //fwrite($fp, '<tr><td bgcolor="red" align="left">Date : <b>' . $ob->date.'</b></td></tr>');
 
 
-                $databases = explode(',', $ob->databases);
+                fwrite($fp, '<tr><td bgcolor="grey" align="left">');
 
-                foreach ($databases as $database) {
-                    fwrite($fp, '<tr><td bgcolor="#dddddd" align="left" title="MPD of ' . $database . '" href="' . LINK . 'mysql/mpd/' . str_replace('_', '-', $ob->name) . '/' . $database . '">' . $database . '</td></tr>' . PHP_EOL);
-                }
 
+                fwrite($fp, $this->displayDatabase($ob->id, $hostname) . PHP_EOL);
+
+                fwrite($fp, '</td></tr>' . PHP_EOL);
                 fwrite($fp, '</table>> ];' . PHP_EOL);
+                /*                 * */
+// end of tab
+
 
                 $ip[$ob->ip] = $ob->id;
             }
@@ -257,7 +284,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 }
 
 
-                //to set cluster display horizontally
+//to set cluster display horizontally
 
                 /*
                   $last_node = "";
@@ -326,7 +353,6 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 }
 
                 fwrite($fp, "" . $ip[$ob->master_host] . " -> " . $ob->id . '[ arrowsize="1.5" penwidth="2" fontname="arial" fontsize=8 color ="' . $color . '" label ="' . $label . '"  edgetarget="' . LINK . 'mysql/thread/' . str_replace('_', '-', $ob->name) . '/" edgeURL="' . LINK . 'mysql/thread/' . str_replace('_', '-', $ob->name) . '/' . $ob->thread_name . '"];' . PHP_EOL);
-
             }
 
             fwrite($fp, "}");
@@ -464,6 +490,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                     $data['mysql_replication_stats']['time_zone'] = ($dblink->getVariables('system_time_zone')) ? $dblink->getVariables('system_time_zone') : '-1';
                     $data['mysql_replication_stats']['ping'] = 1;
                     $data['mysql_replication_stats']['last_sql_error'] = '';
+                    $data['mysql_replication_stats']['binlog_format'] = ($dblink->getVariables('binlog_format')) ? $dblink->getVariables('binlog_format') : 'N/A';
 
                     $sql = "SHOW databases";
                     $dblist = array();
@@ -491,8 +518,6 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                     debug($data);
                     throw new \Exception("GLI-031 : Impossible to get id_mysql_replication_stats");
                 }
-
-
 
 
                 if ($slave) {
@@ -528,9 +553,13 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                             debug($default->sql_error());
                             debug($data);
 //throw new \Exception("GLI-032 : Impossible to save row in mysql_replication_thread");
+                        } else {
+                            $thread['id_mysql_replication_thread'] = $default->sql_insert_id();
                         }
                     }
                 }
+
+                $this->saveDatabase($dblink, $ob->id, $master, $thread);
             }
         }
     }
@@ -591,14 +620,14 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
     public function all()
     {
-        //$this->testDaemon();
+//$this->testDaemon();
         ini_set('mysql.connect_timeout', '5');
         ini_set('max_execution_time', '20');
 
 
         $this->updateServerList();
-        
-        
+
+
         $this->view = false;
         $previous_data = $this->sql_to_array();
 
@@ -616,7 +645,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
     public function daemon()
     {
-        //$this->testDaemon();
+//$this->testDaemon();
 
         $i = 0;
 
@@ -714,7 +743,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 debug($db->sql_error());
                 exit;
             } else {
-                //echo $data['mysql_server']['name'] . PHP_EOL;
+//echo $data['mysql_server']['name'] . PHP_EOL;
             }
         }
 
@@ -949,25 +978,6 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         
     }
 
-    private function Daemontest()
-    {
-        /*
-
-
-          $ret = shell_exec('ps aux | grep glial | sed "s/\ \+/ /g" | grep -v grep | cut -d" " -f11');
-          $tab = explode("\n", $ret);
-          $items = array('glial-pma_cli-daemon', 'glial-pma_cli-all');
-
-
-
-          foreach ($items as $item) {
-          if (in_array($item, $tab)) {
-          throw new \Exception("GLI-099 : A daemon pma_cli already currently running !");
-          }
-          } */
-    }
-
-
     private function deleteBackup()
     {
 
@@ -975,5 +985,141 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         shell_exec($cmd);
     }
 
-    
+    private function saveDatabase($db, $id_mysql_server, $binlog, $replicate)
+    {
+        $default = $this->di['db']->sql('default');
+
+
+        $binlog_do_db = explode(",", $binlog['Binlog_Do_DB']);
+        $binlog_ignore_db = explode(",", $binlog['Binlog_Ignore_DB']);
+
+        $sql = "DELETE FROM mysql_database where id_mysql_server = '" . $id_mysql_server . "';";
+        $default->sql_query($sql);
+        echo $sql;
+
+        $sql = "SELECT * FROM `information_schema`.`SCHEMATA`";
+        $databases = $db->sql_fetch_yield($sql);
+
+        foreach ($databases as $database) {
+            $data = array();
+            $data['mysql_database']['id_mysql_server'] = $id_mysql_server;
+            $data['mysql_database']['name'] = $database['SCHEMA_NAME'];
+            $data['mysql_database']['collation_name'] = $database['DEFAULT_COLLATION_NAME'];
+            $data['mysql_database']['character_set_name'] = $database['DEFAULT_CHARACTER_SET_NAME'];
+            $data['mysql_database']['binlog_do_db'] = (in_array($database['SCHEMA_NAME'], $binlog_do_db)) ? 1 : 0;
+            $data['mysql_database']['binlog_ignore_db'] = (in_array($database['SCHEMA_NAME'], $binlog_ignore_db)) ? 1 : 0;
+
+            $saved = $default->sql_save($data);
+
+            if (!$saved) {
+                debug($default->sql_error());
+                debug($data);
+                die();
+            } else {
+
+                if (!empty($replicate['id_mysql_replication_thread'])) {
+                    $id_mysql_database = $default->sql_insert_id();
+
+                    $replicate_do_db = explode(",", $replicate['Replicate_Do_DB']);
+                    $replicate_ignore_db = explode(",", $replicate['Replicate_Ignore_DB']);
+
+
+                    $data = array();
+                    $data['link__mysql_database__mysql_replication_thread']['id_mysql_database'] = $id_mysql_database;
+                    $data['link__mysql_database__mysql_replication_thread']['id_mysql_replication_thread'] = $replicate['id_mysql_replication_thread'];
+                    $data['link__mysql_database__mysql_replication_thread']['replicate_do_db'] = (in_array($database['SCHEMA_NAME'], $replicate_do_db)) ? 1 : 0;
+                    $data['link__mysql_database__mysql_replication_thread']['replicate_ignore_db'] = (in_array($database['SCHEMA_NAME'], $replicate_ignore_db)) ? 1 : 0;
+
+                    $saved = $default->sql_save($data);
+                    if (!$saved) {
+                        debug($default->sql_error());
+                        debug($data);
+                        die();
+                    }
+                }
+            }
+        }
+    }
+
+    private function saveReplicateDb($id_mysql_database)
+    {
+        
+    }
+
+    private function displayServer(&$fp, $data)
+    {
+        $color = ['blue', 'red', 'green'];
+
+        if (!in_array($data['color'], $color)) {
+            throw new Exception("PMACLI-085 Impossible to get the color !");
+        }
+        fwrite($fp, "\t node [color=" . $data['color'] . "];" . PHP_EOL);
+
+
+
+        fwrite($fp, '  "' . $data['id_mysql_server'] . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center" href="' . LINK . 'monitoring/query/' . str_replace('_', '-', $data['hostname']) . '/' . '"><font color="white">' . str_replace('_', '-', $data['hostname']) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $data['ip'] . ':' . $data['port'] . '</td></tr>');
+
+        fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $data['version'] . '</td></tr>' . PHP_EOL);
+        fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($data['uptime']) . '</td></tr>');
+        fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $data['date'] . ') : ' . $data['timezone'] . '</td></tr>');
+        fwrite($fp, '<tr><td bgcolor="grey" align="left">Binlog format : '.$data['binlog_format'].'</td></tr>');
+//fwrite($fp, '<tr><td bgcolor="red" align="left">Date : <b>' . $ob->date.'</b></td></tr>');
+        // DATABASES
+
+
+        fwrite($fp, '</table>> ];' . PHP_EOL);
+    }
+
+    private function displayDatabase($id, $hostname)
+    {
+        $db = $this->di['db']->sql("default");
+        $ret = '';
+
+        if (!empty($id)) {
+            $sql = "SELECT * FROM mysql_database a"
+                    . " LEFT JOIN link__mysql_database__mysql_replication_thread b ON a.id = b.id_mysql_database "
+                    . "WHERE a.id_mysql_server='" . $id . "' order by a.name";
+            $res = $db->sql_query($sql);
+
+
+
+            if ($db->sql_num_rows($res) > 0) {
+                $ret .= '<table border="0" cellborder="0" cellspacing="1" cellpadding="1">';
+
+                $ret .= '<tr><td bgcolor="#eeeeee">M</td><td bgcolor="#eeeeee">S</td>'
+                        . '<td bgcolor="#dddddd" align="left">Databases</td></tr>' . PHP_EOL;
+
+                while ($database = $db->sql_fetch_array($res)) {
+
+                    $binlog = (empty($database['binlog_do_db'])) ? "" : "&#10004;";
+
+
+                    if (empty($binlog)) {
+                        $binlog = (empty($database['binlog_ignore_db'])) ? "-" : "&#10006;";
+                    }
+
+                    
+
+                    $replicate = (empty($database['replicate_ignore_db'])) ? "" : "&#10006;";
+
+                    if (empty($replicate)) {
+                        $replicate = (empty($database['replicate_do_db'])) ? "-" : "&#10004;";
+                    }
+
+
+
+
+                    $ret .= '<tr><td bgcolor="#eeeeee">' . $binlog . '</td><td bgcolor="#eeeeee">' . $replicate . '</td>'
+                            . '<td bgcolor="#dddddd" align="left" title="MPD of ' . $database['name'] . '" href="' . LINK . 'mysql/mpd/' .
+                            str_replace('_', '-', $hostname) . '/' . $hostname . '">' . $database['name'] . '</td></tr>' . PHP_EOL;
+                }
+                $ret .= '</table>';
+            }
+        } else {
+            throw new \Exception('PMACLI-072 Impossible to get id of server !');
+        }
+
+        return $ret;
+    }
+
 }

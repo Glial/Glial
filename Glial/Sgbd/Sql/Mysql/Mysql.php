@@ -86,6 +86,8 @@ class Mysql extends Sql
 
     protected function _query($sql)
     {
+        
+       
         return mysqli_query($this->link, $sql);
     }
 

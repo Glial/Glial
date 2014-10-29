@@ -13,7 +13,7 @@ use \Glial\Cli\Color;
 class PmaCliDraining
 {
 
-    const NB_DELETE = 800; //nombre de delete en même temps
+    const NB_DELETE = 800; //nombre de delete en mÃªme temps
     const NB_PROCESS = 1;
     const NB_THREAD = 1; //must be below that the number of CPU
     const DEBUG = false;
@@ -33,10 +33,21 @@ class PmaCliDraining
     function __construct($di)
     {
         $this->di['db'] = $di;
+        
+        // set @@skip_replication = ON
     }
 
     public function start()
     {
+        $db = $this->di['db']->sql($this->link_to_purge);
+        $db->sql_select_db($this->schema_to_purge);
+        
+        
+        // to not affect history server, read : https://mariadb.com/kb/en/mariadb/documentation/replication/standard-replication/selectively-skipping-replication-of-binlog-events/
+        $sql = "SET @@skip_replication = ON;";
+        $db->sql_query($sql);
+        
+        
         $this->view = false;
 
 
@@ -59,10 +70,6 @@ class PmaCliDraining
         $this->delete(1);
         $this->deleteOther();
 
-
-
-
-
         return $this->rows_to_delete;
     }
 
@@ -72,8 +79,8 @@ class PmaCliDraining
         $db->sql_select_db($this->schema_to_purge);
 
 
-        $sql = "DROP TABLE IF EXISTS `" . self::PREFIX . $table . "`;";
-        $db->sql_query($sql);
+        //$sql = "DROP TABLE IF EXISTS `" . self::PREFIX . $table . "`;";
+        //$db->sql_query($sql);
         //$this->log($sql);
 
         $fields = $this->getTypeOfPrimaryKey($table);
@@ -102,9 +109,11 @@ class PmaCliDraining
         $sql .= implode(",", $line);
         $sql .= ", PRIMARY KEY (" . implode(",", $index) . "));";
         $db->sql_query($sql);
+        
+        
         //$this->log($sql);
-        //$sql = "TRUNCATE TABLE `" . self::PREFIX . $table . "`;";
-        //$db->sql_query($sql);
+        $sql = "TRUNCATE TABLE `" . self::PREFIX . $table . "`;";
+        $db->sql_query($sql);
         //$this->log($sql);
     }
 

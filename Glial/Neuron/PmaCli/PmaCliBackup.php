@@ -65,4 +65,22 @@ trait PmaCliBackup {
         $sql = "UPDATE mysql_dump SET is_gziped=1 where is_gziped=0";
         $db->sql_query($sql);
     }
+    
+    
+    public function backupShow($param)
+    {
+        
+        $db = $this->di['db']->sql('default');
+        
+        $sql = "SELECT * FROM mysql_dump a
+                INNER JOIN mysql_server b ON a.id_mysql_server = b.id
+                ORDER BY date_end DESC";
+        
+        $data['list_dump'] = $db->sql_fetch_yield($res);
+        
+        
+        
+        $this->set('data',$data);
+        
+    }
 }

@@ -67,6 +67,9 @@ abstract class Sql
     abstract protected function getListTable();
 
     abstract protected function getIndexUnique($table_name);
+    
+    //abstract protected function sql_ping($result);
+    
 
     public function sql_fetch_field($res, $field_offset = 0)
     {
@@ -81,6 +84,10 @@ abstract class Sql
 
 
         if (IS_CLI) { //to save memory with crawler & bot
+            
+            
+            
+            
             $this->serializeQuery();
         }
 
