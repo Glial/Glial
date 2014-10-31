@@ -51,7 +51,7 @@ class Controller
         $controller = Inflector::camelize($controller);
 
         if (!IS_CLI) {
-            if (!$GLOBALS['acl']->isAllowed($GLOBALS['_SITE']['id_group'], $controller . "/" . $action)) {
+            if (!$GLOBALS['acl']->isAllowed($GLOBALS['auth']->getAccess(), $controller . "/" . $action)) {
                 return;
             }
         }
@@ -179,10 +179,8 @@ class Controller
                 //echo $this->js;
             }
             echo "</html>\n"; //TODO a mettre ailleurs
-
-
+            
             Variable::$_html = ob_get_clean();
-
             Variable::$_html = I18n::getTranslation(Variable::$_html);
 
             echo Variable::$_html;

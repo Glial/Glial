@@ -105,7 +105,8 @@ class Validation
         if (empty($elem['value']) && $elem['value'] != '0') {
             return false;
         }
-        $regex = '/^[\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}]+[\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}]+(([\-]|[ ])[\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}]+[\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}]+)?$/mu';
+        //$regex = '/^[\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}]+[\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}]+(([\-]|[ ])[\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}]+[\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}]+)?$/mu';
+        $regex = '/^[\p{L}\p{P}\p{Zs}]+$/mu';
 
         if (preg_match($regex, $elem['value'])) {
             return true;
