@@ -175,7 +175,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $ob->version . '</td></tr>' . PHP_EOL);
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($ob->uptime) . '</td></tr>');
                 fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $ob->date . ') : ' . $ob->time_zone . '</td></tr>');
-                fwrite($fp, '<tr><td bgcolor="grey" align="left">Binlog format : '.$ob->binlog_format.'</td></tr>');
+                fwrite($fp, '<tr><td bgcolor="grey" align="left">Binlog format : ' . $ob->binlog_format . '</td></tr>');
 //fwrite($fp, '<tr><td bgcolor="red" align="left">Date : <b>' . $ob->date.'</b></td></tr>');
 
 
@@ -447,6 +447,26 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 $MS->setInstance($dblink);
                 $master = $MS->isMaster();
                 $slave = $MS->isSlave();
+
+
+                /*
+                $client = new \crodas\InfluxPHP\Client(
+                        "dev.metrics.noc2.photobox.com", 8086, "root", "root"
+                );
+                $influxDB = $client->mysqlmetrics;
+
+                $sql = "SELECT * FROM information_schema.GLOBAL_STATUS ORDER BY VARIABLE_NAME";
+                $global_status = $dblink->sql_fetch_yield($sql);
+
+
+                foreach ($global_status as $status) {
+                    
+                    $value =  (int) $status['VARIABLE_VALUE'];
+                    $influxDB->insert(str_replace('_','-', $db) . "." . $status['VARIABLE_NAME'], ['value' => $value]);
+                }
+                
+                */
+                
             } else {
 
                 $server_on = 0;
@@ -995,7 +1015,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
         $sql = "DELETE FROM mysql_database where id_mysql_server = '" . $id_mysql_server . "';";
         $default->sql_query($sql);
-        echo $sql;
+        //echo $sql;
 
         $sql = "SELECT * FROM `information_schema`.`SCHEMATA`";
         $databases = $db->sql_fetch_yield($sql);
@@ -1062,7 +1082,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $data['version'] . '</td></tr>' . PHP_EOL);
         fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($data['uptime']) . '</td></tr>');
         fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $data['date'] . ') : ' . $data['timezone'] . '</td></tr>');
-        fwrite($fp, '<tr><td bgcolor="grey" align="left">Binlog format : '.$data['binlog_format'].'</td></tr>');
+        fwrite($fp, '<tr><td bgcolor="grey" align="left">Binlog format : ' . $data['binlog_format'] . '</td></tr>');
 //fwrite($fp, '<tr><td bgcolor="red" align="left">Date : <b>' . $ob->date.'</b></td></tr>');
         // DATABASES
 
@@ -1098,7 +1118,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                         $binlog = (empty($database['binlog_ignore_db'])) ? "-" : "&#10006;";
                     }
 
-                    
+
 
                     $replicate = (empty($database['replicate_ignore_db'])) ? "" : "&#10006;";
 
@@ -1111,7 +1131,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
                     $ret .= '<tr><td bgcolor="#eeeeee">' . $binlog . '</td><td bgcolor="#eeeeee">' . $replicate . '</td>'
                             . '<td bgcolor="#dddddd" align="left" title="MPD of ' . $database['name'] . '" href="' . LINK . 'mysql/mpd/' .
-                            str_replace('_', '-', $hostname) . '/' . $hostname . '">' . $database['name'] . '</td></tr>' . PHP_EOL;
+                            str_replace('_', '-', $hostname) . '/' . $database['name'] . '">' . $database['name'] . '</td></tr>' . PHP_EOL;
                 }
                 $ret .= '</table>';
             }
@@ -1120,6 +1140,13 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         }
 
         return $ret;
+    }
+
+    function influxDB()
+    {
+        $client = new \crodas\InfluxPHP\Client(
+                "localhost" /* default */, 8086 /* default */, "root" /* by default */, "root" /* by default */
+        );
     }
 
 }

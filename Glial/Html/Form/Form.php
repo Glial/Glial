@@ -42,7 +42,7 @@ class Form
         return "<input id=\"" . $id . "\" name=\"" . $name . "\" " . $extra . " />" . $error;
     }
 
-    static public function select($table, $field, $data, $default_id = "", $classo = "", $ajax = 0, $indice = -1)
+    static public function select($table, $field, $data, $default_id = "", $options = array(), $ajax = 0, $indice = -1)
     {
         if (!empty($_SESSION['ERROR'][$table][$field])) {
             $error = " <span class=\"error\">" . $_SESSION['ERROR'][$table][$field] . "</span>";
@@ -54,15 +54,19 @@ class Form
         }
 
 
-        if (!empty($classo))
-            $classo = "$classo ";
+        $extra = "";
+        foreach ($options as $key => $val) {
+            $extra .= $key . '="' . $val . '" ';
+        }
+        
+        
 
         $ret = "";
         if ($ajax == 0) {
             if ($indice != -1) {
-                $ret .= "<select id=\"" . $table . "-" . $indice . "-" . $field . "\" class=\"" . $classo . "select" . $class . "\" name=\"" . $table . "[" . $indice . "]" . "[" . $field . "]\">";
+                $ret .= "<select id=\"" . $table . "-" . $indice . "-" . $field . "\" $extra name=\"" . $table . "[" . $indice . "]" . "[" . $field . "]\">";
             } else {
-                $ret .= "<select id=\"" . $table . "-" . $field . "\" class=\"" . $classo . "select" . $class . "\" name=\"" . $table . "[" . $field . "]\">";
+                $ret .= "<select id=\"" . $table . "-" . $field . "\" $extra name=\"" . $table . "[" . $field . "]\">";
             }
         }
 

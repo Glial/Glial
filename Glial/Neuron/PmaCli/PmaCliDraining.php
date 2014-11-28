@@ -16,7 +16,7 @@ class PmaCliDraining
     const NB_DELETE = 800; //nombre de delete en mÃªme temps
     const NB_PROCESS = 1;
     const NB_THREAD = 1; //must be below that the number of CPU
-    const DEBUG = true;
+    const DEBUG = false;
     const COLOR = true;
     const PREFIX = "DELETE_";
 
@@ -33,7 +33,7 @@ class PmaCliDraining
     function __construct($di)
     {
         $this->di['db'] = $di;
-        
+
         // set @@skip_replication = ON
     }
 
@@ -41,13 +41,13 @@ class PmaCliDraining
     {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
-        
-        
+
+
         // to not affect history server, read : https://mariadb.com/kb/en/mariadb/documentation/replication/standard-replication/selectively-skipping-replication-of-binlog-events/
         $sql = "SET @@skip_replication = ON;";
         $db->sql_query($sql);
-        
-        
+
+
         $this->view = false;
 
 
@@ -67,8 +67,11 @@ class PmaCliDraining
             }
         }
 
-        $this->delete(1);
-        $this->deleteOther();
+        if (!empty($this->rows_to_delete[$this->main_table])) {
+
+            $this->delete(1);
+            $this->deleteOther();
+        }
 
         return $this->rows_to_delete;
     }
@@ -109,8 +112,8 @@ class PmaCliDraining
         $sql .= implode(",", $line);
         $sql .= ", PRIMARY KEY (" . implode(",", $index) . "));";
         $db->sql_query($sql);
-        
-        
+
+
         //$this->log($sql);
         $sql = "TRUNCATE TABLE `" . self::PREFIX . $table . "`;";
         $db->sql_query($sql);
@@ -135,14 +138,13 @@ class PmaCliDraining
 
         $this->setAffectedRows($this->main_table);
 
-        
-        if (empty($this->rows_to_delete[$this->main_table]))
-        {
-            
+
+        if (empty($this->rows_to_delete[$this->main_table])) {
+
             return $this->rows_to_delete;
         }
-        
-        
+
+
         $this->feedDeleteTableWithJoin();
         $this->feedDeleteTableWithFk();
 

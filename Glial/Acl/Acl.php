@@ -517,5 +517,19 @@ class Acl
     {
         return $this->resources;
     }
+    
+    
+    public function getRoles()
+    {
+        return $this->roles;
+    }
+    
+    
+        public function getAlias()
+    {
+        return $this->alias;
+    }
+    
+    
 
 }

@@ -482,9 +482,11 @@ namespace Glial\I18n {
             self::$_SQL->sql(I18n::DATABASE)->set_history_user(11);
 
 
-            debug($data);
+            
 
             if (!self::$_SQL->sql(I18n::DATABASE)->sql_save($data)) {
+                
+                debug($data);
                 debug(self::$_SQL->sql(I18n::DATABASE)->error);
                 mail("aurelien.lequoy@gmail.com", "Alstom : Bug with I18n", debug($data) . "\n" . json_encode($data));
             }
@@ -629,12 +631,19 @@ namespace Glial\I18n {
 
         public static function get_answer_from_google($string, $from)
         {
-
+            //debug(self::$_language);
+            //debug($from);
+            //debug($string);
 
 //debug("We calling google ...");
-//$url ="http://translate.google.fr/translate_t?text=Traduction%20automatique%20de%20pages%20web%0Aceci%20est%20un%20test&hl=fr&langpair=fr|en&tbb=1&ie=utf-8";
-            $url = 'http://translate.google.fr/translate_t?text=' . urlencode($string) . '&hl=fr&langpair=' . $from . '|' . self::$_language . '&tbb=1&ie=utf-8';
+//$url ="http://translate.google.fr/translate_t?text=Traduction%20automatique%20de%20pages%20web%0Aceci%20est%20un%20test&hl=fr&langpair=en&tbb=1&ie=utf-8";
+            $url = 'http://translate.google.fr/translate_t?text=' . urlencode($string) . '&hl='.$from.'&langpair=' . self::$_language . '&tbb=1&ie=utf-8';
             $url = 'https://translate.google.fr/?text=' . urlencode($string) . '&amp;hl=' . self::$_language . '&amp;langpair=' . $from . '%7Cfr&amp;tbb=1&amp;ie=utf-8';
+
+            $url = 'https://translate.google.fr/?text=' . urlencode($string) . '&hl='. self::$_language.'&langpair=' . $from . '&tbb=1&ie=utf-8';
+
+            //debug($url);
+
 
             $UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
             $UA = 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36';
@@ -643,7 +652,7 @@ namespace Glial\I18n {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_USERAGENT, $UA);
-            curl_setopt($ch, CURLOPT_REFERER, "http://www.starcraft.com/");
+            curl_setopt($ch, CURLOPT_REFERER, "https://translate.google.fr/");
             $body = curl_exec($ch);
             curl_close($ch);
 
@@ -652,6 +661,10 @@ namespace Glial\I18n {
 
 
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
+            
+            //debug($string); 
+            //debug($content);
+            
             $content = str_replace('<br>', '', $content);
             $out = Grabber::getTagContents($content, '<span title="', true);
 
@@ -660,7 +673,12 @@ namespace Glial\I18n {
 
 //we check that we have same number of input and output
             if (count($nb) != count($out)) {
-                throw new \Exception("GLI-009 : Problem with machine translation" . trim($string) . PHP_EOL . var_dump($out));
+
+
+                //debug($nb);
+                //debug($out);
+
+                throw new \Exception("GLI-059 : Problem with machine translation '" . trim($string) ."' [".$from."=>".self::$_language."]". PHP_EOL);
                 return false;
             }
 

@@ -47,7 +47,7 @@ class Upload
         if (empty($_FILES[$name]) || !self::is_uploaded_file($_FILES[$name]['tmp_name'])) {
             
             
-            debug($_FILES);
+            //debug($_FILES);
             
             $this->codeToMessage($_FILES[$name]['error']);
             return FALSE;
@@ -59,7 +59,6 @@ class Upload
     static public function is_uploaded_file($filename)
     {
         //Check only if file exists
-
         return file_exists($filename);
     }
 

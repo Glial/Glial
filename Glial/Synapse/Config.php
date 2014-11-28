@@ -36,7 +36,6 @@ class Config
 
         $list_config_file = glob($this->config_path . "*.config.php");
         foreach ($list_config_file as $file) {
-
             require $file;
         }
 

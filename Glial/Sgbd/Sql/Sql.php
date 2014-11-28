@@ -84,10 +84,6 @@ abstract class Sql
 
 
         if (IS_CLI) { //to save memory with crawler & bot
-            
-            
-            
-            
             $this->serializeQuery();
         }
 
