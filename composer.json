@@ -1,26 +1,26 @@
 {
-    "name": "glial/glial",
-    "license": "GPL-3.0",
-    "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
-    "keywords": ["framework"],
-    "type": "library",
-    "license": "GNU/GPL",
-    "authors": [
-        {
-            "name": "Aurélien LEQUOY",
-            "email": "aurelien.lequoy＠esysteme.com",
-            "homepage": "http://www.glial-framework-php.org/",
-            "role": "Creator"
-        }
-    ],
-    "require": {
-        "php": ">=5.5.0",
-        "monolog/monolog": ">=1.10.0",
-        "jdorn/sql-formatter": ">=1.2.0"
+     "name": "glial/glial",
+     "license": "GPL-3.0",
+     "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
+     "keywords": ["framework"],
+     "type": "library",
+     "license": "GPL-3.0+",
+     "authors": [
+         {
+             "name": "Aurélien LEQUOY",
+             "email": "aurelien.lequoy@esysteme.com",
+             "homepage": "http://www.glial-framework-php.org/",
+             "role": "Creator"
+         }
+     ],
+     "require": {
+         "php": ">=5.5",
+         "monolog/monolog": "1.10.*",
+         "jdorn/sql-formatter": "1.2.*"
 
-    },
-    "autoload": {
-        "psr-4": {"Glial\\": "Glial/"}
-    },
-    "minimum-stability": "dev"
-}
+     },
+     "autoload": {
+         "psr-4": {"Glial\\": "Glial/"}
+     },
+     "minimum-stability": "stable"
+ }
