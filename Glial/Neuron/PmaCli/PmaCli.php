@@ -450,23 +450,22 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
 
                 /*
-                $client = new \crodas\InfluxPHP\Client(
-                        "dev.metrics.noc2.photobox.com", 8086, "root", "root"
-                );
-                $influxDB = $client->mysqlmetrics;
+                  $client = new \crodas\InfluxPHP\Client(
+                  "dev.metrics.noc2.photobox.com", 8086, "root", "root"
+                  );
+                  $influxDB = $client->mysqlmetrics;
 
-                $sql = "SELECT * FROM information_schema.GLOBAL_STATUS ORDER BY VARIABLE_NAME";
-                $global_status = $dblink->sql_fetch_yield($sql);
+                  $sql = "SELECT * FROM information_schema.GLOBAL_STATUS ORDER BY VARIABLE_NAME";
+                  $global_status = $dblink->sql_fetch_yield($sql);
 
 
-                foreach ($global_status as $status) {
-                    
-                    $value =  (int) $status['VARIABLE_VALUE'];
-                    $influxDB->insert(str_replace('_','-', $db) . "." . $status['VARIABLE_NAME'], ['value' => $value]);
-                }
-                
-                */
-                
+                  foreach ($global_status as $status) {
+
+                  $value =  (int) $status['VARIABLE_VALUE'];
+                  $influxDB->insert(str_replace('_','-', $db) . "." . $status['VARIABLE_NAME'], ['value' => $value]);
+                  }
+
+                 */
             } else {
 
                 $server_on = 0;
@@ -1000,8 +999,10 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
     private function deleteBackup()
     {
+        $cmd = "find /data/backup/ -type d -empty -delete";
+        shell_exec($cmd);
 
-        $cmd = "find /data/backup/10.*/* -mtime +10 -exec rm {} \;";
+        $cmd = "find /data/backup/10.*/* -type f -mtime +10 -exec rm {} \;";
         shell_exec($cmd);
     }
 
@@ -1013,15 +1014,25 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         $binlog_do_db = explode(",", $binlog['Binlog_Do_DB']);
         $binlog_ignore_db = explode(",", $binlog['Binlog_Ignore_DB']);
 
-        $sql = "DELETE FROM mysql_database where id_mysql_server = '" . $id_mysql_server . "';";
-        $default->sql_query($sql);
+        //$sql = "DELETE FROM mysql_database where id_mysql_server = '" . $id_mysql_server . "';";
+        //$default->sql_query($sql);
         //echo $sql;
 
         $sql = "SELECT * FROM `information_schema`.`SCHEMATA`";
         $databases = $db->sql_fetch_yield($sql);
 
         foreach ($databases as $database) {
+            
+            $sql = "SELECT id FROM mysql_database WHERE `name` ='" . $database['SCHEMA_NAME'] . "' AND id_mysql_server=" . $id_mysql_server . ";";
+            $res = $default->sql_query($sql);
+
             $data = array();
+
+            if ($default->sql_num_rows($res) === 1) {
+                $ob = $default->sql_fetch_object($res);
+                $data['mysql_database']['id'] = $ob->id;
+            }
+
             $data['mysql_database']['id_mysql_server'] = $id_mysql_server;
             $data['mysql_database']['name'] = $database['SCHEMA_NAME'];
             $data['mysql_database']['collation_name'] = $database['DEFAULT_COLLATION_NAME'];
@@ -1050,7 +1061,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                     $data['link__mysql_database__mysql_replication_thread']['replicate_do_db'] = (in_array($database['SCHEMA_NAME'], $replicate_do_db)) ? 1 : 0;
                     $data['link__mysql_database__mysql_replication_thread']['replicate_ignore_db'] = (in_array($database['SCHEMA_NAME'], $replicate_ignore_db)) ? 1 : 0;
 
-                    $saved = $default->sql_save($data);
+                    $saved = $default->sql_replace($data);
                     if (!$saved) {
                         debug($default->sql_error());
                         debug($data);

@@ -7,7 +7,6 @@ use \Glial\Synapse\Validation;
 use \Glial\Utility\Inflector;
 use \Glial\Cli\Color;
 
-
 abstract class Sql
 {
 
@@ -67,9 +66,9 @@ abstract class Sql
     abstract protected function getListTable();
 
     abstract protected function getIndexUnique($table_name);
-    
+
     //abstract protected function sql_ping($result);
-    
+
 
     public function sql_fetch_field($res, $field_offset = 0)
     {
@@ -100,18 +99,17 @@ abstract class Sql
         if (!$res = $this->_query($sql)) {
 
             $indice = 0;
-            if (strstr($called_from[0]['file'],  "/Sgbd/Sql/Sql.php"))
-            {
+            if (strstr($called_from[0]['file'], "/Sgbd/Sql/Sql.php")) {
                 $indice = 1;
             }
-            
+
             //error
             if (IS_CLI) {
-                echo "SQL : ".Color::getColoredString($sql,"yellow")."\n" . Color::getColoredString($this->_error(),"grey","red") . "" .
-                "\nFILE : " . $called_from[$indice]['file'] . " LINE : " . $called_from[$indice]['line']."\n";
+                echo "SQL : " . Color::getColoredString($sql, "yellow") . "\n" . Color::getColoredString($this->_error(), "grey", "red") . "" .
+                "\nFILE : " . $called_from[$indice]['file'] . " LINE : " . $called_from[$indice]['line'] . "\n";
             } else {
                 echo "SQL : $sql<br /><b>" . $this->_error() . "</b>" .
-                "<br />FILE : " . $called_from[$indice]['file'] . ":" . $called_from[$indice]['line']."<br />";
+                "<br />FILE : " . $called_from[$indice]['file'] . ":" . $called_from[$indice]['line'] . "<br />";
             }
         }
 
@@ -132,7 +130,7 @@ abstract class Sql
 
 
         $this->number_of_query++;
-        
+
 
 
         return $res;
@@ -143,8 +141,15 @@ abstract class Sql
         return $this->error;
     }
 
-    public function sql_save($data = null, $validate = true, $fieldList = array())
+    public function sql_save($data = null, $replace = false)
     {
+
+        if ($replace) {
+            $insert_or_replace = 'REPLACE';
+        } else {
+            $insert_or_replace = 'INSERT';
+        }
+
 
         unset($this->error);
         $this->error = array();
@@ -159,11 +164,12 @@ abstract class Sql
         $table = $table[0];
         $keys = array_keys($data[$table]);
 
-
+        
         $this->getInfosTable($table);
 
         $validation = new Validation($this);
 
+        
         include_once APP_DIR . DS . "model" . DS . "Identifier" . ucwords(strtolower($this->_name)) . DS . $table . ".php";
 
 
@@ -240,12 +246,7 @@ abstract class Sql
             }
         }
 
-
-
-
         if (count($this->error) == 0) {
-
-
             if ($this->_history_active) { //traitement specifique
                 if (strstr($this->_table_to_history, $table)) {
 
@@ -276,20 +277,32 @@ abstract class Sql
                 }
 
                 $sql = "UPDATE " . static::ESC . "" . $table . "" . static::ESC . " SET " . implode(",", $str) . " WHERE id= " . $this->sql_real_escape_string($id) . "";
+                
+                
                 $this->sql_query($sql, $table, "UPDATE");
 
+
+                
                 if ($this->query[$this->number_of_query - 1]['rows'] === 0) {
                     $this->query[$this->number_of_query - 1]['last_id'] = $id;
                 }
 
+                
+                // have to see if any problem in update
+                /*
                 if ($this->query[$this->number_of_query - 1]['rows'] == 0) {
                     //$sql = "INSERT INTO ".static::ESC."".$table."".static::ESC." SET ".implode(",", $str)."";
                     //$sql = "INSERT INTO ".static::ESC."".$table."".static::ESC." (".implode(",", $keys).") VALUES (".$this->sql_real_escape_string($id).",'".implode("','", $data[$table])."') --";
-                    $sql = "INSERT INTO " . static::ESC . "" . $table . "" . static::ESC . " SET id=" . $this->sql_real_escape_string($id) . " , " . implode(",", $str) . ""; //not supported by sybase A amÃ©liorer
+                    $sql = $insert_or_replace . " INTO " . static::ESC . "" . $table . "" . static::ESC . " SET id=" . $this->sql_real_escape_string($id) . " , " . implode(",", $str) . ""; //not supported by sybase A amÃ©liorer
                     $this->sql_query($sql, $table, "INSERT");
-                }
+                }*/
+                
+                
             } else {
-                $sql = "INSERT INTO " . static::ESC . "" . $table . "" . static::ESC . " (" . static::ESC . "" . implode("" . static::ESC . "," . static::ESC . "", $keys) . "" . static::ESC . ") VALUES ('" . implode("','", $data[$table]) . "') --";
+                $sql = $insert_or_replace . " INTO " . static::ESC . "" . $table . "" . static::ESC . " (" . static::ESC . "" . implode("" . static::ESC . "," . static::ESC . "", $keys) . "" . static::ESC . ") VALUES ('" . implode("','", $data[$table]) . "') --";
+                
+                //debug($sql);
+                
                 $this->sql_query($sql, $table, "INSERT");
             }
 
@@ -300,8 +313,6 @@ abstract class Sql
                 //case where ignore insert 0 line and we need the id inserted with these infos, focus on index unique
                 $this->last_id = $this->query[$this->number_of_query - 1]['last_id'];
                 if ($this->last_id == 0) {
-
-
 
                     $sql = "SELECT id FROM " . static::ESC . "" . $table . "" . static::ESC . " WHERE 1=1 ";
 
@@ -314,8 +325,6 @@ abstract class Sql
                             }
                         }
                     }
-
-
                     //debug($sql);
 
                     $res = $this->sql_query($sql, $table, "SELECT");
@@ -496,6 +505,11 @@ abstract class Sql
     public function getDriver()
     {
         return $this->_param['driver'];
+    }
+
+    public function sql_replace($data = null)
+    {
+        return $this->sql_save($data, true);
     }
 
 }
