@@ -4,25 +4,21 @@
     "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
     "keywords": ["framework"],
     "type": "library",
-    "license": "MIT",
+    "license": "GNU/GPL",
     "authors": [
         {
             "name": "Aurélien LEQUOY",
-            "email": "aurelien.lequoy@esysteme.com",
+            "email": "aurelien.lequoy＠esysteme.com",
             "homepage": "http://www.glial-framework-php.org/",
             "role": "Creator"
         }
     ],
+    
     "require": {
         "php": ">=5.5.0",
-        "monolog/monolog": "1.10.*",
-        "jdorn/sql-formatter": "1.2.*"
+        "monolog/monolog": ">=1.10.0",
+        "jdorn/sql-formatter": ">=1.2.0"
 
-    },
-    "require-dev": {
-        "phpunit/phpunit": "*",
-        "fabpot/php-cs-fixer": "*",
-        "phpdocumentor/phpdocumentor": "*"
     },
     "autoload": {
         "psr-4": {"Glial\\": "Glial/"}
