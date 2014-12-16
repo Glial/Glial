@@ -46,32 +46,29 @@ class Ssh
         if (!($this->connection = ssh2_connect($this->ssh_host, $this->ssh_port))) {
             throw new Exception('Cannot connect to server');
         }
-        
+
         /*
-        $fingerprint = ssh2_fingerprint($this->connection, SSH2_FINGERPRINT_MD5 | SSH2_FINGERPRINT_HEX);
-        
-        if (strcmp($this->ssh_server_fp, $fingerprint) !== 0) {
-            throw new Exception('Unable to verify server identity!');
-        }*/
-        
+          $fingerprint = ssh2_fingerprint($this->connection, SSH2_FINGERPRINT_MD5 | SSH2_FINGERPRINT_HEX);
+
+          if (strcmp($this->ssh_server_fp, $fingerprint) !== 0) {
+          throw new Exception('Unable to verify server identity!');
+          } */
+
         /*
-        if (!ssh2_auth_pubkey_file($this->connection, $this->ssh_auth_user, $this->ssh_auth_pub, $this->ssh_auth_priv, $this->ssh_auth_pass)) {
-            throw new Exception('Autentication rejected by server');
-        }*/
-        
-        
-        if (! ssh2_auth_password($this->connection, $this->ssh_auth_user, $this->ssh_auth_pass)) {
+          if (!ssh2_auth_pubkey_file($this->connection, $this->ssh_auth_user, $this->ssh_auth_pub, $this->ssh_auth_priv, $this->ssh_auth_pass)) {
+          throw new Exception('Autentication rejected by server');
+          } */
+
+
+        if (!ssh2_auth_password($this->connection, $this->ssh_auth_user, $this->ssh_auth_pass)) {
             return false;
         }
-        
-        
-        
     }
 
     public function exec($cmd)
     {
         if (!($stream = ssh2_exec($this->connection, $cmd))) {
-            throw new Exception('SSH command failed');
+            throw new \Exception('GLI-885 : SSH command failed');
         }
         stream_set_blocking($stream, true);
         $data = "";
@@ -91,6 +88,37 @@ class Ssh
     public function __destruct()
     {
         $this->disconnect();
+    }
+
+    public function scp($cmd, $password, $password2)
+    {
+        
+    }
+
+    public function getconnection()
+    {
+        return $this->connection;
+    }
+
+    private function read($stdio)
+    {
+        $line = '';
+        while ($buffer = fgets($stdio)) {
+
+            flush();
+            echo $buffer;
+            $line .= $buffer;
+            sleep(0.5);
+        }
+        return $line;
+    }
+    
+    
+    static public function getRegexPrompt()
+    {
+        // best tools => http://www.regexper.com/
+        
+        return '/[\w-\d_-]+@[\w\d_-]+:[\~]?(?:\/[\w-\d_-]+)*(?:\$|\#)[\s]?/';
     }
 
 }
