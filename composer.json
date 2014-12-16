@@ -1,6 +1,5 @@
 {
      "name": "glial/glial",
-     "license": "GPL-3.0",
      "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
      "keywords": ["framework"],
      "type": "library",
