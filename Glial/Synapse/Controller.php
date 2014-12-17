@@ -93,10 +93,8 @@ class Controller
         $action = $this->action;
 
         
-        
         $page->before($this->param);
 		
-		echo $action;
 		
         if (method_exists ( $page , $action ))
         {
@@ -104,7 +102,7 @@ class Controller
         }
         else
         {
-            throw new \Exception("GLI-026 Impossible to acces to this controller/action");
+            throw new \Exception("GLI-026 Impossible to access to this controller/action");
         }
         
         $page->after($this->param);        
