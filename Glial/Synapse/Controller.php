@@ -67,22 +67,22 @@ class Controller
     {
         $this->di = $di;
     }
+    
+
 
     final function getController()
     {
         if (empty($this->controller)) {
             return;
         }
-
+        
         $filename = APP_DIR . DS . "controller" . DS . $this->controller . ".controller.php";
 
         if (file_exists($filename)) {
-            include_once $filename;
+            require_once $filename;
         } else {
-            trigger_error("impossible to get the class file : " . $filename . ":" . __FILE__ . ":" . __LINE__, E_USER_NOTICE);
-            exit;
+            throw new \Exception("GLI-654 Error controller not found : '" . $this->controller."'");
         }
-
 
         $page = new $this->controller($this->controller, $this->action, $this->param);
         $page->setDi($this->di);
@@ -92,9 +92,23 @@ class Controller
         $this->title = $this->controller;
         $action = $this->action;
 
-        $page->before();
-        $page->$action($this->param);
-        $page->after();
+        
+        
+        $page->before($this->param);
+		
+		echo $action;
+		
+        if (method_exists ( $page , $action ))
+        {
+            $page->$action($this->param);
+        }
+        else
+        {
+            throw new \Exception("GLI-026 Impossible to acces to this controller/action");
+        }
+        
+        $page->after($this->param);        
+        
 
         if (!IS_CLI) {
             $this->ajax = $page->ajax;
@@ -247,12 +261,12 @@ class Controller
         $this->isRootNode = true;
     }
 
-    function after()
+    function after($param)
     {
         
     }
 
-    function before()
+    function before($param)
     {
         
     }

@@ -20,7 +20,7 @@ class Javascript
     
     public function code_javascript($js)
     {
-        $this->code_javascript[] = $js;
+        $this->di['js']->code_javascript[] = $js;
     }
 
     final function getJavascript()

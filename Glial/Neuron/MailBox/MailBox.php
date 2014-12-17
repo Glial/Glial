@@ -139,7 +139,7 @@ Your use of Estrildidae is subject to the terms of use and privacy policy of Est
                 }
 
                 $this->javascript = array("jquery.1.3.2.js", "jquery.autocomplete.min.js");
-                $this->code_javascript[] = '$("#mailbox_main-id_user_main__to-auto").autocomplete("' . LINK . 'user/user_main/", {
+                $this->di['js']->code_javascript[] = '$("#mailbox_main-id_user_main__to-auto").autocomplete("' . LINK . 'user/user_main/", {
 					
 					mustMatch: true,
 					autoFill: false,
