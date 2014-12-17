@@ -50,7 +50,7 @@ class Upload
             //debug($_FILES);
             
             $this->codeToMessage($_FILES[$name]['error']);
-            return FALSE;
+            return false;
         }
 
         return self::move_uploaded_file($_FILES[$name]['tmp_name'], $this->_destination . '/' . $_FILES[$name]['name']);

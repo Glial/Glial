@@ -28,7 +28,7 @@ use \Glial\Extract\Grabber;
 class Flickr
 {
 
-    private static $url = "http://www.flickr.com";
+    private static $url = "https://www.flickr.com";
     private static $size = array("sq" => "_s", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_s.jpg 75*75
         "q" => "_q", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_q.jpg 150*150
         "t" => "_t", //http://farm8.staticflickr.com/7022/6657652857_34d38960ab_t.jpg ~100
@@ -47,7 +47,7 @@ class Flickr
     {
         $ch = curl_init();
 
-        $user_agent = 'Mozilla/5.0 (Windows NT 5.1; rv:22.0) Gecko/20100101 Firefox/22.0';
+        $user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36';
         $header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,";
         $header[0] .= "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
         $header[] = "Cache-Control: max-age=0";
@@ -61,7 +61,7 @@ class Flickr
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+        //curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $content = curl_exec($ch);
         curl_close($ch);
 
@@ -147,19 +147,17 @@ class Flickr
 
     public static function getPhotoInfo($url)
     {
+       
+        
         $pattern = "#^" . self::$url . "/photos/([a-zA-Z0-9@]+)/([0-9]*)\/#i";
 
+        
         if (!preg_match($pattern, $url)) {
             die($url . " did not match with REGEX : " . $pattern);
         }
 
-        $data = array();
+       
         $content = self::curl($url);
-
-        $contents = Grabber::getTagContent($content, '<div id="photo', true);
-        if (false === $contents) {
-            return false;
-        }
 
         $tab_id_photo = explode("/", $url);
         $data['id'] = "flickr_" . $tab_id_photo[5];
@@ -173,10 +171,13 @@ class Flickr
                 $data['id_author'] = $out[1];
             } else {
 
-                die("Error : Impossible to get id_author\n");
+                return false;
+                //die("Error : Impossible to get id_author\n");
                 //return false;
             }
         }
+        
+        
 
         $brut_min = Grabber::getTagContent($content, '<div id="photo', true);
 

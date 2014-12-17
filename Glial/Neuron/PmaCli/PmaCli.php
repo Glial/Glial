@@ -730,7 +730,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
             $all_server[$mysql['name']] = $mysql;
         }
 
-        Crypt::$key = 'photobox';
+        Crypt::$key = CRYPT_KEY;
 
 
         $all = array();
@@ -756,6 +756,15 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
             $data['mysql_server']['login'] = $info_server['user'];
             $data['mysql_server']['passwd'] = Crypt::encrypt($info_server['password']);
             $data['mysql_server']['port'] = empty($info_server['port']) ? 3306 : $info_server['port'];
+
+            if (!empty($info_server['ssh_login'])) {
+                $data['mysql_server']['ssh_login'] = Crypt::encrypt($info_server['ssh_login']);
+            }
+            if (!empty($info_server['ssh_password'])) {
+                $data['mysql_server']['ssh_password'] = Crypt::encrypt($info_server['ssh_password']);
+            }
+
+
 
             if (!$db->sql_save($data)) {
                 debug($data);
@@ -1022,7 +1031,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         $databases = $db->sql_fetch_yield($sql);
 
         foreach ($databases as $database) {
-            
+
             $sql = "SELECT id FROM mysql_database WHERE `name` ='" . $database['SCHEMA_NAME'] . "' AND id_mysql_server=" . $id_mysql_server . ";";
             $res = $default->sql_query($sql);
 
