@@ -112,13 +112,54 @@ class Ssh
         }
         return $line;
     }
-    
-    
+
     static public function getRegexPrompt()
     {
         // best tools => http://www.regexper.com/
-        
+
         return '/[\w-\d_-]+@[\w\d_-]+:[\~]?(?:\/[\w-\d_-]+)*(?:\$|\#)[\s]?/';
+    }
+
+    static public function waitPrompt($stdio)
+    {
+
+        $regex = self::getRegexPrompt();
+
+        $wait = true;
+
+        do {
+            sleep(1);
+
+            $buffer = fgets($stdio);
+            \preg_match_all(self::getRegexPrompt(), $buffer, $output_array);
+
+            if (count($output_array[0]) === 1) {
+                debug($buffer);
+
+                $wait = false;
+            }
+            
+            echo "WAITING ...\n";
+        } while ($wait);
+    }
+
+    public function whereis($cmd)
+    {
+        $paths = $this->exec("whereis " . $cmd);
+        return trim(explode(" ", trim(explode(":", $paths)[1]))[0]);
+    }
+
+    static public function testPrompt($line)
+    {
+        $output_array = [];
+
+        \preg_match_all(self::getRegexPrompt(), $line, $output_array);
+
+        if (count($output_array[0]) === 1) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

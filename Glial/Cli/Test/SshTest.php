@@ -13,7 +13,7 @@ class TestSsh extends \PHPUnit_Framework_TestCase
     {
         $regex = Ssh::getRegexPrompt();
 
-        $test_ok = array('root@dba-tools-sa-01:~#', 'logftp@srv-backup-01:/data/Save/DB_ITPROD$');
+        $test_ok = array('root@dba-tools-sa-01:~#', 'logftp@srv-backup-01:/data/Save/DB_ITPROD$','alequoy@dba-tools-sa-01:~$');
         $test_fail = array("root@dba-tools-sa-01:~#", "logftp@srv-backup-01:/data/Save/DB_ITPROD$");
 
         foreach ($test_ok as $test) {

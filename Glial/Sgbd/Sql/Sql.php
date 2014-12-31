@@ -131,8 +131,6 @@ abstract class Sql
 
         $this->number_of_query++;
 
-
-
         return $res;
     }
 
@@ -150,15 +148,12 @@ abstract class Sql
             $insert_or_replace = 'INSERT';
         }
 
-
         unset($this->error);
         $this->error = array();
-
 
         if (count($this->_keys) === 0) {
             $this->unserializeKeys();
         }
-
 
         $table = array_keys($data);
         $table = $table[0];
@@ -436,9 +431,9 @@ abstract class Sql
         }
     }
 
-    private function serializeQuery()
+    public function serializeQuery()
     {
-        if (count($this->query) > 500) {
+        if (count($this->query) > 50) {
             array_splice($this->query, 0, -10);
         }
     }

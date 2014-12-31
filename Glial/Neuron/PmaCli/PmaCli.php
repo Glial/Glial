@@ -398,189 +398,209 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         $masters = array();
         $i = 0;
 
-        $sql = "DELETE FROM mysql_replication_stats";
-        $default->sql_query($sql);
+        /*
+        try {
 
-        $sql = "DELETE FROM `link__mysql_cluster__mysql_server`";
-        $default->sql_query($sql);
+            $default->sql_query('SET AUTOCOMMIT=0;');
+            $default->sql_query('START TRANSACTION;');
+*/
+        
+            $sql = "DELETE FROM mysql_replication_stats";
+            $default->sql_query($sql);
 
-
-        $sql = "DELETE FROM `mysql_replication_stats`";
-        $default->sql_query($sql);
-
-
-
-        $sql = "ALTER TABLE mysql_replication_stats AUTO_INCREMENT = 1";
-        $default->sql_query($sql);
-        $sql = "ALTER TABLE mysql_replication_thread AUTO_INCREMENT = 1";
-        $default->sql_query($sql);
-        $sql = "ALTER TABLE mysql_cluster AUTO_INCREMENT = 1";
-        $default->sql_query($sql);
-        $sql = "ALTER TABLE link__mysql_cluster__mysql_server AUTO_INCREMENT = 1";
-        $default->sql_query($sql);
+            $sql = "DELETE FROM `link__mysql_cluster__mysql_server`";
+            $default->sql_query($sql);
 
 
+            $sql = "DELETE FROM `mysql_replication_stats`";
+            $default->sql_query($sql);
 
-        $sql = "SELECT * FROM mysql_server";
-        $res50 = $default->sql_query($sql);
-
-        while ($ob50 = $default->sql_fetch_object($res50)) {
-            $db = $ob50->name;
-
-            $i++;
-
-
-            echo "[" . date("Y-m-d H:i:s") . "] Try to connect to : " . $db . "\n";
-            $server_config = $this->di['db']->getParam($db);
-
-            $server_on = 1;
-
-
-            $server_config['port'] = empty($server_config['port']) ? 3306 : $server_config['port'];
-
-
-            $dblink = $this->di['db']->sql($db);
+            $sql = "ALTER TABLE mysql_replication_stats AUTO_INCREMENT = 1";
+            $default->sql_query($sql);
+            $sql = "ALTER TABLE mysql_replication_thread AUTO_INCREMENT = 1";
+            $default->sql_query($sql);
+            $sql = "ALTER TABLE mysql_cluster AUTO_INCREMENT = 1";
+            $default->sql_query($sql);
+            $sql = "ALTER TABLE link__mysql_cluster__mysql_server AUTO_INCREMENT = 1";
+            $default->sql_query($sql);
 
 
 
-            if ($dblink->is_connected) {
-                $MS->setInstance($dblink);
-                $master = $MS->isMaster();
-                $slave = $MS->isSlave();
+            $sql = "SELECT * FROM mysql_server";
+            $res50 = $default->sql_query($sql);
+
+            while ($ob50 = $default->sql_fetch_object($res50)) {
+                
+                
+                echo "ICI \n";
+                $db = $ob50->name;
+
+                $i++;
 
 
-                /*
-                  $client = new \crodas\InfluxPHP\Client(
-                  "dev.metrics.noc2.photobox.com", 8086, "root", "root"
-                  );
-                  $influxDB = $client->mysqlmetrics;
+                echo "[" . date("Y-m-d H:i:s") . "] Try to connect to : " . $db . "\n";
+                $server_config = $this->di['db']->getParam($db);
 
-                  $sql = "SELECT * FROM information_schema.GLOBAL_STATUS ORDER BY VARIABLE_NAME";
-                  $global_status = $dblink->sql_fetch_yield($sql);
+                $server_on = 1;
 
 
-                  foreach ($global_status as $status) {
+                $server_config['port'] = empty($server_config['port']) ? 3306 : $server_config['port'];
 
-                  $value =  (int) $status['VARIABLE_VALUE'];
-                  $influxDB->insert(str_replace('_','-', $db) . "." . $status['VARIABLE_NAME'], ['value' => $value]);
-                  }
 
-                 */
-            } else {
-
-                $server_on = 0;
-                $master = false;
-                $slave = false;
-
-                echo " server Mysql : " . $server_config['hostname'] . " is down\n";
-            }
+                $dblink = $this->di['db']->sql($db);
 
 
 
-            $sql = "SELECT id FROM mysql_server WHERE name = '" . $db . "'";
+                if ($dblink->is_connected) {
+                    $MS->setInstance($dblink);
+                    $master = $MS->isMaster();
+                    $slave = $MS->isSlave();
+
+
+                    /*
+                      $client = new \crodas\InfluxPHP\Client(
+                      "dev.metrics.noc2.photobox.com", 8086, "root", "root"
+                      );
+                      $influxDB = $client->mysqlmetrics;
+
+                      $sql = "SELECT * FROM information_schema.GLOBAL_STATUS ORDER BY VARIABLE_NAME";
+                      $global_status = $dblink->sql_fetch_yield($sql);
+
+
+                      foreach ($global_status as $status) {
+
+                      $value =  (int) $status['VARIABLE_VALUE'];
+                      $influxDB->insert(str_replace('_','-', $db) . "." . $status['VARIABLE_NAME'], ['value' => $value]);
+                      }
+
+                     */
+                } else {
+
+                    $server_on = 0;
+                    $master = false;
+                    $slave = false;
+
+                    echo " server Mysql : " . $server_config['hostname'] . " is down\n";
+                }
+
+
+
+                $sql = "SELECT id FROM mysql_server WHERE name = '" . $db . "'";
 
 //echo $sql . PHP_EOL;
-            $res = $default->sql_query($sql);
+                $res = $default->sql_query($sql);
 
-            while ($ob = $default->sql_fetch_object($res)) {
-
-
-                $data = array();
-                $data['mysql_replication_stats']['id_mysql_server'] = $ob->id;
-                $data['mysql_replication_stats']['date'] = date("Y-m-d H:i:s");
-                $data['mysql_replication_stats']['ping'] = $server_on;
+                while ($ob = $default->sql_fetch_object($res)) {
 
 
+                    $data = array();
+                    $data['mysql_replication_stats']['id_mysql_server'] = $ob->id;
+                    $data['mysql_replication_stats']['date'] = date("Y-m-d H:i:s");
+                    $data['mysql_replication_stats']['ping'] = $server_on;
 
-                if ($server_on === 1) {
-                    $sql = "SELECT now() as date_time";
-                    $res = $dblink->sql_query($sql);
-                    $date_time = $dblink->sql_fetch_object($res);  // can be empty ???????????
 
-                    if (version_compare($dblink->getVersion(), '10.0') >= 0) {
-                        $this->clusterGalera($dblink);
+
+                    if ($server_on === 1) {
+                        $sql = "SELECT now() as date_time";
+                        $res = $dblink->sql_query($sql);
+                        $date_time = $dblink->sql_fetch_object($res);  // can be empty ???????????
+
+                        if (version_compare($dblink->getVersion(), '10.0') >= 0) {
+                            $this->clusterGalera($dblink);
+                        }
+
+                        $data['mysql_replication_stats']['version'] = $dblink->getServerType() . " : " . $dblink->getVersion();
+                        $data['mysql_replication_stats']['date'] = $date_time->date_time;
+                        $data['mysql_replication_stats']['is_master'] = ($master) ? 1 : 0;
+                        $data['mysql_replication_stats']['is_slave'] = ($slave) ? 1 : 0;
+                        $data['mysql_replication_stats']['uptime'] = ($dblink->getStatus('Uptime')) ? $dblink->getStatus('Uptime') : '-1';
+                        $data['mysql_replication_stats']['time_zone'] = ($dblink->getVariables('system_time_zone')) ? $dblink->getVariables('system_time_zone') : '-1';
+                        $data['mysql_replication_stats']['ping'] = 1;
+                        $data['mysql_replication_stats']['last_sql_error'] = '';
+                        $data['mysql_replication_stats']['binlog_format'] = ($dblink->getVariables('binlog_format')) ? $dblink->getVariables('binlog_format') : 'N/A';
+
+                        $sql = "SHOW databases";
+                        $dblist = array();
+                        $res3 = $dblink->sql_query($sql);
+                        while ($ob3 = $dblink->sql_fetch_object($res3)) {
+                            $dblist[] = $ob3->Database;
+                        }
+
+                        $data['mysql_replication_stats']['databases'] = implode(',', $dblist);
+
+
+
+                        if ($master) {
+                            $data['mysql_replication_stats']['file'] = $master['File'];
+                            $data['mysql_replication_stats']['position'] = $master['Position'];
+                        }
                     }
 
-                    $data['mysql_replication_stats']['version'] = $dblink->getServerType() . " : " . $dblink->getVersion();
-                    $data['mysql_replication_stats']['date'] = $date_time->date_time;
-                    $data['mysql_replication_stats']['is_master'] = ($master) ? 1 : 0;
-                    $data['mysql_replication_stats']['is_slave'] = ($slave) ? 1 : 0;
-                    $data['mysql_replication_stats']['uptime'] = ($dblink->getStatus('Uptime')) ? $dblink->getStatus('Uptime') : '-1';
-                    $data['mysql_replication_stats']['time_zone'] = ($dblink->getVariables('system_time_zone')) ? $dblink->getVariables('system_time_zone') : '-1';
-                    $data['mysql_replication_stats']['ping'] = 1;
-                    $data['mysql_replication_stats']['last_sql_error'] = '';
-                    $data['mysql_replication_stats']['binlog_format'] = ($dblink->getVariables('binlog_format')) ? $dblink->getVariables('binlog_format') : 'N/A';
 
-                    $sql = "SHOW databases";
-                    $dblist = array();
-                    $res3 = $dblink->sql_query($sql);
-                    while ($ob3 = $dblink->sql_fetch_object($res3)) {
-                        $dblist[] = $ob3->Database;
+
+                    $id_mysql_replication_stats = $default->sql_save($data);
+
+                    if (!$id_mysql_replication_stats) {
+                        debug($default->sql_error());
+                        debug($data);
+                        throw new \Exception("GLI-031 : Impossible to get id_mysql_replication_stats");
                     }
 
-                    $data['mysql_replication_stats']['databases'] = implode(',', $dblist);
+                    $thread = [];
+                    
+                    if ($slave) {
 
+                        foreach ($slave as $thread) {
+                            $data = array();
 
-
-                    if ($master) {
-                        $data['mysql_replication_stats']['file'] = $master['File'];
-                        $data['mysql_replication_stats']['position'] = $master['Position'];
-                    }
-                }
-
-
-
-                $id_mysql_replication_stats = $default->sql_save($data);
-
-                if (!$id_mysql_replication_stats) {
-                    debug($default->sql_error());
-                    debug($data);
-                    throw new \Exception("GLI-031 : Impossible to get id_mysql_replication_stats");
-                }
-
-
-                if ($slave) {
-
-                    foreach ($slave as $thread) {
-                        $data = array();
-
-                        $data['mysql_replication_thread']['id_mysql_replication_stats'] = $id_mysql_replication_stats;
-                        $data['mysql_replication_thread']['relay_master_log_file'] = $thread['Relay_Master_Log_File'];
-                        $data['mysql_replication_thread']['exec_master_log_pos'] = $thread['Exec_Master_Log_Pos'];
-                        $data['mysql_replication_thread']['thread_io'] = ($thread['Slave_IO_Running'] === 'Yes') ? 1 : 0;
-                        $data['mysql_replication_thread']['thread_sql'] = ($thread['Slave_SQL_Running'] === 'Yes') ? 1 : 0;
+                            $data['mysql_replication_thread']['id_mysql_replication_stats'] = $id_mysql_replication_stats;
+                            $data['mysql_replication_thread']['relay_master_log_file'] = $thread['Relay_Master_Log_File'];
+                            $data['mysql_replication_thread']['exec_master_log_pos'] = $thread['Exec_Master_Log_Pos'];
+                            $data['mysql_replication_thread']['thread_io'] = ($thread['Slave_IO_Running'] === 'Yes') ? 1 : 0;
+                            $data['mysql_replication_thread']['thread_sql'] = ($thread['Slave_SQL_Running'] === 'Yes') ? 1 : 0;
 
 //only for MariaDB 10
-                        if (version_compare($dblink->getVersion(), "10", ">=")) {
-                            $data['mysql_replication_thread']['thread_name'] = $thread['Connection_name'];
-                        }
+                            if (version_compare($dblink->getVersion(), "10", ">=")) {
+                                $data['mysql_replication_thread']['thread_name'] = $thread['Connection_name'];
+                            }
 
-                        $data['mysql_replication_thread']['time_behind'] = $thread['Seconds_Behind_Master'];
-                        $data['mysql_replication_thread']['master_host'] = $thread['Master_Host'];
-                        $data['mysql_replication_thread']['master_port'] = $thread['Master_Port'];
+                            $data['mysql_replication_thread']['time_behind'] = $thread['Seconds_Behind_Master'];
+                            $data['mysql_replication_thread']['master_host'] = $thread['Master_Host'];
+                            $data['mysql_replication_thread']['master_port'] = $thread['Master_Port'];
 
 //suuport for mysql 5.0
-                        $data['mysql_replication_thread']['last_sql_error'] = empty($thread['Last_SQL_Error']) ? $thread['Last_Error'] : $thread['Last_SQL_Error'];
-                        $data['mysql_replication_thread']['last_io_error'] = empty($thread['Last_IO_Error']) ? $thread['Last_Error'] : $thread['Last_IO_Error'];
+                            $data['mysql_replication_thread']['last_sql_error'] = empty($thread['Last_SQL_Error']) ? $thread['Last_Error'] : $thread['Last_SQL_Error'];
+                            $data['mysql_replication_thread']['last_io_error'] = empty($thread['Last_IO_Error']) ? $thread['Last_Error'] : $thread['Last_IO_Error'];
 
-                        $data['mysql_replication_thread']['last_sql_errno'] = empty($thread['Last_SQL_Errno']) ? $thread['Last_Errno'] : $thread['Last_SQL_Errno'];
-                        $data['mysql_replication_thread']['last_io_errno'] = empty($thread['Last_IO_Errno']) ? $thread['Last_Errno'] : $thread['Last_IO_Errno'];
+                            $data['mysql_replication_thread']['last_sql_errno'] = empty($thread['Last_SQL_Errno']) ? $thread['Last_Errno'] : $thread['Last_SQL_Errno'];
+                            $data['mysql_replication_thread']['last_io_errno'] = empty($thread['Last_IO_Errno']) ? $thread['Last_Errno'] : $thread['Last_IO_Errno'];
 
-                        $id_mysql_replication_thread = $default->sql_save($data);
+                            $id_mysql_replication_thread = $default->sql_save($data);
 
-                        if (!$id_mysql_replication_thread) {
-                            debug($default->sql_error());
-                            debug($data);
+                            if (!$id_mysql_replication_thread) {
+                                debug($default->sql_error());
+                                debug($data);
 //throw new \Exception("GLI-032 : Impossible to save row in mysql_replication_thread");
-                        } else {
-                            $thread['id_mysql_replication_thread'] = $default->sql_insert_id();
+                            } else {
+                                $thread['id_mysql_replication_thread'] = $default->sql_insert_id();
+                            }
                         }
                     }
-                }
 
-                $this->saveDatabase($dblink, $ob->id, $master, $thread);
+                    $this->saveDatabase($dblink, $ob->id, $master, $thread);
+                }
             }
-        }
+
+
+            $default->sql_query('COMMIT;');
+            
+            /*
+        } catch (\Exception $ex) {
+
+            
+            $default->sql_query('ROLLBACK;');
+        }*/
+        
     }
 
     /**
@@ -1095,10 +1115,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         }
         fwrite($fp, "\t node [color=" . $data['color'] . "];" . PHP_EOL);
 
-
-
         fwrite($fp, '  "' . $data['id_mysql_server'] . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center" href="' . LINK . 'monitoring/query/' . str_replace('_', '-', $data['hostname']) . '/' . '"><font color="white">' . str_replace('_', '-', $data['hostname']) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $data['ip'] . ':' . $data['port'] . '</td></tr>');
-
         fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $data['version'] . '</td></tr>' . PHP_EOL);
         fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($data['uptime']) . '</td></tr>');
         fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $data['date'] . ') : ' . $data['timezone'] . '</td></tr>');
@@ -1121,8 +1138,6 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                     . "WHERE a.id_mysql_server='" . $id . "' order by a.name";
             $res = $db->sql_query($sql);
 
-
-
             if ($db->sql_num_rows($res) > 0) {
                 $ret .= '<table border="0" cellborder="0" cellspacing="1" cellpadding="1">';
 
@@ -1138,16 +1153,11 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                         $binlog = (empty($database['binlog_ignore_db'])) ? "-" : "&#10006;";
                     }
 
-
-
                     $replicate = (empty($database['replicate_ignore_db'])) ? "" : "&#10006;";
 
                     if (empty($replicate)) {
                         $replicate = (empty($database['replicate_do_db'])) ? "-" : "&#10004;";
                     }
-
-
-
 
                     $ret .= '<tr><td bgcolor="#eeeeee">' . $binlog . '</td><td bgcolor="#eeeeee">' . $replicate . '</td>'
                             . '<td bgcolor="#dddddd" align="left" title="MPD of ' . $database['name'] . '" href="' . LINK . 'mysql/mpd/' .

@@ -13,17 +13,14 @@ class Crontab
     static public function insert($chpMinute, $chpHeure, $chpJourMois, $chpMois, $chpJourSemaine, $chpCommande, $chpCommentaire, $new_id = 0)
     {
         $new_elem = $chpMinute . ' ' . $chpHeure . ' ' . $chpJourMois . ' ' . $chpMois . ' ' . $chpJourSemaine;
-        
-        /* TODO : Add check
-        if (!self::assertLineIsValid($new_elem))
-        {
-            throw new \Exception("GLI-125 : Crontab malformed : '".$new_elem."'");
-        }*/
-        
-        $new_elem .= ' ' . $chpCommande;
-        
-        
 
+        /* TODO : Add check
+          if (!self::assertLineIsValid($new_elem))
+          {
+          throw new \Exception("GLI-125 : Crontab malformed : '".$new_elem."'");
+          } */
+
+        $new_elem .= ' ' . $chpCommande;
         $maxNb = 0;     /* le plus grand numéro de script trouvé */
         $crontab_list = Array();    /* pour chaque cellule une ligne du crontab actuel */
         $newCrontab = Array();    /* pour chaque cellule une ligne du nouveau crontab */
@@ -32,7 +29,11 @@ class Crontab
         //$crontab_list = $this->view();
         exec('crontab -l', $crontab_list);
 
-        foreach ($crontab_list as $index => $ligne) /* copie $crontab_list dans $newCrontab et ajoute le nouveau script */ {
+
+        /* copie $crontab_list dans $newCrontab et ajoute le nouveau script */
+        foreach ($crontab_list as $index => $ligne) {
+
+
             if ($isSection == true) /* on est dans la section gérée automatiquement */ {
                 $motsLigne = explode(' ', $ligne);
 
@@ -45,8 +46,7 @@ class Crontab
                 $isSection = true;
             }
 
-            if ($ligne == self::$fin) /* on est arrivé à la fin, on rajoute le nouveau script */ {
-
+            if ($ligne == self::$fin) {
 
                 if (empty($new_id)) {
                     $id = $maxNb + 1;
@@ -71,7 +71,7 @@ class Crontab
 
 
             $newCrontab[] = self::$debut;
-            $newCrontab[] = '# 1 : ' . $chpCommentaire;
+            $newCrontab[] = '# '.$id.' : ' . $chpCommentaire;
             $newCrontab[] = $chpMinute . ' ' . $chpHeure . ' ' . $chpJourMois . ' ' . $chpMois . ' ' . $chpJourSemaine . ' ' . $chpCommande;
             $newCrontab[] = self::$fin;
         }
@@ -88,7 +88,7 @@ class Crontab
         if (!empty($output)) {
             throw new \Exception("GLI-075 : Impossible to install new crontab : '" . $new_elem . "'\n" . $output . "");
         }
-        
+
         unlink(CRONTAB_FILE);
 
         return $id;
@@ -141,26 +141,22 @@ class Crontab
         return $id;
     }
 
-    
     /*
-    static public function assertFileIsValidUserCrontab($file = CRONTAB_FILE)
-    {
-        $f = @fopen($file, 'r', 1);
-        $this->assertTrue($f !== false, 'Crontab file must exist');
-        while (($line = fgets($f)) !== false) {
-            $this->assertLineIsValid($line);
-        }
-    }*/
+      static public function assertFileIsValidUserCrontab($file = CRONTAB_FILE)
+      {
+      $f = @fopen($file, 'r', 1);
+      $this->assertTrue($f !== false, 'Crontab file must exist');
+      while (($line = fgets($f)) !== false) {
+      $this->assertLineIsValid($line);
+      }
+      } */
 
     static public function assertLineIsValid($line)
     {
         $regexp = self::buildRegexp();
-        if (preg_match("/$regexp/", $line))
-        {
+        if (preg_match("/$regexp/", $line)) {
             return true;
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
@@ -193,4 +189,5 @@ class Crontab
                 "|($replacements)\s+\S" .
                 ')';
     }
+
 }
