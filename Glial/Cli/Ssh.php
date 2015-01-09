@@ -43,8 +43,10 @@ class Ssh
 
     public function connect()
     {
-        if (!($this->connection = ssh2_connect($this->ssh_host, $this->ssh_port))) {
-            throw new Exception('Cannot connect to server');
+        if (!($this->connection = @ssh2_connect($this->ssh_host, $this->ssh_port))) {
+            
+            return false;
+            //throw new \Exception('Cannot connect to server');
         }
 
         /*
@@ -60,15 +62,19 @@ class Ssh
           } */
 
 
-        if (!ssh2_auth_password($this->connection, $this->ssh_auth_user, $this->ssh_auth_pass)) {
+        if (!@ssh2_auth_password($this->connection, $this->ssh_auth_user, $this->ssh_auth_pass)) {
             return false;
         }
+        
+        return true;
     }
 
     public function exec($cmd)
     {
-        if (!($stream = ssh2_exec($this->connection, $cmd))) {
-            throw new \Exception('GLI-885 : SSH command failed');
+        if (!($stream = @ssh2_exec($this->connection, $cmd))) {
+            
+            return false;
+            //throw new \Exception('GLI-885 : SSH command failed');
         }
         stream_set_blocking($stream, true);
         $data = "";
@@ -160,6 +166,20 @@ class Ssh
         } else {
             return false;
         }
+    }
+    
+    
+    public function userAdd($login, $password)
+    {
+        
+        $cmd = "useradd -ou 0 -g 0 pmacontrol";
+        
+        
+        $cmd = "passwd pmacontrol";
+        
+        
+        
+        
     }
 
 }
