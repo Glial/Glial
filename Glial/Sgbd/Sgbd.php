@@ -94,7 +94,7 @@ class Sgbd
      * @return string return a table with all main's information and tell us with one is connected
      * @description give a status o all databases 
      * @access public
-     * @example echo $this->di['db']->sql('default');
+     * @example echo $this->di['db']->sql(DB_DEFAULT);
      * @package Sgbd
      * @See Also Glial\Cli\Table
      * @since 3.0 First time this was introduced.

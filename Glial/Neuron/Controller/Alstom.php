@@ -12,7 +12,7 @@ trait Alstom
 {
     public function autorisation($CDUSER, $CDORG)
     {
-        $db = $this->di['db']->sql('default');
+        $db = $this->di['db']->sql(DB_DEFAULT);
         $sql = "SELECT * FROM TABLE(FF_GESTION_AUTORISATION_V2.RECUPERATION_DONNEES('T1', '".$CDUSER."','".$CDORG."','','',''))";
         $res = $db->sql_query($sql);
    
