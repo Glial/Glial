@@ -50,11 +50,15 @@ class Controller
     {
         $controller = Inflector::camelize($controller);
 
-        if (!IS_CLI) {
-            if (!$GLOBALS['acl']->isAllowed($GLOBALS['auth']->getAccess(), $controller . "/" . $action)) {
-                return;
-            }
-        }
+	if (AUTH_ACTIVE)
+	{
+		if (!IS_CLI) {
+	            if (!$GLOBALS['acl']->isAllowed($GLOBALS['auth']->getAccess(), $controller . "/" . $action)) {
+	                return;
+	            }
+		}
+	}
+
 
         $this->controller = $controller;
         $this->action = $action;
