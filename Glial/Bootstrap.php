@@ -73,7 +73,7 @@ spl_autoload_register(function($className) {
 //$_POST = ArrayTools::array_map_recursive("htmlentities", $_POST);
 
 
-require __DIR__ . "/basic.php";
+require __DIR__ . "/Basic.php";
 
 //debug($_GET);
 
