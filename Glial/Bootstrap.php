@@ -155,16 +155,17 @@ if (IS_CLI) {
 
 
 
+    if (AUTH_ACTIVE)
+    {
+        $auth = new Auth();
+        $auth->setInstance($_DB->sql("default"), "user_main", array("login", "password"));
+        $auth->setFctToHashCookie(function ($password) {
+            return password_hash($password . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR'], PASSWORD_DEFAULT);
+        });
+        $auth->authenticate(false);
+        FactoryController::addDi("auth", $auth);
 
-    $auth = new Auth();
-    $auth->setInstance($_DB->sql("default"), "user_main", array("login", "password"));
-    $auth->setFctToHashCookie(function ($password) {
-        return password_hash($password . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR'], PASSWORD_DEFAULT);
-    });
-    $auth->authenticate(false);
-    FactoryController::addDi("auth", $auth);
-
-    
+    }
 
     (ENVIRONEMENT) ? $_DEBUG->save("User connexion") : "";
 
