@@ -88,7 +88,7 @@ FactoryController::addDi("db", $_DB);
 
 
 if (!IS_CLI) {
-    include __DIR__ . DS . 'router.php';
+    include __DIR__ . DS . 'Router.php';
 
     $route = new router();
     $route->parse($_GET['glial_path']);
