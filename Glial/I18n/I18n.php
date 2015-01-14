@@ -7,7 +7,7 @@ namespace Glial\I18n {
     class I18n
     {
 
-        const DATABASE = "default";
+        const DATABASE = DB_DEFAULT;
 
 // to prevent kick or/and ban from google
         private static $nb_google_call = 0;
