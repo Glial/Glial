@@ -131,7 +131,7 @@ class PmaCliDraining
         $primary_key = "`" . implode('`,`', $pri) . "`";
 
         $sql = "INSERT INTO `" . self::PREFIX . $this->main_table . "`  SELECT " . $primary_key . " FROM `" . $this->main_table . "`
-                WHERE " . $this->init_where . ";";
+                WHERE " . $this->init_where . ";"; // LOCK IN SHARE MODE
 
         $db->sql_query($sql);
         $this->log($sql);
@@ -194,7 +194,7 @@ class PmaCliDraining
 
                     $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table_name . "`
                     SELECT " . $primary_key . " FROM `" . $table_name . "` a
-                    INNER JOIN `" . self::PREFIX . $ob->REFERENCED_TABLE_NAME . "` b ON b.`" . $ob->REFERENCED_COLUMN_NAME . "` = a.`" . $ob->COLUMN_NAME . "`;";
+                    INNER JOIN `" . self::PREFIX . $ob->REFERENCED_TABLE_NAME . "` b ON b.`" . $ob->REFERENCED_COLUMN_NAME . "` = a.`" . $ob->COLUMN_NAME . "`;"; // @todo LOCK IN SHARE MODE
                     $db->sql_query($sql);
 
                     $this->setAffectedRows($table_name);
