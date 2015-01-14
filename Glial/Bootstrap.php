@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Basic Gliale functionality.
+ * Glial Bootstrap.
  *
  * Handles loading of core files needed on every request
  *
