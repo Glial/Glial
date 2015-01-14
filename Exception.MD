@@ -6,5 +6,4 @@
 * GLI-006 : the field login and password must be different
 * GLI-007 : the cookie name for login and password must be different.
 * GLI-008 : Impossible to write this file : "PATH_NAME"
-
 * GLI-026 : Impossible to access to this controller/action
