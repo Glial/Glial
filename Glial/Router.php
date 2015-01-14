@@ -4,10 +4,10 @@ include_once(CONFIG . "router.config.php");
 
 
 
-if ( empty($_GET['path']) )
+if ( empty($_GET['glial_path']) )
 {
 	
-	debug($_GET['path']);
+	debug($_GET['glial_path']);
 	
 	//$_GET['path'] = ROUTE_DEFAULT;
 

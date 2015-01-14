@@ -185,6 +185,10 @@ if (IS_CLI) {
 
 
     if ($acl->checkIfResourceExist($_SYSTEM['controller'] . "/" . $_SYSTEM['action'])) {
+        
+        
+        if(AUTH_ACTIVE)
+        {
         if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller'] . "/" . $_SYSTEM['action'])) {
             if ($auth->getAccess() == 1) {
 
@@ -199,6 +203,7 @@ if (IS_CLI) {
             set_flash("error", __("Acess denied"), __("Acess denied") . " : " . $msg);
             header("location: " . LINK . $url);
             exit;
+        }
         }
     } else {
         set_flash("error", __("Error 404"), __("Page not found") . " : " . __("Sorry, the page you requested : \"" . $_SYSTEM['controller'] . "/" . $_SYSTEM['action'] . "\"is not on this server. Please contact us if you have questions or concerns"));

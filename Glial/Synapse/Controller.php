@@ -106,7 +106,7 @@ class Controller
         }
         else
         {
-            throw new \Exception("GLI-026 Impossible to access to this controller/action");
+            throw new \Exception("GLI-026 Impossible to access to this controller/action => '$this->controller/$action'");
         }
         
         $page->after($this->param);        
