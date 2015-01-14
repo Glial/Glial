@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Basic Gliale functionality.
+ * Glial Bootstrap.
  *
  * Handles loading of core files needed on every request
  *
@@ -158,7 +158,7 @@ if (IS_CLI) {
     if (AUTH_ACTIVE)
     {
         $auth = new Auth();
-        $auth->setInstance($_DB->sql("default"), "user_main", array("login", "password"));
+        $auth->setInstance($_DB->sql(DB_DEFAULT), "user_main", array("login", "password"));
         $auth->setFctToHashCookie(function ($password) {
             return password_hash($password . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR'], PASSWORD_DEFAULT);
         });
@@ -234,18 +234,18 @@ if ((ENVIRONEMENT) && (!IS_CLI) && (!IS_AJAX)) {//ENVIRONEMENT
     echo "<hr />";
 
     echo "Temps d'exéution de la page : " . round($execution_time, 5) . " seconds";
-    echo "<br />Nombre de requette : " . $_DB->sql("default")->get_count_query();
+    echo "<br />Nombre de requette : " . $_DB->sql(DB_DEFAULT)->get_count_query();
     $file_list = get_included_files();
     echo "<br />Nombre de fichier loaded : <b>" . count($file_list) . "</b><br />";
     debug($file_list);
 
-    if ($_DB->sql("default")->get_count_query() != 0) {
+    if ($_DB->sql(DB_DEFAULT)->get_count_query() != 0) {
         echo "<table class=\"debug\" style=\"width:100%\">";
         echo "<tr><th>#</th><th>File</th><th>Line</th><th>Query</th><th>Rows</th><th>Last inserted id</th><th>Time</th></tr>";
         $i = 0;
         $j = 0;
         $k = 0;
-        foreach ($_DB->sql("default")->query as $value) {
+        foreach ($_DB->sql(DB_DEFAULT)->query as $value) {
             echo "<tr><td>" . $k . "</td><td>" . $value['file'] . "</td><td>" . $value['line'] . "</td><td>" . SqlFormatter::format($value['query']) . "</td><td>" . $value['rows'] . "</td><td>" . $value['last_id'] . "</td><td>" . $value['time'] . "</td></tr>";
             $i += $value['time'];
             $j += $value['rows'];
