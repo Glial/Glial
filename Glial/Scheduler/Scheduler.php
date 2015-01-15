@@ -23,6 +23,16 @@ class Scheduler
         Shutdown::getInstance()->registerStaticClassOnTime($className, $methodName, $methodParams);
     }
 
+    static public function onBackground($className, $methodName, array $methodParams = array())
+    {
+        Shutdown::getInstance()->registerStaticClassOnTime($className, $methodName, $methodParams);
+    }
+
+    static public function onMaxTime($className, $methodName, array $methodParams = array())
+    {
+        Shutdown::getInstance()->registerStaticClassOnTime($className, $methodName, $methodParams);
+    }
+
     function my_background_exec($function_name, $params, $str_requires, $timeout = 600)
     {
         $map = array('"' => '\"', '$' => '\$', '`' => '\`', '\\' => '\\\\', '!' => '\!');

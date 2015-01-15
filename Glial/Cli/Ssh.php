@@ -5,6 +5,13 @@ namespace Glial\Cli;
 class Ssh
 {
 
+    const DEBUG_ON = 1;
+    const DEBUG_OFF = 0;
+    const DEBUG_PARTIAL = 2; //only display cmd
+
+    // debug
+
+    private $debug = 0;
     // SSH Host 
     private $ssh_host;
     // SSH Port 
@@ -21,6 +28,7 @@ class Ssh
     private $ssh_auth_priv = '/home/username/.ssh/id_rsa';
     // SSH Connection 
     private $connection;
+    private $stdio;
 
     static public function testAccount($host, $port, $login, $password)
     {
@@ -41,10 +49,13 @@ class Ssh
         $this->ssh_auth_pass = $password;
     }
 
-    public function connect()
+    public function connect($debug = self::DEBUG_OFF)
     {
+
+        $this->debug = $debug;
+
         if (!($this->connection = @ssh2_connect($this->ssh_host, $this->ssh_port))) {
-            
+
             return false;
             //throw new \Exception('Cannot connect to server');
         }
@@ -65,14 +76,14 @@ class Ssh
         if (!@ssh2_auth_password($this->connection, $this->ssh_auth_user, $this->ssh_auth_pass)) {
             return false;
         }
-        
+
         return true;
     }
 
     public function exec($cmd)
     {
         if (!($stream = @ssh2_exec($this->connection, $cmd))) {
-            
+
             return false;
             //throw new \Exception('GLI-885 : SSH command failed');
         }
@@ -106,46 +117,67 @@ class Ssh
         return $this->connection;
     }
 
-    private function read($stdio)
+    public function shellCmd($cmd)
     {
-        $line = '';
-        while ($buffer = fgets($stdio)) {
-
-            flush();
-            echo $buffer;
-            $line .= $buffer;
-            sleep(0.5);
+        if ($this->debug === self::DEBUG_PARTIAL) {
+            echo $cmd."\n";
         }
-        return $line;
+
+        fwrite($this->stdio, $cmd . "\n");
     }
 
     static public function getRegexPrompt()
     {
         // best tools => http://www.regexper.com/
-
-        return '/[\w-\d_-]+@[\w\d_-]+:[\~]?(?:\/[\w-\d_-]+)*(?:\$|\#)[\s]?/';
+        //[alequoy@SEQ-DWS-02 ~]
+        
+        
+        //return '/[\w-\d_-]+@[\w\d_-]+:[\~]?(?:\/[\w-\d_-]+)*(?:\$|\#)[\s]?/';
+        
+        return '/(?:[\w-\d_-]+@[\w\d_-]+:[\~]?(?:\/[\w-\d_-]+)*(?:\$|\#)[\s]?)|(?:\[(?:[\d\w-_]+)@(?:[\d\w-_]+)\s+\~?\](?:\$|\#)\s*)/';
+        
+        
+        
+        
     }
 
-    static public function waitPrompt($stdio)
+    public function waitPrompt($testPhrase = '')
     {
-
         $regex = self::getRegexPrompt();
-
         $wait = true;
-
         do {
-            sleep(1);
+            $buffer = fgets($this->stdio);
+            // add pause if nothing chose waiting prompt
+            if (empty($buffer)) {
 
-            $buffer = fgets($stdio);
+                if ($this->debug === self::DEBUG_ON) {
+                    echo " [Waiting] ";
+                }
+                sleep(1);
+                continue;
+            }
+
+            if ($this->debug === self::DEBUG_ON) {
+                echo $buffer;
+            }
+
+
             \preg_match_all(self::getRegexPrompt(), $buffer, $output_array);
 
             if (count($output_array[0]) === 1) {
-                debug($buffer);
-
-                $wait = false;
+                return false;
             }
-            
-            echo "WAITING ...\n";
+
+            if (!empty($testPhrase)) {
+                
+                //debug($buffer);
+                
+                \preg_match_all("/" . $testPhrase . "/", $buffer, $output_array);
+
+                if (count($output_array[0]) === 1) {
+                    return true;
+                }
+            }
         } while ($wait);
     }
 
@@ -155,7 +187,7 @@ class Ssh
         return trim(explode(" ", trim(explode(":", $paths)[1]))[0]);
     }
 
-    static public function testPrompt($line)
+    public function testPrompt($line)
     {
         $output_array = [];
 
@@ -167,18 +199,29 @@ class Ssh
             return false;
         }
     }
-    
-    
-    public function userAdd($login, $password)
+
+    public function userAdd($stdio, $login, $password)
     {
-        
+
         $cmd = "useradd -ou 0 -g 0 pmacontrol";
-        
-        
         $cmd = "passwd pmacontrol";
-        
-        
-        
+    }
+
+    public function openShell()
+    {
+
+        if (!($stdio = ssh2_shell($this->connection, "xterm"))) {
+            echo "[FAILED] to open a virtual shell\n";
+            exit(1);
+        }
+
+        echo "Virtual shell opened\n";
+
+        $this->stdio = $stdio;
+    }
+
+    public function test()
+    {
         
     }
 
