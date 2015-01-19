@@ -15,7 +15,8 @@
      "require": {
          "php": ">=5.5",
          "monolog/monolog": ">1.10",
-         "jdorn/sql-formatter": ">1.2"
+         "jdorn/sql-formatter": ">1.2",
+         "vatson/isolated-callback": "*"
 
      },
      "autoload": {
