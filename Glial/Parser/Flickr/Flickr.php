@@ -85,7 +85,7 @@ class Flickr
             //http://www.flickr.com/search/?q=%22timor+sparrow%22&ss=0&ct=0&mt=all&w=all&adv=1
             
             $generate_url = self::$url . "/search/?q=%22" . $q . "%22&s=rec&page=" . $i;
-            //echo $url ."\n";
+            echo $url ."\n";
             $content = self::curl($generate_url);
             $contents = Grabber::getTagContents($content, '<div class="photo-display-item"', true);
 
