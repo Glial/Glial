@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-namespace Glial\Form;
+namespace Glial\Html\Form;
 
 class Upload
 {
@@ -105,4 +105,56 @@ class Upload
         return $this->_error;
     }
 
+	
+	static public function getMaxUploadSize()
+	{
+		
+		$upload_max_filesize = self::returnBytes(ini_get('upload_max_filesize'));
+		$post_max_size = self::returnBytes(ini_get('post_max_size'));
+		
+		$tab = array($upload_max_filesize, $post_max_size);
+		
+		$max = max($tab);
+		
+		/*
+		; Maximum allowed size for uploaded files.
+		upload_max_filesize = 40M
+
+		; Must be greater than or equal to upload_max_filesize
+		post_max_size = 40M
+		*/
+		
+		return $max;
+	}
+	
+	static function returnBytes($val) {
+		$val = trim($val);
+		$last = strtolower($val[strlen($val)-1]);
+		switch($last) {
+			// Le modifieur 'G' est disponible depuis PHP 5.1.0
+			case 'g':
+				$val *= 1024;
+			case 'm':
+				$val *= 1024;
+			case 'k':
+				$val *= 1024;
+		}
+
+		return $val;
+	}
+	
+	
+	static function formatBytes($bytes, $precision = 2) { 
+		$units = array('o', 'Ko', 'Mo', 'Go', 'To'); 
+
+		$bytes = max($bytes, 0); 
+		$pow = floor(($bytes ? log($bytes) : 0) / log(1024)); 
+		$pow = min($pow, count($units) - 1); 
+
+		// Uncomment one of the following alternatives
+		// $bytes /= pow(1024, $pow);
+		 $bytes /= (1 << (10 * $pow));
+
+		return round($bytes, $precision) . ' ' . $units[$pow]; 
+	} 
 }

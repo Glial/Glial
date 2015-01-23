@@ -61,7 +61,6 @@ class FactoryController
             $node->setJs(self::$di['js']->getJavascript());
         }
         
-        
         if (!$node->layout_name) {
             $node->display();
             return false;

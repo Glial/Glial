@@ -7,7 +7,7 @@ namespace Glial\I18n {
     class I18n
     {
 
-        const DATABASE = "default";
+        const DATABASE = DB_DEFAULT;
 
 // to prevent kick or/and ban from google
         private static $nb_google_call = 0;
@@ -932,11 +932,11 @@ namespace {
 				inner JOIN scientific_name_translation b ON a.id = b.id_species_main AND b.id_species_sub = 0 and b.is_valid=1
 				INNER JOIN language c ON c.iso3 = b.language AND c.iso = '" . I18n::Get() . "'
 			where a.scientific_name ='" . $scientific_name . "'";
-                $res = I18n::getDb()->sql_query($sql);
+                $res = I18n::getDb()->sql(I18n::DATABASE)->sql_query($sql);
 
 
-                if (I18n::getDb()->sql_num_rows($res) == 1) {
-                    $ob = I18n::getDb()->sql_fetch_object($res);
+                if (I18n::getDb()->sql(I18n::DATABASE)->sql_num_rows($res) == 1) {
+                    $ob = I18n::getDb()->sql(I18n::DATABASE)->sql_fetch_object($res);
                     $replace_with[] = $ob->text . " (" . $scientific_name . ")";
                 } else {
                     $replace_with[] = $scientific_name;

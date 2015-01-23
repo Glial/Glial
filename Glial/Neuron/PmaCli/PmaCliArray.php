@@ -9,7 +9,7 @@ trait PmaCliArray {
         $this->layout_name = false;
         $this->view = false;
 
-        $default = $this->di['db']->sql("default");
+        $default = $this->di['db']->sql(DB_DEFAULT);
 
         $sql = "SELECT ip,port FROM `mysql_server`";
 

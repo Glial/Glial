@@ -131,7 +131,7 @@ class PmaCliDraining
         $primary_key = "`" . implode('`,`', $pri) . "`";
 
         $sql = "INSERT INTO `" . self::PREFIX . $this->main_table . "`  SELECT " . $primary_key . " FROM `" . $this->main_table . "`
-                WHERE " . $this->init_where . ";";
+                WHERE " . $this->init_where . ";"; // LOCK IN SHARE MODE
 
         $db->sql_query($sql);
         $this->log($sql);
@@ -191,15 +191,37 @@ class PmaCliDraining
 
                     $pri = $this->getPrimaryKey($table_name);
                     $primary_key = "a.`" . implode('`,a.`', $pri) . "`";
+                    $primary_keys = "`" . implode('`,`', $pri) . "`";
 
-                    $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table_name . "`
-                    SELECT " . $primary_key . " FROM `" . $table_name . "` a
-                    INNER JOIN `" . self::PREFIX . $ob->REFERENCED_TABLE_NAME . "` b ON b.`" . $ob->REFERENCED_COLUMN_NAME . "` = a.`" . $ob->COLUMN_NAME . "`;";
-                    $db->sql_query($sql);
 
-                    $this->setAffectedRows($table_name);
+                    $sql = "SELECT " . $primary_key . " FROM `" . $table_name . "` a
+                    INNER JOIN `" . self::PREFIX . $ob->REFERENCED_TABLE_NAME . "` b ON b.`" . $ob->REFERENCED_COLUMN_NAME . "` = a.`" . $ob->COLUMN_NAME . "`";
+                    $data = $db->sql_fetch_yield($sql);
 
-                    $this->log($sql);
+                    //version 1
+                    /*
+                      foreach ($data as $line) {
+                      $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table_name . "` (" . $primary_keys . ") VALUES ('" . implode("','", $line) . "')";
+                      $db->sql_query($sql);
+                      $this->setAffectedRows($table_name);
+                      $this->log($sql);
+                      } */
+
+                    //version 2 faster
+
+                    $have_data = false;
+                    $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table_name . "` (" . $primary_keys . ") VALUES ";
+                    foreach ($data as $line) {
+                        $have_data = true;
+                        $sql .= "('" . implode("','", $line) . "'),";
+                    }
+
+                    if ($have_data) {
+                        $sql = rtrim($sql, ",");
+                        $db->sql_query($sql);
+                        $this->setAffectedRows($table_name);
+                        $this->log($sql);
+                    }
                 }
             }
         }
@@ -323,17 +345,51 @@ class PmaCliDraining
 
                 if (self::PREFIX . $table != self::PREFIX . $this->main_field[$colone['COLUMN_NAME']]) {
 
-                    $primary_key = "a.`" . implode('`,a.`', $this->getPrimaryKey($table)) . "`";
 
-                    $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table . "`
-                    SELECT " . $primary_key . " FROM `" . $table . "` a
-                    INNER JOIN `" . self::PREFIX . $this->main_field[$colone['COLUMN_NAME']] . "` b ON a.`" . $colone['COLUMN_NAME'] . "` = b.`" . $colone['COLUMN_NAME'] . "`;";
+                    $pri = $this->getPrimaryKey($table);
+                    $primary_key = "a.`" . implode('`,a.`', $pri) . "`";
+                    $primary_keys = "`" . implode('`,`', $pri) . "`";
 
-                    $db->sql_query($sql);
-                    $this->setAffectedRows($table);
+                    //replacing insert into to prevent lock on table used in select
+
+                    $sql = "SELECT " . $primary_key . " FROM `" . $table . "` a
+                    INNER JOIN `" . self::PREFIX . $this->main_field[$colone['COLUMN_NAME']] . "` b ON a.`" . $colone['COLUMN_NAME'] . "` = b.`" . $colone['COLUMN_NAME'] . "`";
+
+                    $data = $db->sql_fetch_yield($sql);
+
+//version 1
+                    /*
+                      foreach ($data as $line) {
+                      $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table . "` (" . $primary_keys . ") VALUES ('" . implode("','", $line) . "')";
+                      $db->sql_query($sql);
+                      $this->setAffectedRows($table);
+                      $this->log($sql);
+                      }
+                     */
 
 
-                    $this->log($sql);
+
+                    //version 2 faster
+                    $have_data = false;
+                    $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table . "` (" . $primary_keys . ") VALUES ";
+                    foreach ($data as $line) {
+                        $have_data = true;
+                        $sql .= "('" . implode("','", $line) . "'),";
+                    }
+
+
+                    if ($have_data) {
+                        $sql = rtrim($sql, ",");
+
+
+
+                        $db->sql_query($sql);
+                        $this->setAffectedRows($table);
+                        $this->log($sql);
+                    }
+
+
+                    // INSERT INGORE INTO `DELETE_PROD_ITEMS` (`ID_PROD_ITEM`) VALUES ('364157897')
                 }
             }
         }

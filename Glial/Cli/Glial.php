@@ -34,8 +34,8 @@ class Glial
         $str = self::logo();
         
         $str .= PHP_EOL;
-        $str .= Color::getColoredString("Glial 3.1", "green");
-        $str .= " (2014-07-30) by Aurélien LEQUOY.".PHP_EOL;
+        $str .= Color::getColoredString("Glial 3.2", "green");
+        $str .= " (2015-01-05) by Aurélien LEQUOY.".PHP_EOL;
         
         return $str;
     }

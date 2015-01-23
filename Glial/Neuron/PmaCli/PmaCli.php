@@ -2,8 +2,8 @@
 
 namespace Glial\Neuron\PmaCli;
 
-use Glial\Cli\Table;
-use Glial\Cli\Window;
+use \Glial\Cli\Table;
+use \Glial\Cli\Window;
 use \Glial\Sgbd\Sql\Mysql\MasterSlave;
 use \Glial\Security\Crypt\Crypt;
 use \Glial\Date\Date;
@@ -19,8 +19,11 @@ use \Glial\Neuron\PmaCli\PmaCliArray;
 
 use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
-//use \Glial\Neuron\PmaCli\PmaCliSwitch;
+use \Glial\Neuron\PmaCli\PmaCliDaemon;
 
+use \Glial\Neuron\PmaCli\PmaCliServerInfos;
+
+use \Glial\Neuron\PmaCli\PmaCliCommons;
 
     public function load($param)
     {
@@ -398,6 +401,13 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         $masters = array();
         $i = 0;
 
+        /*
+          try {
+
+          $default->sql_query('SET AUTOCOMMIT=0;');
+          $default->sql_query('START TRANSACTION;');
+         */
+
         $sql = "DELETE FROM mysql_replication_stats";
         $default->sql_query($sql);
 
@@ -407,8 +417,6 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
         $sql = "DELETE FROM `mysql_replication_stats`";
         $default->sql_query($sql);
-
-
 
         $sql = "ALTER TABLE mysql_replication_stats AUTO_INCREMENT = 1";
         $default->sql_query($sql);
@@ -425,6 +433,8 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         $res50 = $default->sql_query($sql);
 
         while ($ob50 = $default->sql_fetch_object($res50)) {
+
+
             $db = $ob50->name;
 
             $i++;
@@ -450,23 +460,22 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
 
                 /*
-                $client = new \crodas\InfluxPHP\Client(
-                        "dev.metrics.noc2.photobox.com", 8086, "root", "root"
-                );
-                $influxDB = $client->mysqlmetrics;
+                  $client = new \crodas\InfluxPHP\Client(
+                  "dev.metrics.noc2.photobox.com", 8086, "root", "root"
+                  );
+                  $influxDB = $client->mysqlmetrics;
 
-                $sql = "SELECT * FROM information_schema.GLOBAL_STATUS ORDER BY VARIABLE_NAME";
-                $global_status = $dblink->sql_fetch_yield($sql);
+                  $sql = "SELECT * FROM information_schema.GLOBAL_STATUS ORDER BY VARIABLE_NAME";
+                  $global_status = $dblink->sql_fetch_yield($sql);
 
 
-                foreach ($global_status as $status) {
-                    
-                    $value =  (int) $status['VARIABLE_VALUE'];
-                    $influxDB->insert(str_replace('_','-', $db) . "." . $status['VARIABLE_NAME'], ['value' => $value]);
-                }
-                
-                */
-                
+                  foreach ($global_status as $status) {
+
+                  $value =  (int) $status['VARIABLE_VALUE'];
+                  $influxDB->insert(str_replace('_','-', $db) . "." . $status['VARIABLE_NAME'], ['value' => $value]);
+                  }
+
+                 */
             } else {
 
                 $server_on = 0;
@@ -539,6 +548,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                     throw new \Exception("GLI-031 : Impossible to get id_mysql_replication_stats");
                 }
 
+                $thread = [];
 
                 if ($slave) {
 
@@ -582,6 +592,16 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                 $this->saveDatabase($dblink, $ob->id, $master, $thread);
             }
         }
+
+
+        $default->sql_query('COMMIT;');
+
+        /*
+          } catch (\Exception $ex) {
+
+
+          $default->sql_query('ROLLBACK;');
+          } */
     }
 
     /**
@@ -658,7 +678,6 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
         $this->replicationDrawGraph(ROOT . '/tmp/img/replication.svg');
 
-
         $this->deleteBackup();
 //$this->saveVariable();
     }
@@ -666,6 +685,17 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
     public function daemon()
     {
 //$this->testDaemon();
+
+
+        /*
+          $mutex = new \SyncMutex("UniqueName");
+
+          if (!$mutex->lock(3000)) {
+          echo "Impossible de verrouiller le mutex.";
+
+          exit();
+          } */
+
 
         $i = 0;
 
@@ -681,6 +711,8 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
             sleep(10);
         }
+
+        //$mutex->unlock();
     }
 
     public function backupDeleteOld()
@@ -731,7 +763,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
             $all_server[$mysql['name']] = $mysql;
         }
 
-        Crypt::$key = 'photobox';
+        Crypt::$key = CRYPT_KEY;
 
 
         $all = array();
@@ -757,6 +789,15 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
             $data['mysql_server']['login'] = $info_server['user'];
             $data['mysql_server']['passwd'] = Crypt::encrypt($info_server['password']);
             $data['mysql_server']['port'] = empty($info_server['port']) ? 3306 : $info_server['port'];
+
+            if (!empty($info_server['ssh_login'])) {
+                $data['mysql_server']['ssh_login'] = Crypt::encrypt($info_server['ssh_login']);
+            }
+            if (!empty($info_server['ssh_password'])) {
+                $data['mysql_server']['ssh_password'] = Crypt::encrypt($info_server['ssh_password']);
+            }
+
+
 
             if (!$db->sql_save($data)) {
                 debug($data);
@@ -1000,8 +1041,10 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
 
     private function deleteBackup()
     {
+        $cmd = "find /data/backup/ -type d -empty -delete";
+        shell_exec($cmd);
 
-        $cmd = "find /data/backup/10.*/* -mtime +10 -exec rm {} \;";
+        $cmd = "find /data/backup/10.*/* -type f -mtime +10 -exec rm {} \;";
         shell_exec($cmd);
     }
 
@@ -1013,15 +1056,25 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         $binlog_do_db = explode(",", $binlog['Binlog_Do_DB']);
         $binlog_ignore_db = explode(",", $binlog['Binlog_Ignore_DB']);
 
-        $sql = "DELETE FROM mysql_database where id_mysql_server = '" . $id_mysql_server . "';";
-        $default->sql_query($sql);
+        //$sql = "DELETE FROM mysql_database where id_mysql_server = '" . $id_mysql_server . "';";
+        //$default->sql_query($sql);
         //echo $sql;
 
         $sql = "SELECT * FROM `information_schema`.`SCHEMATA`";
         $databases = $db->sql_fetch_yield($sql);
 
         foreach ($databases as $database) {
+
+            $sql = "SELECT id FROM mysql_database WHERE `name` ='" . $database['SCHEMA_NAME'] . "' AND id_mysql_server=" . $id_mysql_server . ";";
+            $res = $default->sql_query($sql);
+
             $data = array();
+
+            if ($default->sql_num_rows($res) === 1) {
+                $ob = $default->sql_fetch_object($res);
+                $data['mysql_database']['id'] = $ob->id;
+            }
+
             $data['mysql_database']['id_mysql_server'] = $id_mysql_server;
             $data['mysql_database']['name'] = $database['SCHEMA_NAME'];
             $data['mysql_database']['collation_name'] = $database['DEFAULT_COLLATION_NAME'];
@@ -1050,7 +1103,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                     $data['link__mysql_database__mysql_replication_thread']['replicate_do_db'] = (in_array($database['SCHEMA_NAME'], $replicate_do_db)) ? 1 : 0;
                     $data['link__mysql_database__mysql_replication_thread']['replicate_ignore_db'] = (in_array($database['SCHEMA_NAME'], $replicate_ignore_db)) ? 1 : 0;
 
-                    $saved = $default->sql_save($data);
+                    $saved = $default->sql_replace($data);
                     if (!$saved) {
                         debug($default->sql_error());
                         debug($data);
@@ -1075,10 +1128,7 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
         }
         fwrite($fp, "\t node [color=" . $data['color'] . "];" . PHP_EOL);
 
-
-
         fwrite($fp, '  "' . $data['id_mysql_server'] . '" [style="" penwidth="3" fillcolor="yellow" fontname="arial" label =<<table border="0" cellborder="0" cellspacing="0" cellpadding="2" bgcolor="white"><tr><td bgcolor="black" color="white" align="center" href="' . LINK . 'monitoring/query/' . str_replace('_', '-', $data['hostname']) . '/' . '"><font color="white">' . str_replace('_', '-', $data['hostname']) . '</font></td></tr><tr><td bgcolor="grey" align="left">' . $data['ip'] . ':' . $data['port'] . '</td></tr>');
-
         fwrite($fp, '<tr><td bgcolor="grey" align="left">' . $data['version'] . '</td></tr>' . PHP_EOL);
         fwrite($fp, '<tr><td bgcolor="grey" align="left">Uptime : ' . Date::secToTime($data['uptime']) . '</td></tr>');
         fwrite($fp, '<tr><td bgcolor="grey" align="left">(' . $data['date'] . ') : ' . $data['timezone'] . '</td></tr>');
@@ -1101,8 +1151,6 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                     . "WHERE a.id_mysql_server='" . $id . "' order by a.name";
             $res = $db->sql_query($sql);
 
-
-
             if ($db->sql_num_rows($res) > 0) {
                 $ret .= '<table border="0" cellborder="0" cellspacing="1" cellpadding="1">';
 
@@ -1118,16 +1166,11 @@ use \Glial\Neuron\PmaCli\PmaCliFailOver;
                         $binlog = (empty($database['binlog_ignore_db'])) ? "-" : "&#10006;";
                     }
 
-
-
                     $replicate = (empty($database['replicate_ignore_db'])) ? "" : "&#10006;";
 
                     if (empty($replicate)) {
                         $replicate = (empty($database['replicate_do_db'])) ? "-" : "&#10004;";
                     }
-
-
-
 
                     $ret .= '<tr><td bgcolor="#eeeeee">' . $binlog . '</td><td bgcolor="#eeeeee">' . $replicate . '</td>'
                             . '<td bgcolor="#dddddd" align="left" title="MPD of ' . $database['name'] . '" href="' . LINK . 'mysql/mpd/' .
