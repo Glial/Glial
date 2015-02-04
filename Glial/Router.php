@@ -46,7 +46,6 @@ class Router
 
 	function parse($url)
 	{
-
 		if ( strstr($url, '>') )
 		{
 			define('IS_AJAX', true);
@@ -88,20 +87,6 @@ class Router
 		{
 			$this->routes['action'] = $tab[2];
 		}
-
-		/*		 * ************* */
-		/*
-		  if ( empty ($GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$controller][$action]) || $GLOBALS['_SYSTEM']['acl'][$GLOBALS['_SITE']['id_group']][$controller][$action] != 1)
-		  {
-		  if ($controller !== "" && $action !== "")
-		  {
-		  $this->error = __("Acess denied")." : $controller/$action";
-		  set_flash("success",__("Password sent !"), __($msg));
-		  header("location: ".LINK."user/lost_password/");
-		  die();
-		  }
-		  }
-		  /********** */
 
 
 
@@ -145,5 +130,3 @@ class Router
 	}
 
 }
-
-?>

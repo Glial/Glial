@@ -9,6 +9,11 @@ class Ssh
     const DEBUG_OFF = 0;
     const DEBUG_PARTIAL = 2; //only display cmd
 
+    
+    const SSH_PROMPT_STD = 1;
+    const SSH_PROMPT_FOUND = 2;
+    const SSH_PROMPT_TIME_OUT = 3;
+    
     // debug
 
     private $debug = 0;
@@ -29,6 +34,11 @@ class Ssh
     // SSH Connection 
     private $connection;
     private $stdio;
+    
+    //time out for wait prompt if no new answer in second
+    private $idle_time_out = 5;
+    private $wait_time = 500000;
+    
 
     static public function testAccount($host, $port, $login, $password)
     {
@@ -72,11 +82,10 @@ class Ssh
           throw new Exception('Autentication rejected by server');
           } */
 
-
         if (!@ssh2_auth_password($this->connection, $this->ssh_auth_user, $this->ssh_auth_pass)) {
             return false;
         }
-
+        
         return true;
     }
 
@@ -134,48 +143,70 @@ class Ssh
         
         //return '/[\w-\d_-]+@[\w\d_-]+:[\~]?(?:\/[\w-\d_-]+)*(?:\$|\#)[\s]?/';
         
-        return '/(?:[\w-\d_-]+@[\w\d_-]+:[\~]?(?:\/[\w-\d_-]+)*(?:\$|\#)[\s]?)|(?:\[(?:[\d\w-_]+)@(?:[\d\w-_]+)\s+\~?\](?:\$|\#)\s*)/';
-        
-        
-        
-        
-    }
+        //return '/(?:\$|\#)/';
+        return '/(?:[\w-\d_-]+@[\w\d_-]+:[\~]?(?:\/[\w-\d_-]+)*(?:\$|\#)[\s]?)|^(?:\$|\#)\s+$|(?:\[(?:[\d\w-_]+)@(?:[\d\w-_]+)\s+\~?\](?:\$|\#)\s*)/Um';
 
-    public function waitPrompt($testPhrase = '')
+    }
+    
+    
+
+    public function waitPrompt(&$output,$testPhrase = '')
     {
+        
+        $output = '';
         $regex = self::getRegexPrompt();
         $wait = true;
+        
+        $waiting = ['/','-','\\','|'];
+        $i = 0;
+        
+        
+        $wait_time_max = $this->idle_time_out * 1000000;
+        $waited = 0;
+        
         do {
+            $i++;
             $buffer = fgets($this->stdio);
             // add pause if nothing chose waiting prompt
             if (empty($buffer)) {
 
                 if ($this->debug === self::DEBUG_ON) {
-                    echo " [Waiting] ";
+                    
+                    $mod = $i % 4;
+                    echo " ".$waiting[$mod];
+                    echo "\033[2D";
                 }
-                sleep(1);
+                
+                $waited += $this->wait_time;
+                usleep($this->wait_time);
+                
+                if ($waited >= $wait_time_max)
+                {
+                    //echo Color::getColoredString(" Time out exceded ", "red");
+                    return self::SSH_PROMPT_TIME_OUT;
+                }
+                
                 continue;
             }
-
+            
+            $waited = 0;
+            $output .= $buffer;
+            
             if ($this->debug === self::DEBUG_ON) {
                 echo $buffer;
             }
 
-
             \preg_match_all(self::getRegexPrompt(), $buffer, $output_array);
 
             if (count($output_array[0]) === 1) {
-                return false;
+                return self::SSH_PROMPT_STD;
             }
 
             if (!empty($testPhrase)) {
-                
-                //debug($buffer);
-                
                 \preg_match_all("/" . $testPhrase . "/", $buffer, $output_array);
 
                 if (count($output_array[0]) === 1) {
-                    return true;
+                    return self::SSH_PROMPT_FOUND;
                 }
             }
         } while ($wait);
@@ -187,6 +218,8 @@ class Ssh
         return trim(explode(" ", trim(explode(":", $paths)[1]))[0]);
     }
 
+    
+    /*
     public function testPrompt($line)
     {
         $output_array = [];
@@ -198,7 +231,7 @@ class Ssh
         } else {
             return false;
         }
-    }
+    }*/
 
     public function userAdd($stdio, $login, $password)
     {
@@ -218,6 +251,8 @@ class Ssh
         echo "Virtual shell opened\n";
 
         $this->stdio = $stdio;
+        
+        
     }
 
     public function test()

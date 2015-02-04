@@ -30,7 +30,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
 
         $this->view = false;
 
-        $db = $this->di['db']->sql('default');
+        $db = $this->di['db']->sql(DB_DEFAULT);
 
         $server_dest = $param[0];
         $databases = explode(",", $param[1]);
@@ -93,7 +93,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
 
         if ($fp = fopen($path . '/' . $file . '.dot', "w")) {
 
-            $db = $this->di['db']->sql("default");
+            $db = $this->di['db']->sql(DB_DEFAULT);
 
             fwrite($fp, "digraph Replication { rankdir = LR; " . PHP_EOL);
 //fwrite($fp, "\t size=\"10,1000\";");
@@ -393,7 +393,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
         $this->layout_name = false;
         $this->view = false;
 
-        $default = $this->di['db']->sql("default");
+        $default = $this->di['db']->sql(DB_DEFAULT);
 
         $MS = new MasterSlave();
 
@@ -722,7 +722,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
         $this->layout_name = false;
         $this->view = false;
 
-        $db = $this->di['db']->sql("default");
+        $db = $this->di['db']->sql(DB_DEFAULT);
         $sqls = '';
 
         foreach ($db->sql_fetch_yield($sql) as $backup) {
@@ -752,7 +752,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
     {
         $this->view = false;
 
-        $db = $this->di['db']->sql('default');
+        $db = $this->di['db']->sql(DB_DEFAULT);
 
         $sql = "SELECT * FROM `mysql_server`";
         $servers_mysql = $db->sql_fetch_yield($sql);
@@ -860,7 +860,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
                     INNER JOIN mysql_replication_stats b ON a.id = b.id_mysql_server
                     INNER JOIN mysql_replication_thread c ON b.id = c.id_mysql_replication_stats";
 
-        $db = $this->di['db']->sql('default');
+        $db = $this->di['db']->sql(DB_DEFAULT);
 
         $arr = $db->sql_fetch_all($sql);
 
@@ -875,7 +875,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
 
     private function monitoring($previous_data, $actual_data)
     {
-        $db = $this->di['db']->sql('default');
+        $db = $this->di['db']->sql(DB_DEFAULT);
 
         foreach ($previous_data as $key => $tab) {
             $cmp = $this->compare($previous_data[$key], $actual_data[$key]);
@@ -955,7 +955,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
 
     private function saveVariable()
     {
-        $default = $this->di['db']->sql('default');
+        $default = $this->di['db']->sql(DB_DEFAULT);
 
         $sql = "SELECT id,name FROM mysql_server";
 
@@ -1050,7 +1050,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
 
     private function saveDatabase($db, $id_mysql_server, $binlog, $replicate)
     {
-        $default = $this->di['db']->sql('default');
+        $default = $this->di['db']->sql(DB_DEFAULT);
 
 
         $binlog_do_db = explode(",", $binlog['Binlog_Do_DB']);
@@ -1142,7 +1142,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
 
     private function displayDatabase($id, $hostname)
     {
-        $db = $this->di['db']->sql("default");
+        $db = $this->di['db']->sql(DB_DEFAULT);
         $ret = '';
 
         if (!empty($id)) {

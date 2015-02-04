@@ -171,10 +171,10 @@ class Form
         if ($indice != -1) {
 //return "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" class=\"" . $classo . "text" . $class . "\" type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "]\" value=\"" . $value . "\" />" . $error;
             return "<input id=\"" . $table . "-" . $indice."-" . $field . "_auto\" $extra type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "_auto]\" value=\"" . $valueauto . "\" />"
-                    . "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" name=\"" . $table . "[" . $indice. "][" . $field  . "]\" class=\"hidden\" type=\"text\" value=\"" . $value . "\" />" . $error;
+                    . "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" name=\"" . $table . "[" . $indice. "][" . $field  . "]\" class=\"auto\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
         } else {
             return "<input id=\"" . $table . "-" . $field . "_auto\" $extra type=\"text\" name=\"" . $table . "[" . $field . "_auto]\" value=\"" . $valueauto . "\" />"
-                    . "<input id=\"" . $table . "-" . $field . "\" name=\"" . $table . "[" . $field . "]\" class=\"hidden\" type=\"text\" value=\"" . $value . "\" />" . $error;
+                    . "<input id=\"" . $table . "-" . $field . "\" name=\"" . $table . "[" . $field . "]\" class=\"auto\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
         }
     }
 

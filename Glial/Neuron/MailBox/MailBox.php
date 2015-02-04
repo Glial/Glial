@@ -15,7 +15,7 @@ trait MailBox
         $this->data['request'] = $param[0];
         $this->data['send_to'] = $param;
 
-        $db = $this->di['db']->sql("default");
+        $db = $this->di['db']->sql(DB_DEFAULT);
         $user = $this->di['auth']->getUser();
 
 

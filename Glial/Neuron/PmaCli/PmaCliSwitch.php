@@ -14,6 +14,12 @@ use \Glial\Cli\Table;
 trait PmaCliSwitch
 {
 
+    /*
+     * 
+     * glial pma_cli switchMaster NewMaster NewSlave
+     */
+    
+    
     public function switchMaster($servers)
     {
         $this->view = false;

@@ -20,7 +20,7 @@ class Ssh {
                 throw new \Exception("GLI-014 : Connexion to ssh impossible on : " . $user . "@" . $host . ":" . $port . "");
             }
         } else {
-            throw new \Exception("GLI-014 : Connexion to ssh impossible on : " . $user . "@" . $host . ":" . $port . "");
+            //throw new \Exception("GLI-014 : Connexion to ssh impossible on : " . $user . "@" . $host . ":" . $port . "");
         }
     }
 
@@ -34,7 +34,9 @@ class Ssh {
     public function exec($cmd) {
 
         if (!($stream = ssh2_exec($this->connection, $cmd))) {
-            throw new \Exception('SSH command failed');
+            
+            //throw new \Exception('SSH command failed');
+            return false;
         }
         stream_set_blocking($stream, true);
         $data = "";

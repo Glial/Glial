@@ -47,14 +47,14 @@ trait Administration
                     }
                 }
 
-                $tables = $this->di['db']->sql('default')->getListTable();
+                $tables = $this->di['db']->sql(DB_DEFAULT)->getListTable();
 
                 //debug($tables);
 
                 foreach ($tables['table'] as $table) {
                     //echo $table . "\n";
                     $fp = fopen(TMP . "/database/" . strtolower($table) . ".table.txt", "w");
-                    $description = $this->di['db']->sql('default')->getDescription($table);
+                    $description = $this->di['db']->sql(DB_DEFAULT)->getDescription($table);
                     $data = array();
 
 

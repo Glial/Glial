@@ -104,9 +104,11 @@ class Pagination
         if ($this->direction != '')
             $options = $options . ' dir="' . $this->direction . '" ';
 
+        
         if ($this->alignment != '')
             $options = $options . ' align="' . $this->alignment . '" ';
-        $this->output .= '<div ' . $options . ' >';
+        
+        $this->output .= '<div class="btn-group" role="group" aria-label="Default button group" ' . $options . ' >';
 
 
 
@@ -181,7 +183,7 @@ class Pagination
 
     private function get_page_html($page, $name)
     {
-        return '<a class="'.$this->class_buttons.'" href="' . $this->get_page_url($page) . '">' . $name . '</a>';
+        return '<a class="'.$this->class_buttons.'" type="button" href="' . $this->get_page_url($page) . '">' . $name . '</a>';
     }
 
 //------------------------------------------------------------------------

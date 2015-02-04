@@ -47,7 +47,7 @@ trait PmaCliCluster
 
         if (count($out) === 2) {
 
-            $default = $this->di['db']->sql("default");
+            $default = $this->di['db']->sql(DB_DEFAULT);
 
 
 
