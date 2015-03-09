@@ -20,7 +20,7 @@ class Javascript
     
     public function code_javascript($js)
     {
-        $this->di['js']->code_javascript[] = $js;
+        $this->code_javascript[] = $js;
     }
 
     final function getJavascript()
@@ -32,7 +32,7 @@ class Javascript
 
         foreach ($this->javascript as $script) {
 
-            if (stristr($script, 'http://')) {
+            if (stristr($script, 'http://') || stristr($script, 'https://')) {
                 $js .="<script type=\"text/javascript\" src=\"" . $script . "\"></script>\n";
             } else {
                 $js .="<script type=\"text/javascript\" src=\"" . JS . $script . "\"></script>\n";

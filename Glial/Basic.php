@@ -163,7 +163,6 @@ function hidden($table, $field, $default_value)
 function autocomplete($table, $field, $classo = "", $indice = -1)
 {
 
-
     if ($indice != -1) {
         if (!empty($_GET[$table][$indice][$field])) {
             $value = $_GET[$table][$indice][$field];

@@ -52,7 +52,6 @@ class Form
     {
         $indice = self::getIndice($table, $field);
 
-
         if (!empty($_SESSION['ERROR'][$table][$field])) {
             $error = " <span class=\"error\">" . $_SESSION['ERROR'][$table][$field] . "</span>";
             $class = " error";
@@ -64,8 +63,8 @@ class Form
 
 
         $extra = self::formatOptions($options);
-
-
+        
+        
         $ret = "";
         if (!self::$ajax) {
             if ($indice != -1) {
@@ -174,7 +173,7 @@ class Form
                     . "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" name=\"" . $table . "[" . $indice. "][" . $field  . "]\" class=\"auto\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
         } else {
             return "<input id=\"" . $table . "-" . $field . "_auto\" $extra type=\"text\" name=\"" . $table . "[" . $field . "_auto]\" value=\"" . $valueauto . "\" />"
-                    . "<input id=\"" . $table . "-" . $field . "\" name=\"" . $table . "[" . $field . "]\" class=\"auto\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
+                    . "<input id=\"" . $table . "-" . $field . "\" name=\"" . $table . "[" . $field . "]\" class=\"hidden\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
         }
     }
 

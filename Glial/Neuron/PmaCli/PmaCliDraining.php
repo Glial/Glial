@@ -16,7 +16,7 @@ class PmaCliDraining
     const NB_DELETE = 800; //nombre de delete en mÃªme temps
     const NB_PROCESS = 1;
     const NB_THREAD = 1; //must be below that the number of CPU
-    const DEBUG = false;
+    const DEBUG = true;
     const COLOR = true;
     const PREFIX = "DELETE_";
 

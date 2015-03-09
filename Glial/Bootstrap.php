@@ -48,11 +48,27 @@ $config = new Config;
 $config->load(CONFIG);
 FactoryController::addDi("config", $config);
 
-if (ENVIRONEMENT) {
+
+
+$developer = $config->get("developer");
+
+if (in_array($_SERVER['REMOTE_ADDR'] , $developer['ip']) || ENVIRONEMENT )
+{
+    define("DEBUG", true);
+    error_reporting(-1);
+    ini_set('display_errors', 1);
+}
+else
+{
+    define("DEBUG", false);
+}
+
+
+
+if (DEBUG) {
     $_DEBUG = new Debug;
     $_DEBUG->save("Starting...");
 }
-
 
 
 
@@ -77,14 +93,14 @@ require __DIR__ . "/Basic.php";
 
 //debug($_GET);
 
-(ENVIRONEMENT) ? $_DEBUG->save("Loading class") : "";
+(DEBUG) ? $_DEBUG->save("Loading class") : "";
 
 $db = $config->get("db");
 $_DB = new Sgbd($db);
 
 FactoryController::addDi("db", $_DB);
 
-(ENVIRONEMENT) ? $_DEBUG->save("Init database") : "";
+(DEBUG) ? $_DEBUG->save("Init database") : "";
 
 
 if (!IS_CLI) {
@@ -101,7 +117,7 @@ if (!IS_CLI) {
     }
 }
 
-(ENVIRONEMENT) ? $_DEBUG->save("Rooter loaded") : "";
+(DEBUG) ? $_DEBUG->save("Rooter loaded") : "";
 
 
 
@@ -123,7 +139,7 @@ if (!in_array($_SESSION['language'], $lg)) {
 }
 
 I18n::load($_SESSION['language']);
-(ENVIRONEMENT) ? $_DEBUG->save("Language loaded") : "";
+(DEBUG) ? $_DEBUG->save("Language loaded") : "";
 
 
 
@@ -214,7 +230,7 @@ if (IS_CLI) {
 
 
 
-(ENVIRONEMENT) ? $_DEBUG->save("ACL loaded") : "";
+(DEBUG) ? $_DEBUG->save("ACL loaded") : "";
 
 
 //demarre l'application
@@ -224,11 +240,14 @@ FactoryController::rootNode($_SYSTEM['controller'], $_SYSTEM['action'], $_SYSTEM
 $i = 10;
 
 
-(ENVIRONEMENT) ? $_DEBUG->save("Layout loaded") : "";
+(DEBUG) ? $_DEBUG->save("Layout loaded") : "";
 
 
 
-if ((ENVIRONEMENT) && (!IS_CLI) && (!IS_AJAX)) {//ENVIRONEMENT
+
+
+
+if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
     $execution_time = microtime(true) - TIME_START;
 
     echo "<hr />";
