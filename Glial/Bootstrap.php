@@ -52,7 +52,7 @@ FactoryController::addDi("config", $config);
 
 $developer = $config->get("developer");
 
-if (in_array($_SERVER['REMOTE_ADDR'] , $developer['ip']) || ENVIRONEMENT )
+if ((in_array($_SERVER['REMOTE_ADDR'] , $developer['ip']) || ENVIRONEMENT ) && ! IS_CLI)
 {
     define("DEBUG", true);
     error_reporting(-1);
@@ -62,7 +62,6 @@ else
 {
     define("DEBUG", false);
 }
-
 
 
 if (DEBUG) {

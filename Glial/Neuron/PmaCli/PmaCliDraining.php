@@ -16,12 +16,13 @@ class PmaCliDraining
     const NB_DELETE = 800; //nombre de delete en mÃªme temps
     const NB_PROCESS = 1;
     const NB_THREAD = 1; //must be below that the number of CPU
-    const DEBUG = true;
+    const DEBUG = false;
     const COLOR = true;
     const PREFIX = "DELETE_";
 
     public $link_to_purge;
     public $schema_to_purge;
+    public $schema_delete = "CLEANER";
     public $table_to_purge = array();
     public $main_field = array(); // => needed
     public $main_table;
@@ -45,6 +46,9 @@ class PmaCliDraining
 
         // to not affect history server, read : https://mariadb.com/kb/en/mariadb/documentation/replication/standard-replication/selectively-skipping-replication-of-binlog-events/
         $sql = "SET @@skip_replication = ON;";
+        $db->sql_query($sql);
+
+        $sql = "CREATE DATABASE IF NOT EXISTS " . $this->schema_delete;
         $db->sql_query($sql);
 
 
@@ -108,14 +112,14 @@ class PmaCliDraining
             $index[] = "`" . $field['name'] . "`";
         }
 
-        $sql = "CREATE TEMPORARY TABLE IF NOT EXISTS `" . self::PREFIX . $table . "`(";
+        $sql = "CREATE TABLE IF NOT EXISTS `".$this->schema_delete."`.`" . self::PREFIX . $table . "`(";
         $sql .= implode(",", $line);
         $sql .= ", PRIMARY KEY (" . implode(",", $index) . "));";
         $db->sql_query($sql);
 
 
         //$this->log($sql);
-        $sql = "TRUNCATE TABLE `" . self::PREFIX . $table . "`;";
+        $sql = "TRUNCATE TABLE `".$this->schema_delete."`.`" . self::PREFIX . $table . "`;";
         $db->sql_query($sql);
         //$this->log($sql);
     }
@@ -130,7 +134,7 @@ class PmaCliDraining
         $pri = $this->getPrimaryKey($this->main_table);
         $primary_key = "`" . implode('`,`', $pri) . "`";
 
-        $sql = "INSERT INTO `" . self::PREFIX . $this->main_table . "`  SELECT " . $primary_key . " FROM `" . $this->main_table . "`
+        $sql = "INSERT INTO `".$this->schema_delete."`.`" . self::PREFIX . $this->main_table . "`  SELECT " . $primary_key . " FROM `" . $this->main_table . "`
                 WHERE " . $this->init_where . ";"; // LOCK IN SHARE MODE
 
         $db->sql_query($sql);
@@ -138,12 +142,10 @@ class PmaCliDraining
 
         $this->setAffectedRows($this->main_table);
 
-
         if (empty($this->rows_to_delete[$this->main_table])) {
 
             return $this->rows_to_delete;
         }
-
 
         $this->feedDeleteTableWithJoin();
         $this->feedDeleteTableWithFk();
@@ -155,7 +157,6 @@ class PmaCliDraining
 
     public function feedDeleteTableWithFk()
     {
-
         if (self::DEBUG) {
             echo "--###################################################################" . PHP_EOL;
             echo "--##################### FEED FROM FK ################################" . PHP_EOL;
@@ -195,7 +196,7 @@ class PmaCliDraining
 
 
                     $sql = "SELECT " . $primary_key . " FROM `" . $table_name . "` a
-                    INNER JOIN `" . self::PREFIX . $ob->REFERENCED_TABLE_NAME . "` b ON b.`" . $ob->REFERENCED_COLUMN_NAME . "` = a.`" . $ob->COLUMN_NAME . "`";
+                    INNER JOIN `".$this->schema_delete."`.`" . self::PREFIX . $ob->REFERENCED_TABLE_NAME . "` b ON b.`" . $ob->REFERENCED_COLUMN_NAME . "` = a.`" . $ob->COLUMN_NAME . "`";
                     $data = $db->sql_fetch_yield($sql);
 
                     //version 1
@@ -210,7 +211,7 @@ class PmaCliDraining
                     //version 2 faster
 
                     $have_data = false;
-                    $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table_name . "` (" . $primary_keys . ") VALUES ";
+                    $sql = "INSERT IGNORE INTO `".$this->schema_delete."`.`" . self::PREFIX . $table_name . "` (" . $primary_keys . ") VALUES ";
                     foreach ($data as $line) {
                         $have_data = true;
                         $sql .= "('" . implode("','", $line) . "'),";
@@ -338,11 +339,18 @@ class PmaCliDraining
                     . "AND COLUMN_NAME in (" . $in_clause . ");";
 
             $colones = $db->sql_fetch_yield($sql);
-
-            //$this->log($sql);
+            
+            $this->log($sql);
+            
+            
+            
 
             foreach ($colones as $colone) {
-
+                
+                
+                //echo "FOUND $table ".$colone['COLUMN_NAME']."\n";
+                
+                
                 if (self::PREFIX . $table != self::PREFIX . $this->main_field[$colone['COLUMN_NAME']]) {
 
 
@@ -353,10 +361,11 @@ class PmaCliDraining
                     //replacing insert into to prevent lock on table used in select
 
                     $sql = "SELECT " . $primary_key . " FROM `" . $table . "` a
-                    INNER JOIN `" . self::PREFIX . $this->main_field[$colone['COLUMN_NAME']] . "` b ON a.`" . $colone['COLUMN_NAME'] . "` = b.`" . $colone['COLUMN_NAME'] . "`";
+                    INNER JOIN `".$this->schema_delete."`.`" . self::PREFIX . $this->main_field[$colone['COLUMN_NAME']] . "` b ON a.`" . $colone['COLUMN_NAME'] . "` = b.`" . $colone['COLUMN_NAME'] . "`";
 
                     $data = $db->sql_fetch_yield($sql);
-
+                    $this->log($sql);
+                    
 //version 1
                     /*
                       foreach ($data as $line) {
@@ -367,11 +376,9 @@ class PmaCliDraining
                       }
                      */
 
-
-
                     //version 2 faster
                     $have_data = false;
-                    $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table . "` (" . $primary_keys . ") VALUES ";
+                    $sql = "INSERT IGNORE INTO `".$this->schema_delete."`.`" . self::PREFIX . $table . "` (" . $primary_keys . ") VALUES ";
                     foreach ($data as $line) {
                         $have_data = true;
                         $sql .= "('" . implode("','", $line) . "'),";
@@ -380,8 +387,6 @@ class PmaCliDraining
 
                     if ($have_data) {
                         $sql = rtrim($sql, ",");
-
-
 
                         $db->sql_query($sql);
                         $this->setAffectedRows($table);
@@ -516,7 +521,7 @@ class PmaCliDraining
 
                 do {
                     $sql = "DELETE a FROM " . $table . " a
-                    INNER JOIN " . self::PREFIX . $table . " as b ON  " . implode(" AND ", $join);
+                    INNER JOIN `".$this->schema_delete."`." . self::PREFIX . $table . " as b ON  " . implode(" AND ", $join);
 
                     $db->sql_query($sql);
                     $this->log($sql);
@@ -528,7 +533,7 @@ class PmaCliDraining
                 } while (end($db->query)['rows'] == self::NB_DELETE);
 
 
-                $sql = "TRUNCATE TABLE `" . self::PREFIX . $table . "`";
+                $sql = "TRUNCATE TABLE `".$this->schema_delete."`.`" . self::PREFIX . $table . "`";
                 $db->sql_query($sql);
             }
         }
@@ -563,7 +568,7 @@ class PmaCliDraining
                 }
 
                 $sql = "DELETE a FROM " . substr($table, strlen(self::PREFIX)) . " a
-                    INNER JOIN " . $table . " b ON " . implode(" AND ", $join) . ";";
+                    INNER JOIN `".$this->schema_delete."`.`" . $table . "` b ON " . implode(" AND ", $join) . ";";
 
                 $db->sql_query($sql);
                 $this->log($sql);
