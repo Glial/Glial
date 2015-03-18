@@ -215,7 +215,18 @@ class Ssh
     public function whereis($cmd)
     {
         $paths = $this->exec("whereis " . $cmd);
-        return trim(explode(" ", trim(explode(":", $paths)[1]))[0]);
+        
+        
+        debug($paths);
+        
+        $tmp = trim(explode(" ", trim(explode(":", $paths)[1]))[0]);
+        
+        if (empty($tmp))
+        {
+            throw new \Exception("GLI-059 : Impossible to find : ".$cmd."\n return : ".$paths);
+        }
+        
+        return $tmp;
     }
 
     

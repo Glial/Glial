@@ -71,6 +71,11 @@ class Validation
             return false;
         }
     }
+    
+    function decimal($elem)
+    {
+        return true;
+    }
 
     function no_numeric($elem)
     {

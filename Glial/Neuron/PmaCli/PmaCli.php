@@ -668,6 +668,8 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
         $this->updateServerList();
 
 
+        
+        
         $this->view = false;
         $previous_data = $this->sql_to_array();
 

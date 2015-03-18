@@ -99,7 +99,6 @@ class PmaCliDraining
                 echo Color::getColoredString("--No Primary key found : '" . $table . "'", 'black', 'yellow', 'bold') . PHP_EOL;
             }
 
-
             $this->table_in_error[] = $table;
             return false;
         }
@@ -116,7 +115,6 @@ class PmaCliDraining
         $sql .= implode(",", $line);
         $sql .= ", PRIMARY KEY (" . implode(",", $index) . "));";
         $db->sql_query($sql);
-
 
         //$this->log($sql);
         $sql = "TRUNCATE TABLE `".$this->schema_delete."`.`" . self::PREFIX . $table . "`;";

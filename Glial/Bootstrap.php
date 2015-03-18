@@ -52,11 +52,15 @@ FactoryController::addDi("config", $config);
 
 $developer = $config->get("developer");
 
-if ((in_array($_SERVER['REMOTE_ADDR'] , $developer['ip']) || ENVIRONEMENT ) && ! IS_CLI)
-{
-    define("DEBUG", true);
-    error_reporting(-1);
-    ini_set('display_errors', 1);
+
+if (!IS_CLI) {
+    if (in_array($_SERVER['REMOTE_ADDR'], $developer['ip']) || ENVIRONEMENT) {
+        define("DEBUG", true);
+        error_reporting(-1);
+        ini_set('display_errors', 1);
+    } else {
+        define("DEBUG", false);
+    }
 }
 else
 {
@@ -170,8 +174,7 @@ if (IS_CLI) {
 
 
 
-    if (AUTH_ACTIVE)
-    {
+    if (AUTH_ACTIVE) {
         $auth = new Auth();
         $auth->setInstance($_DB->sql(DB_DEFAULT), "user_main", array("login", "password"));
         $auth->setFctToHashCookie(function ($password) {
@@ -179,7 +182,6 @@ if (IS_CLI) {
         });
         $auth->authenticate(false);
         FactoryController::addDi("auth", $auth);
-
     }
 
     (ENVIRONEMENT) ? $_DEBUG->save("User connexion") : "";
@@ -187,12 +189,12 @@ if (IS_CLI) {
     $_SYSTEM['controller'] = \Glial\Utility\Inflector::camelize($url['controller']);
     $_SYSTEM['action'] = $url['action'];
     $_SYSTEM['param'] = $url['param'];
-    
+
 
     $acl = new Acl(CONFIG . "acl.config.ini");
-    
-    
-    
+
+
+
     FactoryController::addDi("acl", $acl);
 
     $js = new Javascript();
@@ -200,25 +202,24 @@ if (IS_CLI) {
 
 
     if ($acl->checkIfResourceExist($_SYSTEM['controller'] . "/" . $_SYSTEM['action'])) {
-        
-        
-        if(AUTH_ACTIVE)
-        {
-        if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller'] . "/" . $_SYSTEM['action'])) {
-            if ($auth->getAccess() == 1) {
 
-                $url = "user/connection/";
-                $msg = $_SYSTEM['controller'] . "/" . $_SYSTEM['action'] . "<br />" . __("You have to be registered to acces to this page");
-            } else {
-                //die("here");
-                $url = "home/index/";
-                $msg = $_SYSTEM['controller'] . "/" . $_SYSTEM['action'] . "<br />" . __("Your rank to this website is not enough to acess to this page");
+
+        if (AUTH_ACTIVE) {
+            if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller'] . "/" . $_SYSTEM['action'])) {
+                if ($auth->getAccess() == 1) {
+
+                    $url = "user/connection/";
+                    $msg = $_SYSTEM['controller'] . "/" . $_SYSTEM['action'] . "<br />" . __("You have to be registered to acces to this page");
+                } else {
+                    //die("here");
+                    $url = "home/index/";
+                    $msg = $_SYSTEM['controller'] . "/" . $_SYSTEM['action'] . "<br />" . __("Your rank to this website is not enough to acess to this page");
+                }
+
+                set_flash("error", __("Acess denied"), __("Acess denied") . " : " . $msg);
+                header("location: " . LINK . $url);
+                exit;
             }
-
-            set_flash("error", __("Acess denied"), __("Acess denied") . " : " . $msg);
-            header("location: " . LINK . $url);
-            exit;
-        }
         }
     } else {
         set_flash("error", __("Error 404"), __("Page not found") . " : " . __("Sorry, the page you requested : \"" . $_SYSTEM['controller'] . "/" . $_SYSTEM['action'] . "\"is not on this server. Please contact us if you have questions or concerns"));
@@ -269,7 +270,7 @@ if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
             $j += $value['rows'];
             $k++;
         }
-        
+
         echo "<tr><td></td><td></td><td></td><td><b>Total</b></td><td>" . $j . "</td><td><b>" . $i . "</b></td></tr>";
         echo "</table>";
     }
