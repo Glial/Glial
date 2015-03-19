@@ -23,12 +23,12 @@ http://www.glial-framework-php.org/
 
 <h3>To install as a library</h3>
 
-Simply add a dependency on glial/glial to your project's composer.json file if you use Composer to manage the dependencies of your project. Here is a minimal example of a composer.json file that just defines a development-time dependency on Glial 2.1:
+Simply add a dependency on glial/glial to your project's composer.json file if you use Composer to manage the dependencies of your project. Here is a minimal example of a composer.json file that just defines a development-time dependency on Glial 3.2:
 
 ```json
 {
     "require": {
-        "glial/glial": "3.1.*"
+        "glial/glial": "3.2.*"
     }
 }
 ```
