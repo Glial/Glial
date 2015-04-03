@@ -179,7 +179,7 @@ class Validation
 
 
 
-        $sql = "SELECT count(1) as cpt FROM " . $table . " WHERE `" . $field . "` = '" . $elem['value'] . "'";
+        $sql = "SELECT count(1) as cpt FROM `" . $table . "` WHERE `" . $field . "` = '" . $elem['value'] . "'";
 
         $bb = $this->db->sql_query($sql);
         $okp = $this->db->sql_to_array($bb);

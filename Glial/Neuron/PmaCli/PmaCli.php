@@ -452,8 +452,14 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
             $dblink = $this->di['db']->sql($db);
 
 
+            
 
             if ($dblink->is_connected) {
+                
+                
+                
+                
+                
                 $MS->setInstance($dblink);
                 $master = $MS->isMaster();
                 $slave = $MS->isSlave();
@@ -474,8 +480,8 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
                   $value =  (int) $status['VARIABLE_VALUE'];
                   $influxDB->insert(str_replace('_','-', $db) . "." . $status['VARIABLE_NAME'], ['value' => $value]);
                   }
-
-                 */
+*/
+                 
             } else {
 
                 $server_on = 0;

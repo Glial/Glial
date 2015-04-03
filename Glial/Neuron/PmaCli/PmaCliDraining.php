@@ -43,14 +43,13 @@ class PmaCliDraining
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
-
+        
         // to not affect history server, read : https://mariadb.com/kb/en/mariadb/documentation/replication/standard-replication/selectively-skipping-replication-of-binlog-events/
         $sql = "SET @@skip_replication = ON;";
         $db->sql_query($sql);
 
         $sql = "CREATE DATABASE IF NOT EXISTS " . $this->schema_delete;
         $db->sql_query($sql);
-
 
         $this->view = false;
 

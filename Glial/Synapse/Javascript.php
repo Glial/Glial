@@ -7,17 +7,35 @@ class Javascript
 
     public $javascript = array();
     public $code_javascript = array();
+    public $code_js_from = array();
 
-    final function addJavascript($js)
+    function __construct()
     {
-        if (is_array($js)) {
-            $this->javascript = array_merge($js, $this->javascript);
-        } else {
-            $this->javascript[] = $js;
+        $jss = explode(",", \GLIAL_JAVASCRIPT);
+
+        foreach ($jss as $js) {
+            $this->addJavascript($js, "Loaded from GLIAL_JAVASCRIPT (configuration/javascript.config.php)");
         }
     }
-    
-    
+
+    final function addJavascript($js, $file = "")
+    {
+        if (empty($file))
+        {
+            $file = \Glial\Synapse\Basic::from();
+        }
+        
+        if (is_array($js)) {
+            foreach ($js as $line) {
+                $this->add_js($line, $file);
+            }
+        } else {
+            $this->add_js($js, $file);
+        }
+        
+        debug($this);
+    }
+
     public function code_javascript($js)
     {
         $this->code_javascript[] = $js;
@@ -28,15 +46,21 @@ class Javascript
         $js = "\n<!-- start library javascript -->\n";
 
         // to prevent problem
-        $this->javascript = array_unique($this->javascript);
+        //$this->javascript = array_unique($this->javascript);
 
+
+        $i = 0;
         foreach ($this->javascript as $script) {
 
             if (stristr($script, 'http://') || stristr($script, 'https://')) {
-                $js .="<script type=\"text/javascript\" src=\"" . $script . "\"></script>\n";
+                $js .="<script type=\"text/javascript\" src=\"" . $script . "\"></script>";
             } else {
-                $js .="<script type=\"text/javascript\" src=\"" . JS . $script . "\"></script>\n";
+                $js .="<script type=\"text/javascript\" src=\"" . JS . $script . "\"></script>";
             }
+
+
+            $js .="<!-- " . $this->code_js_from[$i] . " -->\n";
+            $i++;
         }
 
         $js .= "<!-- end library javascript -->\n<script type=\"text/javascript\">\n";
@@ -44,10 +68,20 @@ class Javascript
             $js .= $script;
         }
 
-        $js .= "</script>\n";
-
+        $js .= "</script>";
 
         return $js;
+    }
+
+    final function add_js($js, $file)
+    {
+
+        
+        
+        if (!in_array($js, $this->javascript)) {
+            $this->javascript[] = $js;
+            $this->code_js_from[] = $file;
+        }
     }
 
 }

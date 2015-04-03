@@ -48,10 +48,11 @@ class Form
         return "<input id=\"" . $id . "\" name=\"" . $name . "\" " . $extra . " />" . $error;
     }
 
-    static public function select($table, $field, $data, $default_id = "", $options = array(), $ajax = 0, $indice = -1)
+    static public function select($table, $field, $data, $default_id = "", $options = array(), $indice = -1)
     {
-        $indice = self::getIndice($table, $field);
-
+        if ($indice === -1) {
+            $indice = self::getIndice($table, $field);
+        }
         if (!empty($_SESSION['ERROR'][$table][$field])) {
             $error = " <span class=\"error\">" . $_SESSION['ERROR'][$table][$field] . "</span>";
             $class = " error";
@@ -63,8 +64,8 @@ class Form
 
 
         $extra = self::formatOptions($options);
-        
-        
+
+
         $ret = "";
         if (!self::$ajax) {
             if ($indice != -1) {
@@ -169,8 +170,8 @@ class Form
 
         if ($indice != -1) {
 //return "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" class=\"" . $classo . "text" . $class . "\" type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "]\" value=\"" . $value . "\" />" . $error;
-            return "<input id=\"" . $table . "-" . $indice."-" . $field . "_auto\" $extra type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "_auto]\" value=\"" . $valueauto . "\" />"
-                    . "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" name=\"" . $table . "[" . $indice. "][" . $field  . "]\" class=\"auto\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
+            return "<input id=\"" . $table . "-" . $indice . "-" . $field . "_auto\" $extra type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "_auto]\" value=\"" . $valueauto . "\" />"
+                    . "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" name=\"" . $table . "[" . $indice . "][" . $field . "]\" class=\"auto\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
         } else {
             return "<input id=\"" . $table . "-" . $field . "_auto\" $extra type=\"text\" name=\"" . $table . "[" . $field . "_auto]\" value=\"" . $valueauto . "\" />"
                     . "<input id=\"" . $table . "-" . $field . "\" name=\"" . $table . "[" . $field . "]\" class=\"hidden\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
@@ -191,7 +192,5 @@ class Form
     {
         self::$ajax = ($val === true) ? true : false;
     }
-    
-    
 
 }
