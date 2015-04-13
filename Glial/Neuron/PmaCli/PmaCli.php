@@ -710,10 +710,10 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
         while (true) {
 
             $i++;
-            passthru("php ".ROOT."application/webroot/index.php pma_cli all");
+            passthru("php ".ROOT."/application/webroot/index.php pma_cli all");
 
             if ($i % 10 === 0) {
-                passthru("php ".ROOT."application/webroot/index.php pma_cli updateServerList");
+                passthru("php ".ROOT."/application/webroot/index.php pma_cli updateServerList");
                 $i = 0;
             }
 
