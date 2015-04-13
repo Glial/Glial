@@ -104,7 +104,6 @@ trait PmaCliFailOver
             }
 
             
-            
             $next_thread = $this->connection_name[$key_next_thread];
                     
             debug($next_thread);
@@ -145,7 +144,7 @@ trait PmaCliFailOver
     public function ha()
     {
         while (true) {
-            passthru("php /data/www/photobox/application/webroot/index.php pma_cli checkReplication");
+            passthru("php ".ROOT."application/webroot/index.php pma_cli checkReplication");
             sleep(2);
         }
     }

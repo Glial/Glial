@@ -155,7 +155,7 @@ trait PmaCliServerInfos
     public function pushToInflux()
     {
         $client = new \crodas\InfluxPHP\Client(
-                "dev.metrics.noc2.photobox.com", 8086, "root", "root"
+                "url", 8086, "root", "root"
         );
         $influxDB = $client->mysqlmetrics;
 
