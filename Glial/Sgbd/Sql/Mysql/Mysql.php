@@ -212,7 +212,7 @@ class Mysql extends Sql
 
     public function getIndexUnique($table_name)
     {
-        $sql = "show keys from `" . $table_name . "` in " . $this->db;
+        $sql = "show keys from `" . $table_name . "` in `" . $this->db."`";
         $res = $this->_query($sql);
 
         if (!$res) {
