@@ -49,6 +49,10 @@ class Javascript
         //$this->javascript = array_unique($this->javascript);
 
 
+        $js = "\n<script type=\"text/javascript\">\n";
+        $js .= "var LINK ='".LINK."';\n";   
+        $js .= "</script>\n";
+        
         $i = 0;
         foreach ($this->javascript as $script) {
 
