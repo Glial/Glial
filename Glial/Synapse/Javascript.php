@@ -50,7 +50,7 @@ class Javascript
 
 
         $js = "\n<script type=\"text/javascript\">\n";
-        $js .= "var LINK ='".LINK."';\n";   
+        $js .= "var LINK ='".GLIAL_LINK."';\n";   
         $js .= "</script>\n";
         
         $i = 0;
