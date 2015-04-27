@@ -10,15 +10,11 @@ namespace Glial\Neuron\PmaCli;
 
 use \Glial\Cli\Color;
 
-class PmaCliDraining
-{
+class PmaCliDraining {
 
-    const NB_DELETE = 800; //nombre de delete en mÃªme temps
-    const NB_PROCESS = 1;
-    const NB_THREAD = 1; //must be below that the number of CPU
-    const DEBUG = false;
-    const COLOR = true;
-    const PREFIX = "DELETE_";
+    public $debug = false;
+    public $color = true;
+    public $prefix = "DELETE_";
 
     public $link_to_purge;
     public $schema_to_purge;
@@ -30,20 +26,17 @@ class PmaCliDraining
     private $table_in_error = array();
     private $di = array();
     private $rows_to_delete = array();
+    public $foreign_keys = array();
+    private $table_impacted = array();
 
-    function __construct($di)
-    {
+    function __construct($di) {
         $this->di['db'] = $di;
-
-        // set @@skip_replication = ON
     }
 
-    public function start()
-    {
+    public function start() {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
-        
         // to not affect history server, read : https://mariadb.com/kb/en/mariadb/documentation/replication/standard-replication/selectively-skipping-replication-of-binlog-events/
         $sql = "SET @@skip_replication = ON;";
         $db->sql_query($sql);
@@ -51,15 +44,17 @@ class PmaCliDraining
         $sql = "CREATE DATABASE IF NOT EXISTS " . $this->schema_delete;
         $db->sql_query($sql);
 
-        $this->view = false;
-
-
         $this->rows_to_delete = array();
-        //create temp table
+
         $this->createAllTemporaryTable();
 
         //get id to delete
         $this->init();
+        
+        
+
+        //feed table in the right order to delete later
+        $this->feedDeleteTableWithFk();
 
         //delete items
         $temp = $this->rows_to_delete;
@@ -71,30 +66,29 @@ class PmaCliDraining
         }
 
         if (!empty($this->rows_to_delete[$this->main_table])) {
-
-            $this->delete(1);
-            $this->deleteOther();
+            $this->delete();
         }
 
+        $db->sql_close();
+        
+        /*
+        debug($this->rows_to_delete);
+        debug($db->query);
+        exit;
+        /***/
         return $this->rows_to_delete;
     }
 
-    public function createTemporaryTable($table)
-    {
+    public function createTemporaryTable($table) {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
-
-
-        //$sql = "DROP TABLE IF EXISTS `" . self::PREFIX . $table . "`;";
-        //$db->sql_query($sql);
-        //$this->log($sql);
 
         $fields = $this->getTypeOfPrimaryKey($table);
 
         if (count($fields) === 0) {
-            //throw new \Exception('GLI-071 : No primary key found'); 
+            throw new \Exception('GLI-071 : No primary key found');
 
-            if (self::DEBUG) {
+            if ($this->debug) {
                 echo Color::getColoredString("--No Primary key found : '" . $table . "'", 'black', 'yellow', 'bold') . PHP_EOL;
             }
 
@@ -110,19 +104,18 @@ class PmaCliDraining
             $index[] = "`" . $field['name'] . "`";
         }
 
-        $sql = "CREATE TABLE IF NOT EXISTS `".$this->schema_delete."`.`" . self::PREFIX . $table . "`(";
+        $sql = "CREATE TABLE IF NOT EXISTS `" . $this->schema_delete . "`.`" . $this->prefix . $table . "`(";
         $sql .= implode(",", $line);
         $sql .= ", PRIMARY KEY (" . implode(",", $index) . "));";
         $db->sql_query($sql);
 
         //$this->log($sql);
-        $sql = "TRUNCATE TABLE `".$this->schema_delete."`.`" . self::PREFIX . $table . "`;";
+        $sql = "DELETE FROM `" . $this->schema_delete . "`.`" . $this->prefix . $table . "`;";
         $db->sql_query($sql);
         //$this->log($sql);
     }
 
-    public function init()
-    {
+    public function init() {
         $this->view = false;
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
@@ -131,30 +124,33 @@ class PmaCliDraining
         $pri = $this->getPrimaryKey($this->main_table);
         $primary_key = "`" . implode('`,`', $pri) . "`";
 
-        $sql = "INSERT INTO `".$this->schema_delete."`.`" . self::PREFIX . $this->main_table . "`  SELECT " . $primary_key . " FROM `" . $this->main_table . "`
-                WHERE " . $this->init_where . ";"; // LOCK IN SHARE MODE
+        $sql = "SELECT " . $primary_key . " FROM `" . $this->main_table . "` WHERE " . $this->init_where . ";"; // LOCK IN SHARE MODE
+        $res = $db->sql_query($sql);
+        $data = $db->sql_fetch_yield($sql);
 
-        $db->sql_query($sql);
         $this->log($sql);
 
-        $this->setAffectedRows($this->main_table);
+        $have_data = false;
 
-        if (empty($this->rows_to_delete[$this->main_table])) {
-
-            return $this->rows_to_delete;
+        $sql = "INSERT IGNORE INTO `" . $this->schema_delete . "`.`" . $this->prefix . $this->main_table . "` (" . $primary_key . ") VALUES ";
+        foreach ($data as $line) {
+            $have_data = true;
+            $sql .= "('" . implode("','", $line) . "'),";
         }
 
-        $this->feedDeleteTableWithJoin();
-        $this->feedDeleteTableWithFk();
-
-        if (self::DEBUG) {
-            echo Color::getColoredString("--Table without primary key", 'grey', 'red') . PHP_EOL;
+        if ($have_data) {
+            $sql = rtrim($sql, ",");
+            $db->sql_query($sql);
+            $this->setAffectedRows($this->main_table);
+            $this->log($sql);
+        } else {
+            $this->rows_to_delete[$this->main_table] = 0;
+            return $this->rows_to_delete;
         }
     }
 
-    public function feedDeleteTableWithFk()
-    {
-        if (self::DEBUG) {
+    public function feedDeleteTableWithFk() {
+        if ($this->debug) {
             echo "--###################################################################" . PHP_EOL;
             echo "--##################### FEED FROM FK ################################" . PHP_EOL;
             echo "--###################################################################" . PHP_EOL;
@@ -163,53 +159,66 @@ class PmaCliDraining
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
-        $table_to_order = $this->getForeignKeys();
-        $list_tables = $this->orderBy($table_to_order, "ASC");
+        $list_tables = $this->getOrderBy();
 
-        //debug($list_tables);
+        $tables_impacted = $this->getAffectedTables();
 
         foreach ($list_tables as $sub_array) {
 
             foreach ($sub_array as $table_name) {
+
+                if ($table_name === $this->main_table) {
+                    continue;
+                }
+
                 $sql = "SELECT * FROM `information_schema`.`KEY_COLUMN_USAGE` "
                         . "WHERE CONSTRAINT_SCHEMA ='" . $this->schema_to_purge . "' "
                         . "AND REFERENCED_TABLE_SCHEMA='" . $this->schema_to_purge . "' "
                         . "AND TABLE_NAME ='" . $table_name . "';";
 
                 $res = $db->sql_query($sql);
-                $this->log($sql . "\n");
-                //$this->log($sql);
+                $this->log($sql);
 
-                while ($ob = $db->sql_fetch_object($res)) {
+                $fks = $db->sql_to_array($res);
 
-                    /*
-                      if (in_array($ob->TABLE_NAME, $this->table_in_error)) {
-                      continue;
-                      } */
+                //get virtual FK and merge to real FK
+                if (!empty($this->foreign_keys[$this->schema_to_purge][$table_name])) {
+                    foreach ($this->foreign_keys[$this->schema_to_purge][$table_name] as $constraint_column => $line) {
+                        $tab = explode("-", $line);
+
+                        $tmp = [];
+
+                        $tmp['REFERENCED_TABLE_SCHEMA'] = $tab[0];
+                        $tmp['REFERENCED_TABLE_NAME'] = $tab[1];
+                        $tmp['REFERENCED_COLUMN_NAME'] = $tab[2];
+                        $tmp['COLUMN_NAME'] = $constraint_column;
+
+                        $fks[] = $tmp;
+                    }
+                }
+
+
+                foreach ($fks as $fk) {
+                    
+                    //don't take in consideration the table not impacted by cleaner
+                    if (! in_array($fk['REFERENCED_TABLE_NAME'], $tables_impacted)) {
+                        continue;
+                    }
 
                     $pri = $this->getPrimaryKey($table_name);
                     $primary_key = "a.`" . implode('`,a.`', $pri) . "`";
                     $primary_keys = "`" . implode('`,`', $pri) . "`";
 
-
-                    $sql = "SELECT " . $primary_key . " FROM `" . $table_name . "` a
-                    INNER JOIN `".$this->schema_delete."`.`" . self::PREFIX . $ob->REFERENCED_TABLE_NAME . "` b ON b.`" . $ob->REFERENCED_COLUMN_NAME . "` = a.`" . $ob->COLUMN_NAME . "`";
+                    $sql = "SELECT " . $primary_key . " FROM `" . $this->schema_to_purge . "`.`" . $table_name . "` a
+                    INNER JOIN `" . $this->schema_delete . "`.`" . $this->prefix . $fk['REFERENCED_TABLE_NAME'] . "` b ON b.`" . $fk['REFERENCED_COLUMN_NAME'] . "` = a.`" . $fk['COLUMN_NAME'] . "`";
                     $data = $db->sql_fetch_yield($sql);
 
-                    //version 1
-                    /*
-                      foreach ($data as $line) {
-                      $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table_name . "` (" . $primary_keys . ") VALUES ('" . implode("','", $line) . "')";
-                      $db->sql_query($sql);
-                      $this->setAffectedRows($table_name);
-                      $this->log($sql);
-                      } */
-
-                    //version 2 faster
+                    $this->log($sql);
 
                     $have_data = false;
-                    $sql = "INSERT IGNORE INTO `".$this->schema_delete."`.`" . self::PREFIX . $table_name . "` (" . $primary_keys . ") VALUES ";
+                    $sql = "INSERT IGNORE INTO `" . $this->schema_delete . "`.`" . $this->prefix . $table_name . "` (" . $primary_keys . ") VALUES ";
                     foreach ($data as $line) {
+
                         $have_data = true;
                         $sql .= "('" . implode("','", $line) . "'),";
                     }
@@ -225,17 +234,16 @@ class PmaCliDraining
         }
     }
 
-    public function getPrimaryKey($table)
-    {
+    public function getPrimaryKey($table) {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
         $sql = "SHOW INDEX FROM `" . $table . "` WHERE Key_name ='PRIMARY'";
         $res = $db->sql_query($sql);
+        
+        $this->log($sql);
 
-        //$this->log($sql);
-
-        if ($db->sql_num_rows($res) == "0") { // should be == 1 have to fix it for PROD_LOT_ITEM
+        if ($db->sql_num_rows($res) == "0") {
             throw new \Exception("GLI-067 : this table '" . $table . "' haven't primary key !");
         } else {
 
@@ -249,8 +257,7 @@ class PmaCliDraining
         }
     }
 
-    public function getTypeOfPrimaryKey($table)
-    {
+    public function getTypeOfPrimaryKey($table) {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
@@ -277,140 +284,30 @@ class PmaCliDraining
         }
     }
 
-    public function createAllTemporaryTable()
-    {
-        $db = $this->di['db']->sql($this->link_to_purge);
-        $db->sql_select_db($this->schema_to_purge);
-
-        foreach ($db->getListTable()['table'] as $table) {
-            if (substr($table, 0, 7) !== self::PREFIX) {
-                $this->createTemporaryTable($table);
-            }
-        }
-    }
-
-    public function feedDeleteTableWithJoin()
-    {
-
-        if (self::DEBUG) {
-            echo "###################################################################" . PHP_EOL;
-            echo "##################### FEED FROM FIELD #############################" . PHP_EOL;
-            echo "###################################################################" . PHP_EOL;
-        }
-
-
-        $db = $this->di['db']->sql($this->link_to_purge);
-        $db->sql_select_db($this->schema_to_purge);
-
-
-        $in_clause = "'" . implode("','", array_keys($this->main_field)) . "'";
-
-
-        $table_to_purge = array_merge($this->table_to_purge, $db->getListTable()['table']);
-
-        //debug($table_to_purge);
-
-        $table_to_purge = array_unique($table_to_purge);
-
-        //debug($table_to_purge);
-
-        foreach ($table_to_purge as $table) {
-
-            if ($table === $this->main_table) { //prevent duplicate key on feed of father table 
-                continue;
-            }
-
-            if (substr($table, 0, strlen(self::PREFIX)) == self::PREFIX) {
-                continue;
-            }
-
-
-            if (in_array($table, $this->table_in_error)) {
-                continue;
-            }
-
-            $sql = "SELECT * "
-                    . "FROM `information_schema`.`COLUMNS` "
-                    . "WHERE TABLE_SCHEMA='" . $this->schema_to_purge . "' "
-                    . "AND TABLE_NAME ='" . $table . "' "
-                    . "AND COLUMN_NAME in (" . $in_clause . ");";
-
-            $colones = $db->sql_fetch_yield($sql);
-            
-            $this->log($sql);
-            
-            
-            
-
-            foreach ($colones as $colone) {
-                
-                
-                //echo "FOUND $table ".$colone['COLUMN_NAME']."\n";
-                
-                
-                if (self::PREFIX . $table != self::PREFIX . $this->main_field[$colone['COLUMN_NAME']]) {
-
-
-                    $pri = $this->getPrimaryKey($table);
-                    $primary_key = "a.`" . implode('`,a.`', $pri) . "`";
-                    $primary_keys = "`" . implode('`,`', $pri) . "`";
-
-                    //replacing insert into to prevent lock on table used in select
-
-                    $sql = "SELECT " . $primary_key . " FROM `" . $table . "` a
-                    INNER JOIN `".$this->schema_delete."`.`" . self::PREFIX . $this->main_field[$colone['COLUMN_NAME']] . "` b ON a.`" . $colone['COLUMN_NAME'] . "` = b.`" . $colone['COLUMN_NAME'] . "`";
-
-                    $data = $db->sql_fetch_yield($sql);
-                    $this->log($sql);
-                    
-//version 1
-                    /*
-                      foreach ($data as $line) {
-                      $sql = "INSERT IGNORE INTO `" . self::PREFIX . $table . "` (" . $primary_keys . ") VALUES ('" . implode("','", $line) . "')";
-                      $db->sql_query($sql);
-                      $this->setAffectedRows($table);
-                      $this->log($sql);
-                      }
-                     */
-
-                    //version 2 faster
-                    $have_data = false;
-                    $sql = "INSERT IGNORE INTO `".$this->schema_delete."`.`" . self::PREFIX . $table . "` (" . $primary_keys . ") VALUES ";
-                    foreach ($data as $line) {
-                        $have_data = true;
-                        $sql .= "('" . implode("','", $line) . "'),";
-                    }
-
-
-                    if ($have_data) {
-                        $sql = rtrim($sql, ",");
-
-                        $db->sql_query($sql);
-                        $this->setAffectedRows($table);
-                        $this->log($sql);
-                    }
-
-
-                    // INSERT INGORE INTO `DELETE_PROD_ITEMS` (`ID_PROD_ITEM`) VALUES ('364157897')
+    public function createAllTemporaryTable() {
+        $tables = $this->getOrderBy();
+        foreach ($tables as $table2) {
+            foreach ($table2 as $table) {
+                if (substr($table, 0, 7) !== $this->prefix) {
+                    $this->createTemporaryTable($table);
                 }
             }
         }
     }
 
-    public function log($sql)
-    {
-        if (self::DEBUG) {
+    public function log($sql) {
+        if ($this->debug) {
 
             $db = $this->di['db']->sql($this->link_to_purge);
             $db->sql_select_db($this->schema_to_purge);
 
-            if (self::COLOR) {
+            if ($this->color) {
                 echo \SqlFormatter::highlight($sql);
             } else {
                 echo \SqlFormatter::format($sql, false) . PHP_EOL;
             }
 
-            if (self::COLOR) {
+            if ($this->color) {
                 echo Color::getColoredString("--Row affected : " . end($db->query)['rows'] . " - Time : " . end($db->query)['time'], 'black', 'green', 'bold') . "\n";
             } else {
                 echo "--Row affected : " . end($db->query)['rows'] . PHP_EOL;
@@ -418,13 +315,11 @@ class PmaCliDraining
         }
     }
 
-    public function getTableError()
-    {
+    public function getTableError() {
         return $this->table_in_error;
     }
 
-    public function getForeignKeys()
-    {
+    private function getForeignKeys() {
         //get list of FK and put in array
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
@@ -433,10 +328,10 @@ class PmaCliDraining
                 . "WHERE CONSTRAINT_SCHEMA ='" . $this->schema_to_purge . "' "
                 . "AND REFERENCED_TABLE_SCHEMA='" . $this->schema_to_purge . "' "
                 . "AND REFERENCED_TABLE_NAME IS NOT NULL "
-                . "AND TABLE_NAME not like '" . self::PREFIX . "%';";
+                . "AND TABLE_NAME not like '" . $this->prefix . "%';";
 
         $res = $db->sql_query($sql);
-        if (self::DEBUG) {
+        if ($this->debug) {
             $this->log($sql);
         }
 
@@ -449,9 +344,41 @@ class PmaCliDraining
         return $order_to_feed;
     }
 
-    public function orderBy($array, $order = "ASC")
-    {
+    private function getVirtualForeignKeys() {
+
+        $order_to_feed = array();
+
+        foreach ($this->foreign_keys as $db => $tab_table) {
+            foreach ($tab_table as $constraint_table => $lines) {
+
+                foreach ($lines as $line) {
+                    $tab_referenced = explode('-', $line);
+                    $order_to_feed[$tab_referenced[1]][] = $constraint_table;
+                }
+            }
+        }
+        return $order_to_feed;
+    }
+
+    private function getOrderBy($order = 'ASC') {
+        $real_fk = $this->getForeignKeys();
+        $virtual_fk = $this->getVirtualForeignKeys();
+
+        $fks = array_merge_recursive($real_fk, $virtual_fk);
+        $tmp = $fks;
+
+        foreach ($tmp as $key => $tab) {
+            $fks[$key] = array_unique($fks[$key]);
+        }
+
+        //remove all tables with no father from $this->main_table
+        $fks = $this->removeTableNotImpacted($fks);
+
         $level = array();
+        $level[] = $this->table_to_purge;
+
+        $array = $fks;
+
         $i = 0;
         while (count($array) != 0) {
 
@@ -486,21 +413,17 @@ class PmaCliDraining
         }
 
         if ($order === "ASC") {
-            sort($level);
-        } elseif ($order === "DESC") {
-            rsort($level);
+            krsort($level);
+        } else {
+            ksort($level);
         }
-
         return $level;
     }
 
-    public function delete($thread_number)
-    {
+    public function delete() {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
-
-        $table_to_order = $this->getForeignKeys();
-        $list_tables = $this->orderBy($table_to_order, "DESC");
+        $list_tables = $this->getOrderBy("DESC");
 
         foreach ($list_tables as $levels) {
             foreach ($levels as $table) {
@@ -515,29 +438,23 @@ class PmaCliDraining
                 }
 
                 $field = implode(" ", $join);
+                $sql = "DELETE a FROM " . $table . " a
+                    INNER JOIN `" . $this->schema_delete . "`." . $this->prefix . $table . " as b ON  " . implode(" AND ", $join);
 
-                do {
-                    $sql = "DELETE a FROM " . $table . " a
-                    INNER JOIN `".$this->schema_delete."`." . self::PREFIX . $table . " as b ON  " . implode(" AND ", $join);
+                $db->sql_query($sql);
+                $this->log($sql);
 
-                    $db->sql_query($sql);
-                    $this->log($sql);
+                if (end($db->query)['rows'] == "-1") {
+                    throw new \Exception('PMACLI-666 : Foreign key error, have to update lib of cleaner or order of table set in param');
+                }
 
-
-                    if (end($db->query)['rows'] == "-1") {
-                        throw new \Exception('PMACLI-666 : Foreign key error, have to update lib of cleaner or order of table set in param');
-                    }
-                } while (end($db->query)['rows'] == self::NB_DELETE);
-
-
-                $sql = "TRUNCATE TABLE `".$this->schema_delete."`.`" . self::PREFIX . $table . "`";
+                $sql = "DELETE FROM `" . $this->schema_delete . "`.`" . $this->prefix . $table . "`";
                 $db->sql_query($sql);
             }
         }
     }
 
-    public function setAffectedRows($table)
-    {
+    public function setAffectedRows($table) {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
@@ -548,29 +465,49 @@ class PmaCliDraining
         }
     }
 
-    public function deleteOther()
-    {
+    public function getAffectedTables() {
+        if (count($this->table_impacted) === 0) {
+            $list_tables = $this->getOrderBy();
 
-        $db = $this->di['db']->sql($this->link_to_purge);
-        $db->sql_select_db($this->schema_to_purge);
-
-        foreach ($db->getListTable()['table'] as $table) {
-            if (substr($table, 0, strlen(self::PREFIX)) === self::PREFIX) {
-
-                $primary_keys = $this->getPrimaryKey($table);
-
-                $join = array();
-                foreach ($primary_keys as $primary_key) {
-                    $join[] = " a.`" . $primary_key . "` = b.`" . $primary_key . "` ";
-                }
-
-                $sql = "DELETE a FROM " . substr($table, strlen(self::PREFIX)) . " a
-                    INNER JOIN `".$this->schema_delete."`.`" . $table . "` b ON " . implode(" AND ", $join) . ";";
-
-                $db->sql_query($sql);
-                $this->log($sql);
+            foreach ($list_tables as $tables) {
+                $this->table_impacted = array_merge($this->table_impacted, $tables);
             }
         }
+        
+        return $this->table_impacted;
     }
+    
+    
+    private function removeTableNotImpacted($fks)
+    {
+        do {
+            $tmp = $fks;
+            $tmp2 = $fks;
 
+            $nbfound = 0;
+            foreach ($fks as $table => $data) {
+                //we want keep main table
+                if (trim($table) == $this->main_table) {
+                    continue;
+                }
+                $found = false;
+
+                foreach ($tmp2 as $data_to_cmp) {
+                    if (in_array($table, $data_to_cmp)) {
+                        $found = true;
+                    }
+                }
+                if (!$found) {
+                    echo "We removed this table (Not a child of : `" . $this->schema_to_purge . "`.`" . $this->main_table . "`) : " . $table . "\n";
+                    unset($tmp2[$table]);
+                    $nbfound++;
+                }
+            }
+            $fks = $tmp2;
+
+            echo str_repeat("-", 80) . "\n";
+        } while ($nbfound != 0);
+        
+        return $tmp2;
+    }
 }
