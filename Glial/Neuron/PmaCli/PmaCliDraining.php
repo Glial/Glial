@@ -84,9 +84,9 @@ class PmaCliDraining {
         $db->sql_select_db($this->schema_to_purge);
 
         $fields = $this->getTypeOfPrimaryKey($table);
-
+        
         if (count($fields) === 0) {
-            throw new \Exception('GLI-071 : No primary key found');
+            throw new \Exception('GLI-071 : No primary key found on table "'.$table.'"');
 
             if ($this->debug) {
                 echo Color::getColoredString("--No Primary key found : '" . $table . "'", 'black', 'yellow', 'bold') . PHP_EOL;
@@ -258,10 +258,12 @@ class PmaCliDraining {
     }
 
     public function getTypeOfPrimaryKey($table) {
+        
+
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
-        $sql = "SELECT COLUMN_TYPE, COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE `TABLE_NAME` = '" . $table . "' AND COLUMN_KEY ='PRI' AND `TABLE_SCHEMA` = '" . $this->schema_to_purge . "'";
+        $sql = "SELECT COLUMN_TYPE, COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE `TABLE_NAME` = '" . $table . "' AND COLUMN_KEY ='PRI' AND `TABLE_SCHEMA` = '" . $this->schema_to_purge . "'";        
         $res = $db->sql_query($sql);
 
         //$this->log($sql);
@@ -498,14 +500,23 @@ class PmaCliDraining {
                     }
                 }
                 if (!$found) {
-                    echo "We removed this table (Not a child of : `" . $this->schema_to_purge . "`.`" . $this->main_table . "`) : " . $table . "\n";
+                    
+                    if($this->debug)
+                    {
+                        echo Color::getColoredString("We removed this table (Not a child of : `" . $this->schema_to_purge . "`.`" . $this->main_table . "`) : " . $table, 'black', 'yellow', 'bold') . PHP_EOL;
+                    }
+                    
                     unset($tmp2[$table]);
                     $nbfound++;
                 }
             }
             $fks = $tmp2;
 
-            echo str_repeat("-", 80) . "\n";
+            if ($this->debug)
+            {
+                echo str_repeat("-", 80) . "\n";
+            }
+            
         } while ($nbfound != 0);
         
         return $tmp2;

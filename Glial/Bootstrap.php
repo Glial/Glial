@@ -163,7 +163,8 @@ if (IS_CLI) {
             $_SYSTEM['param'] = $params;
         }
 
-        cli_set_process_title("glial-" . $_SYSTEM['controller'] . "-" . $_SYSTEM['action']);
+        
+        //cli_set_process_title("glial-" . $_SYSTEM['controller'] . "-" . $_SYSTEM['action']." (".$name.")");
     } else {
 
         throw new InvalidArgumentException('usage : gial <controlleur> <action> [params]');
