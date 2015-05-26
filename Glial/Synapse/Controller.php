@@ -157,8 +157,8 @@ class Controller
             }
         }
 
-
-        (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save($this->controller . "/" . $this->action) : "";
+	//TODO to fix it
+       // (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save($this->controller . "/" . $this->action) : "";
     }
 
     final function display()
