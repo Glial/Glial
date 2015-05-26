@@ -32,8 +32,6 @@ class Javascript
         } else {
             $this->add_js($js, $file);
         }
-        
-        debug($this);
     }
 
     public function code_javascript($js)
