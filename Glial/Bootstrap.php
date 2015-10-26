@@ -50,10 +50,11 @@ FactoryController::addDi("config", $config);
 
 
 
-$developer = $config->get("developer");
+
 
 
 if (!IS_CLI) {
+    $developer = $config->get("developer");
     if (in_array($_SERVER['REMOTE_ADDR'], $developer['ip']) || ENVIRONEMENT) {
         define("DEBUG", true);
         error_reporting(-1);
