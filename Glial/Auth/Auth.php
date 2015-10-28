@@ -307,4 +307,9 @@ class Auth
     {
         return sha1(sha1($password . sha1($login)));;
     }
+
+    static public function hashPassword($login, $password)
+    {
+        return sha1(sha1($password . sha1($login)));;
+    }
 }

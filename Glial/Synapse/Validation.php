@@ -177,7 +177,17 @@ class Validation
     function reference_to($elem, $table, $field)
     {
 
-
+	switch(gettype($elem['value']))
+	{
+		case 'double':
+		case 'integer':
+		case 'string':
+		break;
+	
+		default:
+			throw new \Exception("This type is not supported (only : integer,double,string) : ".gettype($elem['value']." [check, data you set in sql_save]"),80);
+		break;
+	}
 
         $sql = "SELECT count(1) as cpt FROM `" . $table . "` WHERE `" . $field . "` = '" . $elem['value'] . "'";
 

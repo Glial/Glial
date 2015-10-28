@@ -143,10 +143,6 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
                 $sandbox = $ob->ip;
 
 
-
-
-
-
                 /*
                   $data = [];
 
@@ -759,29 +755,20 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
     public function updateServerList()
     {
         $this->view = false;
-
         $db = $this->di['db']->sql(DB_DEFAULT);
-
         $sql = "SELECT * FROM `mysql_server`";
         $servers_mysql = $db->sql_fetch_yield($sql);
-
-
         $all_server = array();
         foreach ($servers_mysql as $mysql) {
             $all_server[$mysql['name']] = $mysql;
         }
-
         Crypt::$key = CRYPT_KEY;
-
 
         $all = array();
         foreach ($this->di['db']->getAll() as $server) {
 
             $all[] = $server;
-
             $info_server = $this->di['db']->getParam($server);
-
-
             $data = array();
 
             if (!empty($all_server[$server])) {
@@ -805,14 +792,12 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
                 $data['mysql_server']['ssh_password'] = Crypt::encrypt($info_server['ssh_password']);
             }
 
-
-
             if (!$db->sql_save($data)) {
                 debug($data);
                 debug($db->sql_error());
                 exit;
             } else {
-//echo $data['mysql_server']['name'] . PHP_EOL;
+                echo $data['mysql_server']['name'] . PHP_EOL;
             }
         }
 

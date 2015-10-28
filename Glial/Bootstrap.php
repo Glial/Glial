@@ -31,7 +31,6 @@ ini_set('APACHE_LOG_DIR', TMP . 'log' . DS);
 use \Glial\Synapse\Config;
 use \Glial\Debug\Debug;
 use \Glial\Synapse\FactoryController;
-use \Glial\Tools\ArrayTools;
 use \Glial\I18n\I18n;
 use \Glial\Acl\Acl;
 use \Glial\Auth\Auth;
@@ -42,15 +41,9 @@ require ROOT . DS . 'vendor/autoload.php';
 
 session_start();
 
-
-
 $config = new Config;
 $config->load(CONFIG);
 FactoryController::addDi("config", $config);
-
-
-
-
 
 
 if (!IS_CLI) {
@@ -89,9 +82,7 @@ spl_autoload_register(function($className) {
     }
 });
 
-
 //$_POST = ArrayTools::array_map_recursive("htmlentities", $_POST);
-
 
 require __DIR__ . "/Basic.php";
 
@@ -122,8 +113,6 @@ if (!IS_CLI) {
 }
 
 (DEBUG) ? $_DEBUG->save("Rooter loaded") : "";
-
-
 
 I18n::injectDb($_DB);
 I18n::SetDefault("en");
@@ -192,20 +181,14 @@ if (IS_CLI) {
     $_SYSTEM['action'] = $url['action'];
     $_SYSTEM['param'] = $url['param'];
 
-
     $acl = new Acl(CONFIG . "acl.config.ini");
-
-
 
     FactoryController::addDi("acl", $acl);
 
     $js = new Javascript();
     FactoryController::addDi("js", $js);
 
-
     if ($acl->checkIfResourceExist($_SYSTEM['controller'] . "/" . $_SYSTEM['action'])) {
-
-
         if (AUTH_ACTIVE) {
             if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller'] . "/" . $_SYSTEM['action'])) {
                 if ($auth->getAccess() == 1) {
@@ -229,8 +212,6 @@ if (IS_CLI) {
         exit;
     }
 }
-
-
 
 (DEBUG) ? $_DEBUG->save("ACL loaded") : "";
 

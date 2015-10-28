@@ -96,7 +96,7 @@ class FactoryController
         if (empty(self::$di[$name])) {
             self::$di[$name] = $object;
         } else {
-            throw new Exception('GLI-019 : This dependency injection already exist !');
+            throw new \Exception('GLI-019 : This dependency injection already exist !');
         }
     }
 
