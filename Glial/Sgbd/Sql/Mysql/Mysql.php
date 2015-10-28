@@ -20,10 +20,12 @@ class Mysql extends Sql
     public $variables = array();
     public $host;
     public $port;
+    public $name;
 
     function __construct($name, $elem)
     {
         $this->setName($name, $elem);
+        $this->name = $name;
     }
 
     /*
@@ -47,17 +49,24 @@ class Mysql extends Sql
         $this->db = $dbname;
 
         if (!$this->link) {
-            return false;
-            //throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . ":" . $port);
+
+            $this->is_connected = false;
+
+
+            if ($this->name === DB_DEFAULT) {
+                $level = 80;
+            } else {
+                $level = 60;
+            }
+
+
+            throw new \Exception('GLI-012 : Can\'t connect to (' . $login . '@' . $host . ":" . $port . ') MySQL server' . ' {' . error_get_last()['message'] . '}', $level);
+        } else {
+            $this->is_connected = true;
+            mysqli_set_charset($this->link, 'utf8');
+            $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
+            $this->_query("SET NAMES 'utf8'");
         }
-
-
-
-        $this->is_connected = true;
-
-        mysqli_set_charset($this->link, 'utf8');
-        $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
-        $this->_query("SET NAMES 'utf8'");
 
         return $this->link;
     }
@@ -98,8 +107,10 @@ class Mysql extends Sql
 
     public function sql_close()
     {
-        $this->link = mysqli_close($this->link);
-        $this->is_connected = false;
+        if ($this->is_connected === true) {
+            $this->link = mysqli_close($this->link);
+            $this->is_connected = false;
+        }
     }
 
     public function sql_affected_rows($stid = '')
@@ -541,7 +552,101 @@ class Mysql extends Sql
         return $this->version_comment;
     }
 
-    
-    
-    
+    /**
+     * This method return an array of master status, is the server is not confgured as master return false
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @param string name of connection
+     * @return array all param of master status
+     * @description if the connection exist return the instance else it create it 
+     * @access public
+     * @package Sgbd
+     * @since 3.0a First time this was introduced.
+     * @version 3.1 add testAccess
+     */
+    public function isMaster()
+    {
+
+        $grants = $this->getGrants();
+
+        if ($this->testAccess()) {
+
+            $sql = "SHOW MASTER STATUS";
+            $res = $this->sql_query($sql);
+
+            if ($this->sql_num_rows($res) === 0) {
+                return false;
+            } elseif ($this->sql_num_rows($res) !== 1) {
+                throw new \Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
+            }
+
+
+            return $this->sql_fetch_array($res, MYSQLI_ASSOC);
+        }
+        return false;
+    }
+
+    /**
+     * This method return an array of all slave thread, is the server is not confgured as slave return false
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @param string name of connection
+     * @return array all param of slave status for each thread
+     * @description if the connection exist return the instance else it create it 
+     * @access public
+     * @example echo $this->di['db']->sql('defaul');
+     * @package Sgbd
+     * @since 3.0a First time this was introduced.
+     * @version 3.1 add testAccess
+     */
+    public function isSlave()
+    {
+
+        if ($this->testAccess()) {
+
+            if (version_compare($this->getVersion(), 10, '>')) {
+                $sql = "SHOW ALL SLAVES STATUS";
+            } else {
+                $sql = "SHOW SLAVE STATUS";
+            }
+
+            $res = $this->sql_query($sql);
+
+            if ($this->sql_num_rows($res) === 0) {
+                return false;
+            } else {
+
+                $tab_ret = array();
+                while ($arr = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+                    $tab_ret[] = $arr;
+                }
+                return $tab_ret;
+            }
+        }
+    }
+
+    /**
+     * This method return true or false
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @return boolean
+     * @description if access is enough return true else false
+     * @access public
+     * @package Sgbd
+     * @since 3.1 First time this was introduced.
+     * @version 3.1 add testAccess
+     */
+    public function testAccess()
+    {
+
+        $grants = $this->getGrants();
+        if (in_array("ALL PRIVILEGES", $grants) || (in_array("SUPER", $grants) || in_array("REPLICATION CLIENT", $grants))) {
+            return true;
+        }
+        return false;
+    }
+
 }

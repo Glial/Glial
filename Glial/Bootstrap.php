@@ -37,6 +37,10 @@ use \Glial\Auth\Auth;
 use \Glial\Sgbd\Sgbd;
 use \Glial\Synapse\Javascript;
 
+use \Monolog\Logger;
+use \Monolog\Formatter\LineFormatter;
+use \Monolog\Handler\StreamHandler;
+
 require ROOT . DS . 'vendor/autoload.php';
 
 session_start();
@@ -44,6 +48,22 @@ session_start();
 $config = new Config;
 $config->load(CONFIG);
 FactoryController::addDi("config", $config);
+
+$log = new Logger('Glial');
+
+
+$file_log = TMP.'log/glial.log';
+
+$handler = new StreamHandler($file_log, Logger::NOTICE);
+$handler->setFormatter(new LineFormatter(null, null, false, true));
+$log->pushHandler($handler);
+
+
+
+FactoryController::addDi("log", $log);
+
+
+
 
 
 if (!IS_CLI) {
@@ -92,6 +112,7 @@ require __DIR__ . "/Basic.php";
 
 $db = $config->get("db");
 $_DB = new Sgbd($db);
+$_DB->setLogger($log);
 
 FactoryController::addDi("db", $_DB);
 
@@ -107,7 +128,7 @@ if (!IS_CLI) {
 
     if (isset($_GET['lg'])) {
         $_SESSION['language'] = $_GET['lg'];
-        //SetCookie("language", $_GET['lg'], time() + 60 * 60 * 24 * 365, "/", $_SERVER['SERVER_NAME'], false, true);
+        SetCookie("language", $_GET['lg'], time() + 60 * 60 * 24 * 365, "/", $_SERVER['SERVER_NAME'], false, true);
         //SetCookie("language", $_GET['lg'], time() + 60 * 60 * 24 * 365, "/");
     }
 }

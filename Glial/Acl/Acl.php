@@ -36,6 +36,9 @@ class Acl
         $path_to_acl_tmp = TMP . "acl/acl.ser";
 
         if (file_exists($path_to_acl_tmp)) {
+            
+            unlink($path_to_acl_tmp);
+            
             if (is_file($path_to_acl_tmp)) {
                 $s = implode('', file($path_to_acl_tmp));
                 $tmp = unserialize($s);
@@ -108,6 +111,11 @@ class Acl
                         if (!class_exists($controller)) {
 
                             require($dir . $file);
+                        }
+
+			if (!class_exists($controller)) {
+
+                            throw new \Exception('GLI-034 : The class must be with the same name (check '.ROOT.'application/controller/'.$controller.'.controller.php)');
                         }
 
                         $tab = get_class_methods($controller);

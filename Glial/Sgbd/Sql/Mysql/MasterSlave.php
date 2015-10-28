@@ -81,7 +81,7 @@ class MasterSlave {
         if ($this->testAccess()) {
 
             if (version_compare($this->instance->getVersion(), 10, '>')) {
-                $sql = "SHOW all SLAVES STATUS";
+                $sql = "SHOW ALL SLAVES STATUS";
             } else {
                 $sql = "SHOW SLAVE STATUS";
             }

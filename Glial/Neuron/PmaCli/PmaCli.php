@@ -509,9 +509,8 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
                     $res = $dblink->sql_query($sql);
                     $date_time = $dblink->sql_fetch_object($res);  // can be empty ???????????
 
-                    if (version_compare($dblink->getVersion(), '10.0') >= 0) {
-                        $this->clusterGalera($dblink);
-                    }
+
+                    $this->clusterGalera($dblink);
 
                     $data['mysql_replication_stats']['version'] = $dblink->getServerType() . " : " . $dblink->getVersion();
                     $data['mysql_replication_stats']['date'] = $date_time->date_time;
@@ -797,7 +796,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
                 debug($db->sql_error());
                 exit;
             } else {
-                echo $data['mysql_server']['name'] . PHP_EOL;
+//echo $data['mysql_server']['name'] . PHP_EOL;
             }
         }
 

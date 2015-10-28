@@ -42,9 +42,15 @@ class FactorySql {
             return false;
         }
 
+        self::$db[$name]->setLogger(self::$logger);
         self::$db[$name]->sql_connect($addr, $elem['user'], $elem['password'], $dbname, $port);
 
         return self::$db[$name];
+    }
+    
+    static function setLogger($logger)
+    {
+        self::$logger = $logger;
     }
 
 }

@@ -10,6 +10,7 @@ class Sgbd
 
     private $db = array();
     private $config = array();
+    private $logger;
 
     /**
      * Set the configuration to know which connection is available
@@ -50,12 +51,14 @@ class Sgbd
 
         if (! preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name))
         {
-            throw new \Exception("GLI-25 : The name of identifier is invalid : '" . $name . "' (only letter / number and underscore are allowed) !");
-        }      
+            throw new \Exception("GLI-025 : The name of identifier is invalid : '" . $name . "' (only letter / number and underscore are allowed) !",50);
+        }
         
         if (array_key_exists($name, $this->config)) {
 
             if (empty($this->db[$name]) || $this->db[$name]->is_connected === false) {
+                
+                FactorySql::setLogger($this->logger);
                 $this->db[$name] = FactorySql::connect($name, $this->config[$name]);
             }
 
@@ -161,6 +164,11 @@ class Sgbd
         foreach ($this->config as $name => $config) {
             yield $name => $this->sql($name);
         }
+    }
+    
+    public function setLogger(\Monolog\Logger $logger)
+    {
+        $this->logger = $logger;
     }
 	
 }

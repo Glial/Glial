@@ -30,6 +30,7 @@ abstract class Sql
     private $_keys = array();
     public $_param = array();
     public $is_connected = false;
+    private $logger;
 
     //to be surcharged
     public function get_table_to_history()
@@ -506,5 +507,14 @@ abstract class Sql
     {
         return $this->sql_save($data, true);
     }
+    
+    public function setLogger($logger)
+    {
+        $this->logger = $logger;   
+    }
 
+    public function getLogger()
+    {
+        return $this->logger;
+    }
 }
