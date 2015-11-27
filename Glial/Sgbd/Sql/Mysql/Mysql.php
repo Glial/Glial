@@ -6,18 +6,17 @@ use \Glial\Sgbd\Sql\Sql;
 
 class Mysql extends Sql
 {
-
     const ESC = '`';
 
-    public $ESC = '`';
+    public $ESC             = '`';
     public $db;
     public $link;
     public $server_type;
-    public $version = '';
-    public $version_full = '';
+    public $version         = '';
+    public $version_full    = '';
     public $version_comment = '';
-    public $status = array();
-    public $variables = array();
+    public $status          = array();
+    public $variables       = array();
     public $host;
     public $port;
     public $name;
@@ -27,7 +26,6 @@ class Mysql extends Sql
         $this->setName($name, $elem);
         $this->name = $name;
     }
-
     /*
      * @since Glial 1.0
      * @version 3.1
@@ -46,7 +44,7 @@ class Mysql extends Sql
         $this->port = $port;
 
         $this->link = mysqli_connect($host, $login, $password, $dbname, $port);
-        $this->db = $dbname;
+        $this->db   = $dbname;
 
         if (!$this->link) {
 
@@ -60,7 +58,7 @@ class Mysql extends Sql
             }
 
 
-            throw new \Exception('GLI-012 : Can\'t connect to (' . $login . '@' . $host . ":" . $port . ') MySQL server' . ' {' . error_get_last()['message'] . '}', $level);
+            throw new \Exception('GLI-012 : Can\'t connect to ('.$login.'@'.$host.":".$port.') MySQL server'.' {'.error_get_last()['message'].'}', $level);
         } else {
             $this->is_connected = true;
             mysqli_set_charset($this->link, 'utf8');
@@ -70,7 +68,6 @@ class Mysql extends Sql
 
         return $this->link;
     }
-
     /*
      * @since Glial 1.0
      * @return Returns TRUE on success or FALSE on failure.
@@ -83,7 +80,6 @@ class Mysql extends Sql
         $this->db = $dbname;
         return mysqli_select_db($this->link, $dbname);
     }
-
     /*
      * @since Glial 1.0
      * @return Returns FALSE on failure. For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries _query() will return a mysqli_result object. For other successful queries _query() will return TRUE.
@@ -95,8 +91,8 @@ class Mysql extends Sql
 
     protected function _query($sql)
     {
-        
-       
+
+
         return mysqli_query($this->link, $sql);
     }
 
@@ -108,7 +104,7 @@ class Mysql extends Sql
     public function sql_close()
     {
         if ($this->is_connected === true) {
-            $this->link = mysqli_close($this->link);
+            $this->link         = mysqli_close($this->link);
             $this->is_connected = false;
         }
     }
@@ -203,7 +199,7 @@ class Mysql extends Sql
         $res = $this->_query($sql);
 
         $table = array();
-        $view = array();
+        $view  = array();
 
 
         while ($ar = $this->sql_fetch_array($res)) {
@@ -215,7 +211,7 @@ class Mysql extends Sql
         }
 
         $ret['table'] = $table;
-        $ret['view'] = $view;
+        $ret['view']  = $view;
 
 
         return $ret;
@@ -223,15 +219,15 @@ class Mysql extends Sql
 
     public function getIndexUnique($table_name)
     {
-        $sql = "show keys from `" . $table_name . "` in `" . $this->db."`";
+        $sql = "show keys from `".$table_name."` in `".$this->db."`";
         $res = $this->_query($sql);
 
         if (!$res) {
-            throw new \Exception("GLI-030 : problem with this query : '" . $sql . "'");
+            throw new \Exception("GLI-030 : problem with this query : '".$sql."'");
         }
 
         $index = array();
-        while ($ob = $this->sql_fetch_object($res)) {
+        while ($ob    = $this->sql_fetch_object($res)) {
 
             if ($ob->Key_name === "PRIMARY") {
                 continue;
@@ -263,10 +259,10 @@ class Mysql extends Sql
 
             $sql = "SHOW GLOBAL VARIABLES LIKE 'version'";
 
-            $res = $this->sql_query($sql);
+            $res  = $this->sql_query($sql);
             $data = $this->sql_fetch_array($res, MYSQLI_ASSOC);
 
-            $version = $data['Value'];
+            $version            = $data['Value'];
             $this->version_full = $version;
 
             if (strpos($version, "-")) {
@@ -346,6 +342,25 @@ class Mysql extends Sql
         return mysqli_multi_query($this->link, $sql);
     }
 
+    public function sql_next_result()
+    {
+        $ret = mysqli_next_result($this->link);
+        return $ret;
+    }
+
+    public function sql_more_results()
+    {
+        $ret = mysqli_more_results($this->link);
+        return $ret;
+    }
+
+    public function sql_store_result()
+    {
+        $ret = mysqli_store_result($this->link);
+        return $ret;
+    }
+
+
     /**
      * Returns true or false is the server support multi master 
      * MariaDB >= 10.x
@@ -386,10 +401,10 @@ class Mysql extends Sql
 
             $sql = "SHOW GLOBAL VARIABLES LIKE 'UpTime'";
 
-            $res = $this->sql_query($sql);
+            $res  = $this->sql_query($sql);
             $data = $this->sql_fetch_array($res, MYSQLI_ASSOC);
 
-            $version = $data['Value'];
+            $version            = $data['Value'];
             $this->version_full = $version;
 
             if (strpos($version, "-")) {
@@ -476,8 +491,8 @@ class Mysql extends Sql
 
     public function getGrants()
     {
-        $sql = "show grants for current_user;";
-        $res = $this->sql_query($sql);
+        $sql  = "show grants for current_user;";
+        $res  = $this->sql_query($sql);
         $data = $this->sql_fetch_array($res, MYSQLI_NUM);
 
         preg_match("/GRANT ([\w ,]+) ON /", $data[0], $output_array);
@@ -487,7 +502,7 @@ class Mysql extends Sql
     public function getCreateTable($table, $schema = '')
     {
 
-        $sql = "SHOW CREATE TABLE `" . $table . "`";
+        $sql = "SHOW CREATE TABLE `".$table."`";
 
         $res = $this->sql_query($sql);
 
@@ -498,7 +513,7 @@ class Mysql extends Sql
 
 
         if (empty($elem)) {
-            throw new \Exception("GLI-101 : couldn't find the table : '" . $table . "'");
+            throw new \Exception("GLI-101 : couldn't find the table : '".$table."'");
         }
 
 
@@ -508,7 +523,7 @@ class Mysql extends Sql
     public function getDescription($table)
     {
         $sql = "SELECT COLUMN_NAME, DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE table_name = '" . $table . "' AND TABLE_SCHEMA = database()
+                WHERE table_name = '".$table."' AND TABLE_SCHEMA = database()
                 ORDER BY `COLUMNS`.`CHARACTER_MAXIMUM_LENGTH` ASC";
 
         //have to switch TABLE_SCHEMA = database() by something else in future if needed
@@ -516,7 +531,7 @@ class Mysql extends Sql
         $res = $this->sql_query($sql);
 
         $table = array();
-        while ($ar = $this->sql_fetch_array($res, MYSQL_NUM)) {
+        while ($ar    = $this->sql_fetch_array($res, MYSQL_NUM)) {
 
             $table[] = $ar;
         }
@@ -542,10 +557,10 @@ class Mysql extends Sql
 
             $sql = "SHOW GLOBAL VARIABLES LIKE 'version_comment'";
 
-            $res = $this->sql_query($sql);
+            $res  = $this->sql_query($sql);
             $data = $this->sql_fetch_array($res, MYSQLI_ASSOC);
 
-            $version = $data['Value'];
+            $version               = $data['Value'];
             $this->version_comment = $version;
         }
 
@@ -619,7 +634,7 @@ class Mysql extends Sql
             } else {
 
                 $tab_ret = array();
-                while ($arr = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+                while ($arr     = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
                     $tab_ret[] = $arr;
                 }
                 return $tab_ret;
@@ -648,5 +663,4 @@ class Mysql extends Sql
         }
         return false;
     }
-
 }

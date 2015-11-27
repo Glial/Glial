@@ -12,6 +12,7 @@ class FactorySql {
 
     private static $driver = array("pgsql", "mysql", "pdo", "oracle", "sybase");
     private static $db = array();
+    private static $logger;
 
     /*
      * @since Glial 2.1
