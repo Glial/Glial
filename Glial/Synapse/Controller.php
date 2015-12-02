@@ -50,14 +50,13 @@ class Controller
     {
         $controller = Inflector::camelize($controller);
 
-	if (AUTH_ACTIVE)
-	{
-		if (!IS_CLI) {
-	            if (!$GLOBALS['acl']->isAllowed($GLOBALS['auth']->getAccess(), $controller . "/" . $action)) {
-	                return;
-	            }
-		}
-	}
+        if (AUTH_ACTIVE) {
+            if (!IS_CLI) {
+                if (!$GLOBALS['acl']->isAllowed($GLOBALS['auth']->getAccess(), $controller . "/" . $action)) {
+                    return;
+                }
+            }
+        }
 
 
         $this->controller = $controller;
@@ -71,21 +70,19 @@ class Controller
     {
         $this->di = $di;
     }
-    
-
 
     final function getController()
     {
         if (empty($this->controller)) {
             return;
         }
-        
+
         $filename = APP_DIR . DS . "controller" . DS . $this->controller . ".controller.php";
 
         if (file_exists($filename)) {
             require_once $filename;
         } else {
-            throw new \Exception("GLI-654 Error controller not found : '" . $this->controller."'");
+            throw new \Exception("GLI-654 Error controller not found : '" . $this->controller . "'");
         }
 
         $page = new $this->controller($this->controller, $this->action, $this->param);
@@ -96,28 +93,25 @@ class Controller
         $this->title = $this->controller;
         $action = $this->action;
 
-        
+
         $page->before($this->param);
-		
-		
-        if (method_exists ( $page , $action ))
-        {
-            $page->$action($this->param);
-        }
-        else
-        {
+
+
+        if (method_exists($page, $action)) {
+            $resultat = $page->$action($this->param);
+        } else {
             throw new \Exception("GLI-026 Impossible to access to this controller/action => '$this->controller/$action'");
         }
-        
-        $page->after($this->param);        
-        
+
+        $page->after($this->param);
+
 
         if (!IS_CLI) {
             $this->ajax = $page->ajax;
             //$this->js = $page->getJavascript();
             $this->js = $this->di['js']->getJavascript();
         }
-        
+
         $this->layout_name = $page->layout_name;
         $this->view = $page->view;
 
@@ -137,7 +131,7 @@ class Controller
         }
 
 
-        if (!$this->recursive) { 
+        if (!$this->recursive) {
 
             if (!Variable::$_open) {
                 ob_start();
@@ -157,8 +151,9 @@ class Controller
             }
         }
 
-	//TODO to fix it
-       // (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save($this->controller . "/" . $this->action) : "";
+        //TODO to fix it
+        // (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save($this->controller . "/" . $this->action) : "";
+        return $resultat;
     }
 
     final function display()
@@ -195,7 +190,7 @@ class Controller
                 //echo $this->js;
             }
             echo "</html>\n"; //TODO a mettre ailleurs
-            
+
             Variable::$_html = ob_get_clean();
             Variable::$_html = I18n::getTranslation(Variable::$_html);
 
@@ -228,9 +223,9 @@ class Controller
         
     }
 
-    
     function setJs($js)
     {
         $this->js = $js;
     }
+
 }

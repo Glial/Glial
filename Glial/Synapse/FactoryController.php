@@ -16,9 +16,10 @@ class FactoryController
      * Add a MVC node in a view 
      * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
      * @param string construct of controller
-     * @return boolean Success
+     * @return mixed
      * @package Controller
      * @since 2.1 First time this was introduced.
+     * @since 4.1.2.5 can return result of method
      * @description create a new MVC and display the output in standard flux
      * @access public
      */
@@ -29,7 +30,7 @@ class FactoryController
         $node = new Controller($controller, $action, json_encode($param));
         $node->setDi(self::$di);
         $node->recursive = true;
-        $node->getController();
+        return $node->getController();
     }
 
     /**
@@ -99,5 +100,5 @@ class FactoryController
             throw new \Exception('GLI-019 : This dependency injection already exist !');
         }
     }
-
+    
 }
