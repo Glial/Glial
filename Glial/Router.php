@@ -26,7 +26,7 @@ if (empty($_GET['glial_path'])) {
 
     header("HTTP/1.1 301 Moved Permanently");
     header("Status: 301 Moved Permanently", false, 301);
-    header("Location: ".WWW_ROOT.$_SESSION['language'].ROUTE_LOGIN);
+    header("Location: ".WWW_ROOT.$_SESSION['language']."/".ROUTE_LOGIN);
     exit;
 }
 
