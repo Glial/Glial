@@ -663,7 +663,7 @@ namespace Glial\I18n {
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
             
             //debug($string); 
-            //debug($content);
+            //var_dump($content);
             
             $content = str_replace('<br>', '', $content);
             $out = Grabber::getTagContents($content, '<span title="', true);
@@ -672,11 +672,16 @@ namespace Glial\I18n {
             $nb = explode("\n", trim($string));
 
 //we check that we have same number of input and output
-            if (count($nb) != count($out)) {
+            
+		
 
 
-                //debug($nb);
-                //debug($out);
+
+		if (count($nb) != count($out)) {
+
+
+                debug($nb);
+                debug($out);
 
                 throw new \Exception("GLI-059 : Problem with machine translation '" . trim($string) ."' [".$from."=>".self::$_language."]". PHP_EOL);
                 return false;

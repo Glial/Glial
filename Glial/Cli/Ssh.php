@@ -223,7 +223,7 @@ class Ssh
         
         if (empty($tmp))
         {
-            throw new \Exception("GLI-059 : Impossible to find : ".$cmd."\n return : ".$paths);
+            throw new \Exception("GLI-060 : Impossible to find : ".$cmd."\n return : ".$paths);
         }
         
         return $tmp;
