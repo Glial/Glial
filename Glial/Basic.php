@@ -195,11 +195,11 @@ function autocomplete($table, $field, $classo = "", $indice = -1)
 
     if ($indice != -1) {
 //return "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" class=\"" . $classo . "text" . $class . "\" type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "]\" value=\"" . $value . "\" />" . $error;
-        return "<input id=\"" . $table . "-" . $indice . "-" . $field . "-auto\" class=\"" . $classo . "text" . $class . "\" type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "-auto]\" value=\"" . $valueauto . "\" />"
-                . "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" name=\"" . $table . "[" . $indice . "][" . $field . "]\" class=\"hidden\" type=\"text\" value=\"" . $value . "\" />" . $error;
+        return "<input id=\"" . $table . "-" . $indice . "-" . $field . "-auto\" class=\"" . $classo . "text" . $class . "\" type=\"text\" autocomplete=\"new-password\" name=\"" . $table . "[" . $indice . "][" . $field . "-auto]\" value=\"" . $valueauto . "\" />"
+                . "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" name=\"" . $table . "[" . $indice . "][" . $field . "]\" class=\"hidden\" autocomplete=\"new-password\" type=\"text\" value=\"" . $value . "\" />" . $error;
     } else {
-        return "<input id=\"" . $table . "-" . $field . "-auto\" class=\"" . $classo . "text" . $class . "\" type=\"text\" name=\"" . $table . "[" . $field . "-auto]\" value=\"" . $valueauto . "\" />"
-                . "<input id=\"" . $table . "-" . $field . "\" name=\"" . $table . "[" . $field . "]\" class=\"hidden\" type=\"text\" value=\"" . $value . "\" />" . $error;
+        return "<input id=\"" . $table . "-" . $field . "-auto\" class=\"" . $classo . "text" . $class . "\" type=\"text\" autocomplete=\"new-password\" name=\"" . $table . "[" . $field . "-auto]\" value=\"" . $valueauto . "\" />"
+                . "<input id=\"" . $table . "-" . $field . "\" name=\"" . $table . "[" . $field . "]\" class=\"hidden\" autocomplete=\"new-password\" type=\"text\" value=\"" . $value . "\" />" . $error;
     }
 }
 

@@ -94,11 +94,9 @@ spl_autoload_register(function($className) {
 });
 
 //$_POST = ArrayTools::array_map_recursive("htmlentities", $_POST);
-
 require __DIR__."/Basic.php";
 
 //debug($_GET);
-
 (DEBUG) ? $_DEBUG->save("Loading class") : "";
 
 $db  = $config->get("db");
@@ -134,9 +132,7 @@ if (empty($_SESSION['language'])) {
     $_SESSION['language'] = "en";
 }
 
-
 $lg = explode(",", LANGUAGE_AVAILABLE);
-
 
 if (!in_array($_SESSION['language'], $lg)) {
     $_SESSION['URL_404'] = $_SERVER['QUERY_STRING'];
@@ -146,8 +142,6 @@ if (!in_array($_SESSION['language'], $lg)) {
 I18n::load($_SESSION['language']);
 (DEBUG) ? $_DEBUG->save("Language loaded") : "";
 
-
-
 //mode with php-cli
 if (IS_CLI) {
     if ($_SERVER["argc"] >= 3) {
@@ -155,16 +149,13 @@ if (IS_CLI) {
         $_SYSTEM['action']     = $_SERVER["argv"][2];
         $_SYSTEM['param']      = !empty($_SERVER["argv"][3]) ? $_SERVER["argv"][3] : '';
 
-
         if ($_SERVER["argc"] > 3) {
             $params = array();
             for ($i = 3; $i < $_SERVER["argc"]; $i++) {
                 $params[] = $_SERVER["argv"][$i];
             }
-
             $_SYSTEM['param'] = $params;
         }
-
 
         //cli_set_process_title("glial-" . $_SYSTEM['controller'] . "-" . $_SYSTEM['action']." (".$name.")");
     } else {
@@ -174,7 +165,6 @@ if (IS_CLI) {
     define('LINK', WWW_ROOT."en"."/");
 } else {  //mode with apache
     define('LINK', WWW_ROOT.I18n::Get()."/");
-
 
 
     if (AUTH_ACTIVE) {
@@ -205,11 +195,11 @@ if (IS_CLI) {
             if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller']."/".$_SYSTEM['action'])) {
                 if ($auth->getAccess() == 1) {
 
-                    $url = "user/connection/";
+                    $url = ROUTE_LOGIN;
                     $msg = $_SYSTEM['controller']."/".$_SYSTEM['action']."<br />".__("You have to be registered to acces to this page");
                 } else {
                     //die("here");
-                    $url = "home/index/";
+                    $url = ROUTE_DEFAULT;
                     $msg = $_SYSTEM['controller']."/".$_SYSTEM['action']."<br />".__("Your rank to this website is not enough to acess to this page");
                 }
 
