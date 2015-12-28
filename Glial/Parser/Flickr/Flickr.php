@@ -147,7 +147,6 @@ class Flickr
 
     public static function getPhotoInfo($url)
     {
-       
         
         $pattern = "#^" . self::$url . "/photos/([a-zA-Z0-9@]+)/([0-9]*)\/#i";
 
@@ -159,25 +158,40 @@ class Flickr
        
         $content = self::curl($url);
 
+        file_put_contents("/tmp/gg", $content);
+
         $tab_id_photo = explode("/", $url);
         $data['id'] = "flickr_" . $tab_id_photo[5];
         $data['id_photo'] = $tab_id_photo[5];
         $data['url']['main'] = $url;
 
-        $brut_canonical = Grabber::getTagContent($content, '<span class="photo-name-line-1"');
+
+        $brut_canonical = Grabber::getTagContent($content, '<div class="attribution-info');
+
         if ($brut_canonical) {
             $tmp = Grabber::getTagAttributeValue($brut_canonical, "href");
+
+
             if (preg_match('#photos/([a-z0-9@]+)/#i', $tmp, $out)) {
                 $data['id_author'] = $out[1];
-            } else {
 
+
+            } else {
+                throw new \Exception("GLI-366 : impossible to get the author");
                 return false;
                 //die("Error : Impossible to get id_author\n");
                 //return false;
             }
         }
-        
-        
+        else
+        {
+            throw new \Exception("GLI-366 : Impossible to find tag : <div class=\"attribution-info\"");
+        }
+
+
+
+
+        print_r($data);
 
         $brut_min = Grabber::getTagContent($content, '<div id="photo', true);
 
@@ -229,8 +243,8 @@ class Flickr
 
         $brut_license = Grabber::getTagContent($content, '<ul class="icon-inline sidecar-list', true);
 
-        $data['license']['text'] = Grabber::getTagContents($brut_license, '<a', true)[1];
-        $data['license']['url'] = Grabber::getTagAttributeValue(Grabber::getTagContents($brut_license, '<a', false)[1], "href");
+        //$data['license']['text'] = Grabber::getTagContents($brut_license, '<a', true)[1];
+        //$data['license']['url'] = Grabber::getTagAttributeValue(Grabber::getTagContents($brut_license, '<a', false)[1], "href");
 
         //print_r($brut_license);
 

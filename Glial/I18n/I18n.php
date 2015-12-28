@@ -6,7 +6,6 @@ namespace Glial\I18n {
 
     class I18n
     {
-
         const DATABASE = DB_DEFAULT;
 
 // to prevent kick or/and ban from google
@@ -248,7 +247,7 @@ namespace Glial\I18n {
          *
          * @var arrays
          */
-        public static $languagesENGLISH = array(
+        public static $languagesENGLISH          = array(
             "Czech" => "cs",
             "German" => "de",
             "Danish" => "dk",
@@ -300,7 +299,7 @@ namespace Glial\I18n {
         {
 
 
-            $sql = "CREATE TABLE IF NOT EXISTS `translation_" . mb_strtolower($iso) . "` (
+            $sql = "CREATE TABLE IF NOT EXISTS `translation_".mb_strtolower($iso)."` (
               `id` int(11) NOT NULL auto_increment,
               `id_history_etat` int NOT NULL,
               `key` char(40) NOT NULL,
@@ -334,19 +333,19 @@ namespace Glial\I18n {
 
             $translate_auto = 1;
 
-            $sql = "SELECT text,translate_auto from translation_main WHERE " . self::$_SQL->sql(I18n::DATABASE)->ESC . "key" . self::$_SQL->sql(I18n::DATABASE)->ESC . " ='" . $key . "' and " . self::$_SQL->sql(I18n::DATABASE)->ESC . "destination" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . $to . "'";
+            $sql = "SELECT text,translate_auto from translation_main WHERE ".self::$_SQL->sql(I18n::DATABASE)->ESC."key".self::$_SQL->sql(I18n::DATABASE)->ESC." ='".$key."' and ".self::$_SQL->sql(I18n::DATABASE)->ESC."destination".self::$_SQL->sql(I18n::DATABASE)->ESC." = '".$to."'";
             $res = self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
 
 
             if (self::$_SQL->sql(I18n::DATABASE)->sql_num_rows($res) == 1) {
-                $ob = self::$_SQL->sql(I18n::DATABASE)->sql_fetch_object($res);
-                $rep = $ob->text;
+                $ob             = self::$_SQL->sql(I18n::DATABASE)->sql_fetch_object($res);
+                $rep            = $ob->text;
                 $translate_auto = $ob->translate_auto;
             } else if (self::$_SQL->sql(I18n::DATABASE)->sql_num_rows($res) == 0) {
 
-                self::$_to_translate[$from][$key]['val'] = $text;
+                self::$_to_translate[$from][$key]['val']  = $text;
                 self::$_to_translate[$from][$key]['file'] = self::$file;
-                self::$_to_translate[$from][$key]['md5'] = self::$_md5File;
+                self::$_to_translate[$from][$key]['md5']  = self::$_md5File;
                 self::$_to_translate[$from][$key]['line'] = self::$line;
 
 
@@ -378,7 +377,7 @@ namespace Glial\I18n {
 
             foreach (self::$_to_translate as $from => $tab) {
                 $string_to_translate = '';
-                $extract = array();
+                $extract             = array();
 
                 $k = 0;
 
@@ -393,7 +392,7 @@ namespace Glial\I18n {
                     } else {
                         $k++;
                         $string_to_translate = $elem['val'];
-                        $extract[$k][$key] = $elem;
+                        $extract[$k][$key]   = $elem;
                     }
                 }
 
@@ -408,27 +407,27 @@ namespace Glial\I18n {
 
                     $string = '';
 
-                    $tab_key = array();
+                    $tab_key    = array();
                     $tab_string = array();
 
                     foreach ($result as $key => $str) {
-                        $tab_key[] = '<span id="' . $key . '">' . $str['val'] . '</span>';
+                        $tab_key[]    = '<span id="'.$key.'">'.$str['val'].'</span>';
                         $tab_string[] = $str['val'];
-                        $string = $string . "\n" . $str['val'];
+                        $string       = $string."\n".$str['val'];
                     }
 
-                    $string = trim($string);
+                    $string  = trim($string);
                     $tab_out = self::get_answer_from_google($string, $from);
                     (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save("calling google... ") : "";
 
                     if ($tab_out) {
                         $html = str_replace($tab_key, $tab_out, $html);
-                        $i = 0;
+                        $i    = 0;
                         foreach ($result as $key => $data) {
                             self::$_translations[$data['md5']][$key] = $tab_out[$i];
-                            self::$file = $data['file'];
-                            self::$line = $data['line'];
-                            self::$_md5File = $data['md5'];
+                            self::$file                              = $data['file'];
+                            self::$line                              = $data['line'];
+                            self::$_md5File                          = $data['md5'];
 
                             //self::insert_db($to, $from, $rep, $key, $translate_auto);
                             self::save_db(self::$_language, $from, $tab_out[$i], $key, '1', $data['file'], $data['line']);
@@ -451,44 +450,44 @@ namespace Glial\I18n {
         private static function insert_db($iso, $source, $text, $key, $translate_auto)
         {
 
-            $sql = "INSERT IGNORE INTO " . self::$_SQL->sql(I18n::DATABASE)->ESC . "translation_" . mb_strtolower($iso) . "" . self::$_SQL->sql(I18n::DATABASE)->ESC . "
-		SET " . self::$_SQL->sql(I18n::DATABASE)->ESC . "key" . self::$_SQL->sql(I18n::DATABASE)->ESC . " ='" . $key . "',
-		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "source" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($source) . "',
-		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "text" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($text) . "',
-		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "date_inserted" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = now(),
-		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "date_updated" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = now(),
-		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "translate_auto" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . $translate_auto . "',
-		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "file_found" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = '" . self::$file . "',
-		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "id_history_etat" . self::$_SQL->sql(I18n::DATABASE)->ESC . " = 1,
-		" . self::$_SQL->sql(I18n::DATABASE)->ESC . "line_found" . self::$_SQL->sql(I18n::DATABASE)->ESC . " ='" . self::$line . "'";
+            $sql = "INSERT IGNORE INTO ".self::$_SQL->sql(I18n::DATABASE)->ESC."translation_".mb_strtolower($iso)."".self::$_SQL->sql(I18n::DATABASE)->ESC."
+		SET ".self::$_SQL->sql(I18n::DATABASE)->ESC."key".self::$_SQL->sql(I18n::DATABASE)->ESC." ='".$key."',
+		".self::$_SQL->sql(I18n::DATABASE)->ESC."source".self::$_SQL->sql(I18n::DATABASE)->ESC." = '".self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($source)."',
+		".self::$_SQL->sql(I18n::DATABASE)->ESC."text".self::$_SQL->sql(I18n::DATABASE)->ESC." = '".self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($text)."',
+		".self::$_SQL->sql(I18n::DATABASE)->ESC."date_inserted".self::$_SQL->sql(I18n::DATABASE)->ESC." = now(),
+		".self::$_SQL->sql(I18n::DATABASE)->ESC."date_updated".self::$_SQL->sql(I18n::DATABASE)->ESC." = now(),
+		".self::$_SQL->sql(I18n::DATABASE)->ESC."translate_auto".self::$_SQL->sql(I18n::DATABASE)->ESC." = '".$translate_auto."',
+		".self::$_SQL->sql(I18n::DATABASE)->ESC."file_found".self::$_SQL->sql(I18n::DATABASE)->ESC." = '".self::$file."',
+		".self::$_SQL->sql(I18n::DATABASE)->ESC."id_history_etat".self::$_SQL->sql(I18n::DATABASE)->ESC." = 1,
+		".self::$_SQL->sql(I18n::DATABASE)->ESC."line_found".self::$_SQL->sql(I18n::DATABASE)->ESC." ='".self::$line."'";
 
             self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
         }
 
         private static function save_db($iso, $source, $text, $key, $translate_auto, $file, $line)
         {
-            $data = array();
-            $data["translation_" . mb_strtolower($iso)]['key'] = $key;
-            $data["translation_" . mb_strtolower($iso)]['source'] = self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($source);
-            $data["translation_" . mb_strtolower($iso)]['text'] = self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($text);
-            $data["translation_" . mb_strtolower($iso)]['date_inserted'] = date("Y-m-d H:i:s");
-            $data["translation_" . mb_strtolower($iso)]['date_updated'] = date("Y-m-d H:i:s");
-            $data["translation_" . mb_strtolower($iso)]['translate_auto'] = intval($translate_auto);
-            $data["translation_" . mb_strtolower($iso)]['file_found'] = $file;
-            $data["translation_" . mb_strtolower($iso)]['id_history_etat'] = 1;
-            $data["translation_" . mb_strtolower($iso)]['line_found'] = intval($line);
+            $data                                                        = array();
+            $data["translation_".mb_strtolower($iso)]['key']             = $key;
+            $data["translation_".mb_strtolower($iso)]['source']          = self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($source);
+            $data["translation_".mb_strtolower($iso)]['text']            = self::$_SQL->sql(I18n::DATABASE)->sql_real_escape_string($text);
+            $data["translation_".mb_strtolower($iso)]['date_inserted']   = date("Y-m-d H:i:s");
+            $data["translation_".mb_strtolower($iso)]['date_updated']    = date("Y-m-d H:i:s");
+            $data["translation_".mb_strtolower($iso)]['translate_auto']  = intval($translate_auto);
+            $data["translation_".mb_strtolower($iso)]['file_found']      = $file;
+            $data["translation_".mb_strtolower($iso)]['id_history_etat'] = 1;
+            $data["translation_".mb_strtolower($iso)]['line_found']      = intval($line);
 
             self::$_SQL->sql(I18n::DATABASE)->set_history_type(6);
             self::$_SQL->sql(I18n::DATABASE)->set_history_user(11);
 
 
-            
+
 
             if (!self::$_SQL->sql(I18n::DATABASE)->sql_save($data)) {
-                
+
                 debug($data);
                 debug(self::$_SQL->sql(I18n::DATABASE)->error);
-                mail("aurelien.lequoy@gmail.com", "Alstom : Bug with I18n", debug($data) . "\n" . json_encode($data));
+                mail("aurelien.lequoy@gmail.com", "Alstom : Bug with I18n", debug($data)."\n".json_encode($data));
             }
         }
 
@@ -497,7 +496,7 @@ namespace Glial\I18n {
 
             $ret = self::$_SQL->sql(I18n::DATABASE)->getListTable();
 
-            if (in_array("translation_" . strtolower($iso), $ret['table'])) {
+            if (in_array("translation_".strtolower($iso), $ret['table'])) {
                 true;
             } else {
                 //self::initiate($iso);
@@ -523,10 +522,10 @@ namespace Glial\I18n {
                 $default_lg = self::$_defaultlanguage;
             }
 
-            self::$file = $file;
-            self::$line = $line;
-            self::$_md5File = md5(self::$file);
-            self::$file_path = self::$_path . "/" . self::$_language . "." . self::$_md5File . ".ini";
+            self::$file      = $file;
+            self::$line      = $line;
+            self::$_md5File  = md5(self::$file);
+            self::$file_path = self::$_path."/".self::$_language.".".self::$_md5File.".ini";
 
 
 
@@ -555,14 +554,14 @@ namespace Glial\I18n {
                         $out = self::translate($default_lg, self::$_language, $string, $key);
                     }
                 } else {
-                    $out = true;
+                    $out                                        = true;
                     self::$_translations[self::$_md5File][$key] = $string;
                 }
 
                 if ($out) {
                     $res = self::$_translations[self::$_md5File][$key];
                 } else {
-                    $res = '<span id="' . $key . '">' . $string . '</span>';
+                    $res = '<span id="'.$key.'">'.$string.'</span>';
                 }
             }
 
@@ -634,58 +633,58 @@ namespace Glial\I18n {
             //debug(self::$_language);
             //debug($from);
             //debug($string);
-
 //debug("We calling google ...");
 //$url ="http://translate.google.fr/translate_t?text=Traduction%20automatique%20de%20pages%20web%0Aceci%20est%20un%20test&hl=fr&langpair=en&tbb=1&ie=utf-8";
-            $url = 'http://translate.google.fr/translate_t?text=' . urlencode($string) . '&hl='.$from.'&langpair=' . self::$_language . '&tbb=1&ie=utf-8';
-            $url = 'https://translate.google.fr/?text=' . urlencode($string) . '&amp;hl=' . self::$_language . '&amp;langpair=' . $from . '%7Cfr&amp;tbb=1&amp;ie=utf-8';
+            $url = 'http://translate.google.fr/translate_t?text='.urlencode($string).'&hl='.$from.'&langpair='.self::$_language.'&tbb=1&ie=utf-8';
+            $url = 'https://translate.google.fr/?text='.urlencode($string).'&amp;hl='.self::$_language.'&amp;langpair='.$from.'%7Cfr&amp;tbb=1&amp;ie=utf-8';
 
-            $url = 'https://translate.google.fr/?text=' . urlencode($string) . '&hl='. self::$_language.'&langpair=' . $from . '&tbb=1&ie=utf-8';
+            $url = 'https://translate.google.fr/?text='.urlencode($string).'&hl='.self::$_language.'&langpair='.$from.'&tbb=1&ie=utf-8';
 
             //debug($url);
+            //$UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
+            $UA = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36';
 
-
-            $UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
-            $UA = 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36';
-
-            $ch = curl_init();
+            $ch   = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_USERAGENT, $UA);
-            curl_setopt($ch, CURLOPT_REFERER, "https://translate.google.fr/");
+            //curl_setopt($ch, CURLOPT_REFERER, "https://translate.google.fr/");
             $body = curl_exec($ch);
             curl_close($ch);
 
 // if we send no user_agent google send sentence translated in default charset we asked for the language
 //$body = iconv(self::charset[$to], "UTF-8", $body);
 
-
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
-            
-            //debug($string); 
-            //var_dump($content);
-            
             $content = str_replace('<br>', '', $content);
-            $out = Grabber::getTagContents($content, '<span title="', true);
 
-//verify that we exactly the same number of element
+            $out = Grabber::getTagContents($content, '<span title="', true);
+            if (empty($out)) {
+                $out = $content;
+            }
+
+            //var_dump($content);
+//verify that we exactly the same number of element in entry
             $nb = explode("\n", trim($string));
 
+            if (!is_array($out)) {
+                $out = explode("\n", trim($out));
+            }
+
+
 //we check that we have same number of input and output
-            
-		
 
 
-
-		if (count($nb) != count($out)) {
-
+            if (count($nb) != count($out)) {
 
                 debug($nb);
                 debug($out);
 
-                throw new \Exception("GLI-059 : Problem with machine translation '" . trim($string) ."' [".$from."=>".self::$_language."]". PHP_EOL);
+                throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
                 return false;
             }
+
+            //throw new \Exception("GLI-999 : GOOD".PHP_EOL);
 
             return $out;
         }
@@ -715,12 +714,12 @@ namespace Glial\I18n {
                 self::$countNumberElemAtLoading[self::$_md5File] = count(self::$_translations[self::$_md5File]);
             } else {
 //chargement du fichier de cache en fonction de la BDD
-                $sql = "SELECT * FROM translation_" . strtolower(self::$_language) . " WHERE file_found ='" . self::$file . "'";
+                $sql = "SELECT * FROM translation_".strtolower(self::$_language)." WHERE file_found ='".self::$file."'";
 
 
 
                 $res23 = self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
-                while ($ob = self::$_SQL->sql(I18n::DATABASE)->sql_fetch_object($res23)) {
+                while ($ob    = self::$_SQL->sql(I18n::DATABASE)->sql_fetch_object($res23)) {
                     self::$_translations[self::$_md5File][$ob->key] = $ob->text;
                 }
 
@@ -734,7 +733,7 @@ namespace Glial\I18n {
 
             foreach (self::$countNumberElemAtLoading as $md5 => $val) {
                 if (count(self::$_translations[$md5]) > $val) {
-                    self::write_ini_file(self::$_translations[$md5], self::$_path . "/" . self::$_language . "." . $md5 . ".ini");
+                    self::write_ini_file(self::$_translations[$md5], self::$_path."/".self::$_language.".".$md5.".ini");
                 }
             }
         }
@@ -757,16 +756,14 @@ namespace Glial\I18n {
             $content = "";
             if ($has_sections) {
                 foreach ($assoc_arr as $key => $elem) {
-                    $content .= "[" . $key . "]\n";
+                    $content .= "[".$key."]\n";
                     foreach ($elem as $key2 => $elem2) {
                         if (is_array($elem2)) {
                             for ($i = 0; $i < count($elem2); $i++) {
-                                $content .= $key2 . "[] = \"" . $elem2[$i] . "\"\n";
+                                $content .= $key2."[] = \"".$elem2[$i]."\"\n";
                             }
-                        } else if ($elem2 == "")
-                            $content .= $key2 . " = \n";
-                        else
-                            $content .= $key2 . " = \"" . $elem2 . "\"\n";
+                        } else if ($elem2 == "") $content .= $key2." = \n";
+                        else $content .= $key2." = \"".$elem2."\"\n";
                     }
                 }
             }
@@ -774,12 +771,10 @@ namespace Glial\I18n {
                 foreach ($assoc_arr as $key => $elem) {
                     if (is_array($elem)) {
                         for ($i = 0; $i < count($elem); $i++) {
-                            $content .= $key . "[] = \"" . $elem[$i] . "\"\n";
+                            $content .= $key."[] = \"".$elem[$i]."\"\n";
                         }
-                    } else if ($elem == "")
-                        $content .= $key . " = \n";
-                    else
-                        $content .= $key . " = \"" . $elem . "\"\n";
+                    } else if ($elem == "") $content .= $key." = \n";
+                    else $content .= $key." = \"".$elem."\"\n";
                 }
             }
 
@@ -795,13 +790,13 @@ namespace Glial\I18n {
 
         static public function installMysql()
         {
-            $lang = self::$languages;
+            $lang         = self::$languages;
             unset($lang['auto']);
             $lang['main'] = 'true';
 
             foreach ($lang as $iso => $libelle) {
 
-                $sql = "CREATE TABLE IF NOT EXISTS `translation_" . mb_strtolower($iso) . "` (
+                $sql = "CREATE TABLE IF NOT EXISTS `translation_".mb_strtolower($iso)."` (
               `id` int(11) NOT NULL auto_increment,
               `id_history_etat` int NOT NULL,
               `key` char(40) NOT NULL,
@@ -826,13 +821,13 @@ namespace Glial\I18n {
         static public function installOracle()
         {
 
-            $lang = self::$languages;
+            $lang         = self::$languages;
             unset($lang['auto']);
             $lang['main'] = 'true';
 
             foreach ($lang as $iso => $libelle) {
 
-                $sql = "CREATE TABLE translation_" . mb_strtolower($iso) . " (
+                $sql = "CREATE TABLE translation_".mb_strtolower($iso)." (
  id NUMBER(11) NOT NULL ,
  id_history_etat NUMBER(11) NOT NULL,
  key varchar2(40) NOT NULL,
@@ -847,15 +842,15 @@ namespace Glial\I18n {
  PRIMARY KEY (id)
 );
 
-CREATE SEQUENCE translation_" . mb_strtolower($iso) . "_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE translation_".mb_strtolower($iso)."_seq START WITH 1 INCREMENT BY 1;
 
 
-CREATE OR REPLACE TRIGGER trx_translation_" . mb_strtolower($iso) . "
-BEFORE INSERT ON translation_" . mb_strtolower($iso) . "
+CREATE OR REPLACE TRIGGER trx_translation_".mb_strtolower($iso)."
+BEFORE INSERT ON translation_".mb_strtolower($iso)."
 FOR EACH ROW
 
 BEGIN
-  SELECT translation_" . mb_strtolower($iso) . "_seq.NEXTVAL
+  SELECT translation_".mb_strtolower($iso)."_seq.NEXTVAL
   INTO   :new.id
   FROM   dual;
 END;
@@ -867,7 +862,7 @@ END;
 
         static public function unInstallMysql()
         {
-            $lang = self::$languages;
+            $lang         = self::$languages;
             unset($lang['auto']);
             $lang['main'] = 'true';
 
@@ -877,8 +872,8 @@ END;
             foreach ($lang as $iso => $libelle) {
 
 
-                if (in_array("translation_" . mb_strtolower($iso), $tables)) {
-                    $sql = "DROP TABLE `translation_" . mb_strtolower($iso) . "`;";
+                if (in_array("translation_".mb_strtolower($iso), $tables)) {
+                    $sql = "DROP TABLE `translation_".mb_strtolower($iso)."`;";
                     self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
                 }
             }
@@ -896,9 +891,7 @@ END;
                     break;
             }
         }
-
     }
-
 }
 
 namespace {
@@ -909,13 +902,12 @@ namespace {
     {
 
 
-        if ($lgfrom === "auto")
-            $lgfrom = I18n::GetDefault();
+        if ($lgfrom === "auto") $lgfrom     = I18n::GetDefault();
         $calledFrom = debug_backtrace();
 //return "<span id=\"".sha1($text)."\" lang=\"".$_LG->Get()."\">".$_LG->_($text,$lgfrom,$calledFrom[0]['file'],$calledFrom[0]['line'])."</span>";
 
-        $file = str_replace(ROOT . "/", '', $calledFrom[0]['file']);
-        $var = I18n::_($text, $lgfrom, $file, $calledFrom[0]['line']);
+        $file = str_replace(ROOT."/", '', $calledFrom[0]['file']);
+        $var  = I18n::_($text, $lgfrom, $file, $calledFrom[0]['line']);
 
 
 
@@ -935,14 +927,14 @@ namespace {
                 $sql = "SELECT b.text 
 				FROM species_main a
 				inner JOIN scientific_name_translation b ON a.id = b.id_species_main AND b.id_species_sub = 0 and b.is_valid=1
-				INNER JOIN language c ON c.iso3 = b.language AND c.iso = '" . I18n::Get() . "'
-			where a.scientific_name ='" . $scientific_name . "'";
+				INNER JOIN language c ON c.iso3 = b.language AND c.iso = '".I18n::Get()."'
+			where a.scientific_name ='".$scientific_name."'";
                 $res = I18n::getDb()->sql(I18n::DATABASE)->sql_query($sql);
 
 
                 if (I18n::getDb()->sql(I18n::DATABASE)->sql_num_rows($res) == 1) {
-                    $ob = I18n::getDb()->sql(I18n::DATABASE)->sql_fetch_object($res);
-                    $replace_with[] = $ob->text . " (" . $scientific_name . ")";
+                    $ob             = I18n::getDb()->sql(I18n::DATABASE)->sql_fetch_object($res);
+                    $replace_with[] = $ob->text." (".$scientific_name.")";
                 } else {
                     $replace_with[] = $scientific_name;
                 }
@@ -952,5 +944,4 @@ namespace {
         }
         return $var;
     }
-
 }

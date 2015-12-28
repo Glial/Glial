@@ -30,6 +30,9 @@ class GoogleImage
         $url = "http://www.google.fr/search?q=%22Lonchura+maja%22&hl=fr&client=firefox-a&rls=org.mozilla:fr:official&biw=1173&bih=775&gbv=1&tbm=isch&ei=fJzXTpq5A4aj4gTjt73rDQ&start=20&sa=N";
         $url = "http://www.google.fr/search?q=%22" . $var2 . "%22&hl=fr&client=firefox-a&rls=org.mozilla:fr:official&biw=1173&bih=775&gbv=1&tbm=isch&ei=jpzXTsqaE6bb4QSohJneDQ&start=0&sa=N";
 
+
+        //echo ""
+
         $data = array();
 
         $ch = curl_init();

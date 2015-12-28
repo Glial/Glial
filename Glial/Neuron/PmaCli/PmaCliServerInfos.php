@@ -19,11 +19,12 @@ trait PmaCliServerInfos
 
     //use Glial\Neuron\PmaCli\PmaCliCommons;
 
+    /*
     static public function test ($param)
     {
         echo "a $param";
         sleep(10);
-    }
+    }*/
     
     
     public function setServerInfosMain($param)
