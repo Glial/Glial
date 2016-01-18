@@ -12,10 +12,7 @@ order by a.total_found desc
 
 /**
  * Glial Framework
- *
  * LICENSE
- *
- *
  */
 
 namespace Glial\Parser\Flickr;
@@ -175,7 +172,6 @@ class Flickr
             if (preg_match('#photos/([a-z0-9@]+)/#i', $tmp, $out)) {
                 $data['id_author'] = $out[1];
 
-
             } else {
                 throw new \Exception("GLI-366 : impossible to get the author");
                 return false;
@@ -188,10 +184,7 @@ class Flickr
             throw new \Exception("GLI-366 : Impossible to find tag : <div class=\"attribution-info\"");
         }
 
-
-
-
-        print_r($data);
+        //print_r($data);
 
         $brut_min = Grabber::getTagContent($content, '<div id="photo', true);
 
@@ -278,7 +271,6 @@ class Flickr
         $data = array();
 
         $content = self::curl($url);
-
         $content = Grabber::getTagContent($content, '<div class="photo-data"', true);
         $tab = Grabber::getTagContents($content, '<h2', true);
         $tab2 = Grabber::getTagContents($content, '<table cellspacing="0" cellpadding="0" width="100%">', false);

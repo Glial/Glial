@@ -15,10 +15,13 @@ class Ssh
         $this->connection = ssh2_connect($host, $port);
 
 
-        if (!empty($passwd)) {
+        if (empty($passwd)) {
             //resource $session , string $username , string $pubkeyfile , string $privkeyfile [, string $passphrase ]
             $ssh = ssh2_auth_pubkey_file($this->connection, $user, $pulic_key, $private_key);
+            
         } else if (empty($private_key) || empty($pulic_key)) {
+
+            
             $ssh = ssh2_auth_password ( $this->connection, $user, $passwd);
         }
 
@@ -27,6 +30,7 @@ class Ssh
                 throw new \Exception("GLI-014 : Connexion to ssh impossible on : ".$user."@".$host.":".$port."");
             }
         } else {
+            echo "Connexion to ssh impossible on : " . $user . "@" . $host . ":" . $port."\n";
             //throw new \Exception("GLI-014 : Connexion to ssh impossible on : " . $user . "@" . $host . ":" . $port . "");
         }
     }

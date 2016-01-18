@@ -214,10 +214,11 @@ class Ssh
 
     public function whereis($cmd)
     {
+
+
         $paths = $this->exec("whereis " . $cmd);
         
         
-        debug($paths);
         
         $tmp = trim(explode(" ", trim(explode(":", $paths)[1]))[0]);
         

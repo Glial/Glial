@@ -13,10 +13,8 @@ use \Glial\Synapse\Basic;
 
 trait Administration
 {
-
     function admin_table()
     {
-
         if (IS_CLI) {
 
             $this->view = false;

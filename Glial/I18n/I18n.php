@@ -348,7 +348,6 @@ namespace Glial\I18n {
                 self::$_to_translate[$from][$key]['md5']  = self::$_md5File;
                 self::$_to_translate[$from][$key]['line'] = self::$line;
 
-
                 return false;
             } else {
                 die("We have a problem !");
@@ -656,6 +655,18 @@ namespace Glial\I18n {
 //$body = iconv(self::charset[$to], "UTF-8", $body);
 
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
+
+
+            //echo $content;
+
+
+
+
+
+            $out = explode("<br>", $content);
+
+
+            
             $content = str_replace('<br>', '', $content);
 
             $out = Grabber::getTagContents($content, '<span title="', true);
@@ -665,21 +676,27 @@ namespace Glial\I18n {
 
             //var_dump($content);
 //verify that we exactly the same number of element in entry
+            
+            
             $nb = explode("\n", trim($string));
 
+            
             if (!is_array($out)) {
                 $out = explode("\n", trim($out));
             }
-
+            
 
 //we check that we have same number of input and output
 
 
             if (count($nb) != count($out)) {
 
+
+
                 debug($nb);
                 debug($out);
 
+                echo $url."<br>\n";
                 throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
                 return false;
             }

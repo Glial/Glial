@@ -29,12 +29,16 @@ class Google
        
         $content = Grabber::getTagContent($data,'<div data-jibp="h" data-jiis="uc" id="search"', true);
 
-         //echo $content;
+        //echo $content;
         //echo htmlentities($content);
         
         
+        $search = [];
+
         if ($content) {
-            $list_li = Grabber::getTagContents($data,'<li class="g">', true);
+            $list_li = Grabber::getTagContents($data,'<div class="g">', true);
+
+            //print_r($list_li);
 
             $i =0;
             foreach ($list_li as $li) {
