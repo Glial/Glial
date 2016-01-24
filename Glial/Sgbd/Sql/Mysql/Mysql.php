@@ -257,7 +257,7 @@ class Mysql extends Sql
 
         if (empty($this->version)) {
 
-            $sql = "SHOW GLOBAL VARIABLES LIKE 'version'";
+            $sql = "SHOW VARIABLES LIKE 'version'";
 
             $res  = $this->sql_query($sql);
             $data = $this->sql_fetch_array($res, MYSQLI_ASSOC);
@@ -394,7 +394,7 @@ class Mysql extends Sql
      * @since 3.0 First time this was introduced.
      * @version 3.0.1
      */
-    public function getVariable()
+    public function XgetVariable()
     {
 
         if (empty($this->version)) {
@@ -434,8 +434,20 @@ class Mysql extends Sql
     {
 
         if (empty($this->status)) {
-            $sql = "SHOW GLOBAL STATUS";
-            $res = $this->sql_query($sql);
+            
+
+            if (version_compare($this->getVersion(), '5.0', '<'))
+	    {
+		$sql ="SHOW STATUS";
+	    }
+	    else
+	    {
+		$sql = "SHOW GLOBAL STATUS";
+            }
+
+
+
+	    $res = $this->sql_query($sql);
 
             while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
                 $this->status[$data['Variable_name']] = $data['Value'];
