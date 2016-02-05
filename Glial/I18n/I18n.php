@@ -654,10 +654,12 @@ namespace Glial\I18n {
 // if we send no user_agent google send sentence translated in default charset we asked for the language
 //$body = iconv(self::charset[$to], "UTF-8", $body);
 
+	debug($body);
+
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
 
 
-            //echo $content;
+            echo $content;
 
 
 
@@ -917,7 +919,7 @@ namespace {
 
     function __($text, $lgfrom = "auto")
     {
-
+	return $text;
 
         if ($lgfrom === "auto") $lgfrom     = I18n::GetDefault();
         $calledFrom = debug_backtrace();
