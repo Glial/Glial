@@ -109,7 +109,7 @@ class Form
         return $ret;
     }
 
-    static public function checkBox($table, $field, $value, $text, $options = array(), $options = array())
+    static public function checkBox($table, $field, $value, $text, $options = array())
     {
 
         return '<label class="checkbox-inline">'
