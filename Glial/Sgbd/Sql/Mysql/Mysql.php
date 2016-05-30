@@ -144,7 +144,7 @@ class Mysql extends Sql
     {
         $rep = array();
 
-        while ($tab = mysqli_fetch_array($res, MYSQL_ASSOC)) {
+        while ($tab = mysqli_fetch_array($res, MYSQLI_ASSOC)) {
 
             $rep[] = $tab;
         }
@@ -543,7 +543,7 @@ class Mysql extends Sql
         $res = $this->sql_query($sql);
 
         $table = array();
-        while ($ar    = $this->sql_fetch_array($res, MYSQL_NUM)) {
+        while ($ar    = $this->sql_fetch_array($res, MYSQLI_NUM)) {
 
             $table[] = $ar;
         }
