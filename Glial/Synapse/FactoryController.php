@@ -9,7 +9,8 @@ class FactoryController
 {
 
     static $di = array();
-
+    static $controller;
+    static $method;
     /**
 
      * (Glial 2.1)<br/>
@@ -54,6 +55,11 @@ class FactoryController
 
         $node = new Controller($controller, $action, json_encode($param));
         $node->setDi(self::$di);
+
+
+	self::$controller = $controller;
+	self::$method = $action;
+
 
         $node->setRootNode();
         $node->getController();
