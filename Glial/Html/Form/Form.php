@@ -2,15 +2,15 @@
 
 namespace Glial\Html\Form;
 
-class Form
-{
+class Form {
 
     static $data = array();
     static $indice = false;
     static $ajax = false;
+    static $select_display_msg = true;
+    static $select_multiple = false;
 
-    static public function input($table, $field, $options = array())
-    {
+    static public function input($table, $field, $options = array()) {
 
         $indice = self::getIndice($table, $field);
 
@@ -48,8 +48,7 @@ class Form
         return "<input id=\"" . $id . "\" name=\"" . $name . "\" " . $extra . " />" . $error;
     }
 
-    static public function select($table, $field, $data, $default_id = "", $options = array(), $indice = -1)
-    {
+    static public function select($table, $field, $data, $default_id = "", $options = array(), $indice = -1) {
         if ($indice === -1) {
             $indice = self::getIndice($table, $field);
         }
@@ -65,18 +64,29 @@ class Form
 
         $extra = self::formatOptions($options);
 
-
         $ret = "";
+
+
+        if (self::$select_multiple) {
+            $add_array = "[]";
+            $extra .= " multiple";
+        } else {
+            $add_array = "";
+        }
+
+
+
+
         if (!self::$ajax) {
             if ($indice != -1) {
-                $ret .= "<select id=\"" . $table . "-" . $indice . "-" . $field . "\" $extra name=\"" . $table . "[" . $indice . "]" . "[" . $field . "]\">";
+                $ret .= "<select id=\"" . $table . "-" . $indice . "-" . $field . "\" $extra name=\"" . $table . "[" . $indice . "]" . "[" . $field . "]" . $add_array . "\">\n";
             } else {
-                $ret .= "<select id=\"" . $table . "-" . $field . "\" $extra name=\"" . $table . "[" . $field . "]\">";
+                $ret .= "<select id=\"" . $table . "-" . $field . "\" $extra name=\"" . $table . "[" . $field . "]" . $add_array . "\">\n";
             }
         }
 
-        if (count($data) != 1) {
-            $ret .= "<option value=\"\">--- " . __("Select") . " ---</option>";
+        if (count($data) != 1 && self::$select_display_msg) {
+            $ret .= "<option value=\"\">" . __("Nothing selected") . "</option>";
         }
 
         $i = 0;
@@ -91,34 +101,52 @@ class Form
                 $i++;
             }
             else {
-                if ((!empty($_GET[$table][$field]) && $_GET[$table][$field] == $val['id']) || (!empty($default_id) && $default_id == $val['id'])) {
-                    $ret .= "<option value=\"" . $val['id'] . "\" selected=\"selected\">" . $val['libelle'] . "</option>";
+
+
+                $option_to_option = '';
+
+
+                if (!empty($val['options'])) {
+                    if (is_array($val['options'])) {
+
+
+                        foreach ($val['options'] as $key_opt => $key_val) {
+                            $option_to_option .= ' ' . $key_opt . '="' . $key_val . '" ';
+                        }
+                    }
+                }
+
+                if ((!empty($_GET[$table][$field]) && $_GET[$table][$field] == $val['id']) 
+                        || (!empty($default_id) && $default_id == $val['id'] && self::$select_multiple === false) 
+                        || (!empty($_GET[$table][$field]) && self::$select_multiple === true && in_array($val['id'], json_decode($_GET[$table][$field], true)))
+                ) {
+                    $ret .= "<option value=\"" . $val['id'] . "\" selected=\"selected\">" . $val['libelle'] . "</option>\n";
                 } else {
-                    $ret .= "<option value=\"" . $val['id'] . "\">" . $val['libelle'] . "</option>";
+                    $ret .= "<option value=\"" . $val['id'] . "\">" . $val['libelle'] . "</option>\n";
                 }
             }
         }
-        if ($i > 0)
+        if ($i > 0) {
             $ret .= "</optgroup>";
-
+        }
 
 
         if (!self::$ajax) {
             $ret .= "</select>" . $error;
         }
+        self::$select_multiple = false;
+        
         return $ret;
     }
 
-    static public function checkBox($table, $field, $value, $text, $options = array(), $options = array())
-    {
+    static public function checkBox($table, $field, $value, $text, $options = array()) {
 
         return '<label class="checkbox-inline">'
                 . '<input type="checkbox" id="' . $table . '-' . $field . '" value="' . $value . '">' . $text . ''
                 . '</label>';
     }
 
-    static private function getIndice($table, $field)
-    {
+    static private function getIndice($table, $field) {
         if (!self::$indice) {
             return -1;
         }
@@ -130,13 +158,11 @@ class Form
         return self::$data[$table][$field];
     }
 
-    static public function setIndice($val)
-    {
+    static public function setIndice($val) {
         self::$indice = ($val === true) ? true : false;
     }
 
-    static public function autocomplete($table, $field, $options = array())
-    {
+    static public function autocomplete($table, $field, $options = array()) {
 
         $indice = self::getIndice($table, $field);
         $extra = self::formatOptions($options);
@@ -178,18 +204,21 @@ class Form
         }
     }
 
-    static private function formatOptions($options = array())
-    {
+    static private function formatOptions($options = array()) {
         $extra = "";
         foreach ($options as $key => $val) {
+
+            if ($key === "multiple") {
+                self::$select_multiple = true;
+            }
+
             $extra .= $key . '="' . $val . '" ';
         }
 
         return $extra;
     }
 
-    static public function setAjax($val)
-    {
+    static public function setAjax($val) {
         self::$ajax = ($val === true) ? true : false;
     }
 
