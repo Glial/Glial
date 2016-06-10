@@ -43,7 +43,7 @@ class Aes {
                 // The options to use
                 $this->options = array_merge(
                         array(
-                            'compress' => true,         // compress the data before encrypting
+                            'compress' => false,         // compress the data before encrypting
                             'base64_encode' => true,    // base64_encode the encrypted data
                             'url_safe' => true,         // make the encrypted data url_safe
                             'use_keygen' => true,       // transform a user supplied key into a key using more of the available keyspace
@@ -148,6 +148,7 @@ class Aes {
                 // Decompress if required
                 if ($this->options['compress']) {
                         $data = gzuncompress($data);
+                        
                 }
 
                 // Unserialize the data
