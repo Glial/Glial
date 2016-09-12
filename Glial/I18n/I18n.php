@@ -269,6 +269,7 @@ namespace Glial\I18n {
         private static $_md5File;
         private static $file_path;
         private static $countNumberElemAtLoading = array();
+        private static $DEBUG = false;
 
         /**
          * Constructor
@@ -653,13 +654,12 @@ namespace Glial\I18n {
 
 // if we send no user_agent google send sentence translated in default charset we asked for the language
 //$body = iconv(self::charset[$to], "UTF-8", $body);
-
-	debug($body);
+//	debug($body);
 
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
 
 
-            echo $content;
+            //echo $content;
 
 
 
@@ -668,7 +668,7 @@ namespace Glial\I18n {
             $out = explode("<br>", $content);
 
 
-            
+
             $content = str_replace('<br>', '', $content);
 
             $out = Grabber::getTagContents($content, '<span title="', true);
@@ -678,23 +678,25 @@ namespace Glial\I18n {
 
             //var_dump($content);
 //verify that we exactly the same number of element in entry
-            
-            
+
+
             $nb = explode("\n", trim($string));
 
-            
+
             if (!is_array($out)) {
                 $out = explode("\n", trim($out));
             }
-            
+
 
 //we check that we have same number of input and output
 
 
             if (count($nb) != count($out)) {
 
+                debug($from);
+                debug($string);
 
-
+                echo '<hr>';
                 debug($nb);
                 debug($out);
 
@@ -910,6 +912,11 @@ END;
                     break;
             }
         }
+
+        static public function setDebug($debug = \I18n::DEBUG)
+        {
+            self::$DEBUG = $debug;
+        }
     }
 }
 
@@ -919,7 +926,7 @@ namespace {
 
     function __($text, $lgfrom = "auto")
     {
-	return $text;
+        //return $text;
 
         if ($lgfrom === "auto") $lgfrom     = I18n::GetDefault();
         $calledFrom = debug_backtrace();

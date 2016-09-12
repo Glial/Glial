@@ -2,19 +2,22 @@
 
 namespace Glial\Html\Form;
 
-class Form {
-
-    static $data = array();
-    static $indice = false;
-    static $ajax = false;
+class Form
+{
+    static $data               = array();
+    static $indice             = false;
+    static $ajax               = false;
     static $select_display_msg = true;
-    static $select_multiple = false;
+    static $select_multiple    = false;
 
-    static public function input($table, $field, $options = array()) {
+    static public function input($table, $field, $options = array())
+    {
 
         $indice = self::getIndice($table, $field);
 
-
+        if (empty($options['class'])) {
+            $options['class'] = "";
+        }
         $error = "";
 
         if ($indice !== -1) {
@@ -28,32 +31,36 @@ class Form {
         }
 
         if (!empty($_SESSION['ERROR'][$table][$field])) {
-            $error = " <span class=\"error\">" . $_SESSION['ERROR'][$table][$field] . "</span>";
-            $options['class'] = (empty($options['value'])) ? "error" : $options['value'] . " error";
+            $error = " <span class=\"error\">".$_SESSION['ERROR'][$table][$field]."</span>";
+            //$options['value'] .= (empty($options['value'])) ? "error" : $options['value']." error";
 
             unset($_SESSION['ERROR'][$table][$field]);
         }
 
+        if (empty($options['class'])) {
+            unset($options['class']);
+        }
 
         $extra = self::formatOptions($options);
 
         if ($indice !== -1) {
-            $id = $table . "-" . $indice . "-" . $field;
-            $name = $table . "[" . $indice . "][" . $field . "]";
+            $id   = $table."-".$indice."-".$field;
+            $name = $table."[".$indice."][".$field."]";
         } else {
-            $id = $table . "-" . $field;
-            $name = $table . "[" . $field . "]";
+            $id   = $table."-".$field;
+            $name = $table."[".$field."]";
         }
 
-        return "<input id=\"" . $id . "\" name=\"" . $name . "\" " . $extra . " />" . $error;
+        return "<input id=\"".$id."\" name=\"".$name."\" ".$extra." />".$error;
     }
 
-    static public function select($table, $field, $data, $default_id = "", $options = array(), $indice = -1) {
+    static public function select($table, $field, $data, $default_id = "", $options = array(), $indice = -1)
+    {
         if ($indice === -1) {
             $indice = self::getIndice($table, $field);
         }
         if (!empty($_SESSION['ERROR'][$table][$field])) {
-            $error = " <span class=\"error\">" . $_SESSION['ERROR'][$table][$field] . "</span>";
+            $error = " <span class=\"error\">".$_SESSION['ERROR'][$table][$field]."</span>";
             $class = " error";
             unset($_SESSION['ERROR'][$table][$field]);
         } else {
@@ -79,14 +86,14 @@ class Form {
 
         if (!self::$ajax) {
             if ($indice != -1) {
-                $ret .= "<select id=\"" . $table . "-" . $indice . "-" . $field . "\" $extra name=\"" . $table . "[" . $indice . "]" . "[" . $field . "]" . $add_array . "\">\n";
+                $ret .= "<select id=\"".$table."-".$indice."-".$field."\" $extra name=\"".$table."[".$indice."]"."[".$field."]".$add_array."\">\n";
             } else {
-                $ret .= "<select id=\"" . $table . "-" . $field . "\" $extra name=\"" . $table . "[" . $field . "]" . $add_array . "\">\n";
+                $ret .= "<select id=\"".$table."-".$field."\" $extra name=\"".$table."[".$field."]".$add_array."\">\n";
             }
         }
 
         if (count($data) != 1 && self::$select_display_msg) {
-            $ret .= "<option value=\"\">" . __("Nothing selected") . "</option>";
+            $ret .= "<option value=\"\">".__("Nothing selected")."</option>";
         }
 
         $i = 0;
@@ -94,35 +101,30 @@ class Form {
         foreach ($data as $val) {
             if (!empty($val['group']) && 1 === $val['group']) {
 
-                if ($i != 0)
-                    $ret .= "</optgroup>";
-                $ret .= "<optgroup LABEL=\"" . $val['libelle'] . "\">";
+                if ($i != 0) $ret .= "</optgroup>";
+                $ret .= "<optgroup LABEL=\"".$val['libelle']."\">";
 
                 $i++;
             }
             else {
-
-
                 $option_to_option = '';
-
-
                 if (!empty($val['options'])) {
                     if (is_array($val['options'])) {
 
 
                         foreach ($val['options'] as $key_opt => $key_val) {
-                            $option_to_option .= ' ' . $key_opt . '="' . $key_val . '" ';
+                            $option_to_option .= ' '.$key_opt.'="'.$key_val.'" ';
                         }
                     }
                 }
 
-                if ((!empty($_GET[$table][$field]) && $_GET[$table][$field] == $val['id']) 
-                        || (!empty($default_id) && $default_id == $val['id'] && self::$select_multiple === false) 
-                        || (!empty($_GET[$table][$field]) && self::$select_multiple === true && in_array($val['id'], json_decode($_GET[$table][$field], true)))
+                if ((!empty($_GET[$table][$field]) && $_GET[$table][$field] == $val['id']) || (!empty($default_id) && $default_id == $val['id']
+                    && self::$select_multiple === false) || (!empty($_GET[$table][$field]) && self::$select_multiple === true && in_array($val['id'],
+                        json_decode($_GET[$table][$field], true)))
                 ) {
-                    $ret .= "<option value=\"" . $val['id'] . "\" selected=\"selected\">" . $val['libelle'] . "</option>\n";
+                    $ret .= "<option value=\"".$val['id']."\" selected=\"selected\">".$val['libelle']."</option>\n";
                 } else {
-                    $ret .= "<option value=\"" . $val['id'] . "\">" . $val['libelle'] . "</option>\n";
+                    $ret .= "<option value=\"".$val['id']."\">".$val['libelle']."</option>\n";
                 }
             }
         }
@@ -132,21 +134,23 @@ class Form {
 
 
         if (!self::$ajax) {
-            $ret .= "</select>" . $error;
+            $ret .= "</select>".$error;
         }
         self::$select_multiple = false;
-        
+
         return $ret;
     }
 
-    static public function checkBox($table, $field, $value, $text, $options = array()) {
+    static public function checkBox($table, $field, $value, $text, $options = array())
+    {
 
         return '<label class="checkbox-inline">'
-                . '<input type="checkbox" id="' . $table . '-' . $field . '" value="' . $value . '">' . $text . ''
-                . '</label>';
+            .'<input type="checkbox" id="'.$table.'-'.$field.'" value="'.$value.'">'.$text.''
+            .'</label>';
     }
 
-    static private function getIndice($table, $field) {
+    static private function getIndice($table, $field)
+    {
         if (!self::$indice) {
             return -1;
         }
@@ -158,35 +162,37 @@ class Form {
         return self::$data[$table][$field];
     }
 
-    static public function setIndice($val) {
+    static public function setIndice($val)
+    {
         self::$indice = ($val === true) ? true : false;
     }
 
-    static public function autocomplete($table, $field, $options = array()) {
+    static public function autocomplete($table, $field, $options = array())
+    {
 
         $indice = self::getIndice($table, $field);
-        $extra = self::formatOptions($options);
+        $extra  = self::formatOptions($options);
 
         if ($indice != -1) {
             if (!empty($_GET[$table][$indice][$field])) {
-                $value = $_GET[$table][$indice][$field];
-                $valueauto = $_GET[$table][$indice][$field . "_auto"];
+                $value     = $_GET[$table][$indice][$field];
+                $valueauto = $_GET[$table][$indice][$field."_auto"];
             } else {
-                $value = "";
+                $value     = "";
                 $valueauto = "";
             }
         } else {
             if (!empty($_GET[$table][$field])) {
-                $value = $_GET[$table][$field];
-                $valueauto = $_GET[$table][$field . "_auto"];
+                $value     = $_GET[$table][$field];
+                $valueauto = $_GET[$table][$field."_auto"];
             } else {
-                $value = "";
+                $value     = "";
                 $valueauto = "";
             }
         }
 
         if (!empty($_SESSION['ERROR'][$table][$field])) {
-            $error = " <span class=\"error\">" . $_SESSION['ERROR'][$table][$field] . "</span>";
+            $error = " <span class=\"error\">".$_SESSION['ERROR'][$table][$field]."</span>";
             $class = " error";
             unset($_SESSION['ERROR'][$table][$field]);
         } else {
@@ -196,15 +202,16 @@ class Form {
 
         if ($indice != -1) {
 //return "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" class=\"" . $classo . "text" . $class . "\" type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "]\" value=\"" . $value . "\" />" . $error;
-            return "<input id=\"" . $table . "-" . $indice . "-" . $field . "_auto\" $extra type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "_auto]\" value=\"" . $valueauto . "\" />"
-                    . "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" name=\"" . $table . "[" . $indice . "][" . $field . "]\" class=\"auto\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
+            return "<input id=\"".$table."-".$indice."-".$field."_auto\" $extra type=\"text\" name=\"".$table."[".$indice."][".$field."_auto]\" value=\"".$valueauto."\" />"
+                ."<input id=\"".$table."-".$indice."-".$field."\" name=\"".$table."[".$indice."][".$field."]\" class=\"auto\" type=\"hidden\" value=\"".$value."\" />".$error;
         } else {
-            return "<input id=\"" . $table . "-" . $field . "_auto\" $extra type=\"text\" name=\"" . $table . "[" . $field . "_auto]\" value=\"" . $valueauto . "\" />"
-                    . "<input id=\"" . $table . "-" . $field . "\" name=\"" . $table . "[" . $field . "]\" class=\"hidden\" type=\"hidden\" value=\"" . $value . "\" />" . $error;
+            return "<input id=\"".$table."-".$field."_auto\" $extra type=\"text\" name=\"".$table."[".$field."_auto]\" value=\"".$valueauto."\" />"
+                ."<input id=\"".$table."-".$field."\" name=\"".$table."[".$field."]\" class=\"hidden\" type=\"hidden\" value=\"".$value."\" />".$error;
         }
     }
 
-    static private function formatOptions($options = array()) {
+    static private function formatOptions($options = array())
+    {
         $extra = "";
         foreach ($options as $key => $val) {
 
@@ -212,14 +219,14 @@ class Form {
                 self::$select_multiple = true;
             }
 
-            $extra .= $key . '="' . $val . '" ';
+            $extra .= $key.'="'.$val.'" ';
         }
 
         return $extra;
     }
 
-    static public function setAjax($val) {
+    static public function setAjax($val)
+    {
         self::$ajax = ($val === true) ? true : false;
     }
-
 }

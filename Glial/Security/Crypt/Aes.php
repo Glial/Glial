@@ -147,7 +147,10 @@ class Aes {
                 
                 // Decompress if required
                 if ($this->options['compress']) {
-                        $data = gzuncompress($data);
+                        if (!empty($data))
+			{
+				$data = gzuncompress($data);
+			}
                         
                 }
 

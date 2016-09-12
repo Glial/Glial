@@ -41,11 +41,10 @@ class SetTimeLimit
         //file_put_contents('debug.txt', time().':cmd:'.$cmd."\n", FILE_APPEND);
         //file_put_contents('debug.txt', time().':stdin:'.$stdin."\n", FILE_APPEND);
 
-        $params = implode(" ", $param);
+        $params = "'".implode("' '", $param)."'";
         $cmd = "php -f " . ROOT . "/application/webroot/index.php $controller $action $params";
 
-
-        //echo $cmd;
+        //echo $cmd."\n<br>";
 
         $process = proc_open($cmd, [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes);
         if (!is_resource($process)) {
@@ -112,8 +111,8 @@ class SetTimeLimit
         $start = time();
         $stdout = '';
         $stderr = '';
-        //file_put_contents('debug.txt', time().':cmd:'.$cmd."\n", FILE_APPEND);
-        //file_put_contents('debug.txt', time().':stdin:'.$stdin."\n", FILE_APPEND);
+        file_put_contents('debug.txt', time().':cmd:'.$cmd."\n", FILE_APPEND);
+        file_put_contents('debug.txt', time().':stdin:'.$stdin."\n", FILE_APPEND);
 
         $process = proc_open($cmd, [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes);
         if (!is_resource($process)) {
@@ -137,12 +136,13 @@ class SetTimeLimit
 //only terminate subprocess, won't terminate sub-subprocess
                 posix_kill(-$status['pid'], 9);
                 ////sends SIGKILL to all processes inside group(negative means GPID, all subprocesses share the top process group, except nested my_timeout_exec)
-                //file_put_contents('debug.txt', time().":kill group {$status['pid']}\n", FILE_APPEND);
+
+file_put_contents('debug.txt', time().":kill group {$status['pid']}\n", FILE_APPEND);
                 return array('return' => '1', 'stdout' => $stdout, 'stderr' => $stderr);
             }
 
             $status = proc_get_status($process);
-            //file_put_contents('debug.txt', time().':status:'.var_export($status, true)."\n";
+            file_put_contents('debug.txt', time().':status:'.var_export($status, true));
             if (!$status['running']) {
                 fclose($pipes[1]);
                 fclose($pipes[2]);

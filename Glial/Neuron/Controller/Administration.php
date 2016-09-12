@@ -13,6 +13,8 @@ use \Glial\Synapse\Basic;
 
 trait Administration
 {
+
+    
     function admin_table()
     {
         if (IS_CLI) {
@@ -212,49 +214,84 @@ trait Administration
     public function index()
     {
 
-        $this->layout_name = "admin";
+        //$this->layout_name = "admin";
         $this->title = __("Administration");
         $this->ariane = "> " . $this->title;
         $dir = APP_DIR . DS . "controller";
         // Add your class dir to include path
         if (is_dir($dir)) {
-            $acl = new Acl($GLOBALS['_SITE']['id_group']);
+
+            //$acl = new Acl($GLOBALS['_SITE']['id_group']);
+            //$acl = $this->di['acl'];
+
+
             $path = $dir . "/*.controller.php";
             $list_class = glob($path);
             //$method_class_controller = get_class_methods("\Glial\Synapse\Controller");
+
+
             foreach ($list_class as $file) {
                 if (strstr($file, '.controller.php')) {
                     $full_name = pathinfo($file);
                     list($className, ) = explode(".", $full_name['filename']);
                     if ($className != __CLASS__) {
-                        require($file);
+                        //require_once($file);
                     }
-                    $class = new ReflectionClass($className);
-                    $tab_methods = $class->getMethods(ReflectionMethod::IS_PUBLIC);
+                    
+                    $class = new \ReflectionClass($className);
+
+
+                    $tab_methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
                     $methods = array();
+
+
+
                     foreach ($tab_methods as $method) {
                         if ($method->class === $className) {
                             if (strstr($method->name, 'admin')) {
+
+
+
+
                                 $methods[] = $method->name;
                             }
                         }
                     }
+
+
                     //$tab3 = array_diff($methods, $method_class_controller);
+
+                    $data['method'] = $methods;
+
+
                     foreach ($methods as $name) {
-                        if ($acl->isAllowed($className, $name)) {
+                        //if ($GLOBALS['acl']->isAllowed($className, $name)) {
+
+
+
                             if (property_exists($className, "module_group")) {
                                 $admin = new $className("", "", "");
                                 $tmp = $admin->$name();
-                                $this->data['link'][$admin->module_group][$tmp['name']] = $admin->$name();
-                                $this->data['link'][$admin->module_group][$tmp['name']]['url'] = $className . "/" . $name . "/";
+                                $data['link'][$admin->module_group][$tmp['name']] = $admin->$name();
+                                $data['link'][$admin->module_group][$tmp['name']]['url'] = $className . "/" . $name . "/";
                             }
-                        }
+                        //}
                     }
+         
                     // echo "memory : " . (memory_get_usage() / 1024 / 1024) . " M  fichier : $file : type : " . filetype($file) . "\n<br />";
                 }
             }
         }
         $this->set("data", $this->data);
+    }
+
+
+    function acl()
+    {
+        
+        $this->view = false;
+        
+        echo $GLOBALS['acl'];
     }
 
 }

@@ -3,6 +3,8 @@
 
 use \Glial\Cli\Color;
 
+
+
 /**
  * Basic defines for timing functions.
  */
@@ -34,7 +36,7 @@ function debug($var = false, $showHtml = false, $showFrom = true)
         echo Color::getColoredString(substr(str_replace(ROOT, '', $calledFrom[0]['file']), 1).' (line ' . $calledFrom[0]['line'] . ')', "grey", "blue","bold") . "\n";
         print_r($var);
     } else {
-        if (ENVIRONEMENT) {
+        if (true) {
 
             if ($showFrom) {
                 $calledFrom = debug_backtrace();

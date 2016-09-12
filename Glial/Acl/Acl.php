@@ -110,7 +110,7 @@ class Acl
 
                         if (!class_exists($controller)) {
 
-                            require($dir . $file);
+                            require_once($dir . $file);
                         }
 
 			if (!class_exists($controller)) {
