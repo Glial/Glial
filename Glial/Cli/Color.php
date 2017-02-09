@@ -57,9 +57,8 @@ class Color
       90–99	Set foreground text color, high intensity	aixterm (not in standard)
       100–109	Set background color, high intensity	aixterm (not in standard)
      */
-
 // Set up shell colors
-    private static $color = array(
+    private static $color      = array(
         'black' => 30,
         'red' => 31,
         'green' => 32,
@@ -78,7 +77,7 @@ class Color
         'purple' => 45,
         'cyan' => 46,
         'grey' => 47);
-    private static $style = array(
+    private static $style      = array(
         'normal' => 0,
         'bold' => 1, //Bold or increased intensity
         'light' => 1,
@@ -118,16 +117,18 @@ class Color
 
         $ansi[] = ($style) ? self::$style[$style] : '0';
         $ansi[] = ($color) ? self::$color[$color] : '37';
-        $ansi[] = ($background) ? self::$background[$background] : '40';
 
+        if (!empty($background)) {
+            $ansi[] = ($background) ? self::$background[$background] : '40';
+
+        }
         $str = implode(';', $ansi);
 
-        $colored_string = "\033[" . $str . "m";
-        $colored_string .= $string . "\033[0m";
+        $colored_string = "\033[".$str."m";
+        $colored_string .= $string."\033[0m";
 
         return $colored_string;
     }
-
     /* @since Glial 1.1
      * @description Returns all foreground color names
      * @param void void This function has no parameters.
@@ -163,7 +164,7 @@ class Color
             foreach (array_keys(self::$color) as $color) {
 
                 foreach (array_keys(self::$background) as $background) {
-                    echo self::getColoredString(str_pad($color, 7) . str_pad($background, 7) . str_pad($style, 9), $color, $background, $style) . " ";
+                    echo self::getColoredString(str_pad($color, 7).str_pad($background, 7).str_pad($style, 9), $color, $background, $style)." ";
                 }
                 echo PHP_EOL;
             }
@@ -189,10 +190,10 @@ class Color
     {
         //echo $color."--";
         if (!array_key_exists($color, $array)) {
-            throw new \DomainException("GLI-016 : Color code not found : " . $color);
+            throw new \DomainException("GLI-016 : Color code not found : ".$color);
         }
     }
-    
+
     static public function setColor($color = null, $background = null, $style = null)
     {
         ($style) ? self::testColor($color, self::$color) : '';
@@ -209,9 +210,8 @@ class Color
 
         $str = implode(';', $ansi);
 
-        $color = "\033[" . $str . "m";
-        
+        $color = "\033[".$str."m";
+
         return $color;
     }
-
 }

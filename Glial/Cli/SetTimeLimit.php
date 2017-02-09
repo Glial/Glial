@@ -13,7 +13,6 @@ class SetTimeLimit
 
     /*
      * this function launch a cmd and return true or false
-     * 
      * idea from kexianbin at diyism dot com : http://php.net/manual/fr/function.set-time-limit.php
      * 
      * 

@@ -235,7 +235,6 @@ $i = 10;
 
 
 
-
 if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
     $execution_time = microtime(true) - TIME_START;
 
@@ -264,9 +263,11 @@ if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
         echo "</table>";
     }
     $_DEBUG->print_table();
+
+    /*
     echo $_DEBUG->graph();
     echo $_DEBUG->graph2();
-
+*/
 
     //debug(get_declared_classes());
 
