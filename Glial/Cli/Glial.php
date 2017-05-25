@@ -24,7 +24,6 @@ class Glial
 ╚██████╔╝███████╗██║██║  ██║███████╗
  ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═╝╚══════╝";
         
-
         return $logo;
     }
 
@@ -34,11 +33,22 @@ class Glial
         $str = self::logo();
         
         $str .= PHP_EOL;
-        $str .= Color::getColoredString("Glial 3.2", "green");
-        $str .= " (2015-01-05) by Aurélien LEQUOY.".PHP_EOL;
+        $str .= Color::getColoredString("Glial ".self::version(), "green");
+        $str .= " (".self::date().") written by Aurélien LEQUOY.".PHP_EOL;
         
         return $str;
     }
     
+    
+    public static function version()
+    {
+        return "4.1.7";
+    }
+    
+    
+        public static function date()
+    {
+        return "2017-05-25";
+    }
     
 }

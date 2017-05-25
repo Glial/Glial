@@ -1,0 +1,503 @@
+[
+    {
+        "name": "psr/log",
+        "version": "1.0.2",
+        "version_normalized": "1.0.2.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/php-fig/log.git",
+            "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/php-fig/log/zipball/4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+            "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "time": "2016-10-10T12:19:37+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Psr\\Log\\": "Psr/Log/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "PHP-FIG",
+                "homepage": "http://www.php-fig.org/"
+            }
+        ],
+        "description": "Common interface for logging libraries",
+        "homepage": "https://github.com/php-fig/log",
+        "keywords": [
+            "log",
+            "psr",
+            "psr-3"
+        ]
+    },
+    {
+        "name": "monolog/monolog",
+        "version": "1.22.1",
+        "version_normalized": "1.22.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Seldaek/monolog.git",
+            "reference": "1e044bc4b34e91743943479f1be7a1d5eb93add0"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Seldaek/monolog/zipball/1e044bc4b34e91743943479f1be7a1d5eb93add0",
+            "reference": "1e044bc4b34e91743943479f1be7a1d5eb93add0",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0",
+            "psr/log": "~1.0"
+        },
+        "provide": {
+            "psr/log-implementation": "1.0.0"
+        },
+        "require-dev": {
+            "aws/aws-sdk-php": "^2.4.9 || ^3.0",
+            "doctrine/couchdb": "~1.0@dev",
+            "graylog2/gelf-php": "~1.0",
+            "jakub-onderka/php-parallel-lint": "0.9",
+            "php-amqplib/php-amqplib": "~2.4",
+            "php-console/php-console": "^3.1.3",
+            "phpunit/phpunit": "~4.5",
+            "phpunit/phpunit-mock-objects": "2.3.0",
+            "ruflin/elastica": ">=0.90 <3.0",
+            "sentry/sentry": "^0.13",
+            "swiftmailer/swiftmailer": "~5.3"
+        },
+        "suggest": {
+            "aws/aws-sdk-php": "Allow sending log messages to AWS services like DynamoDB",
+            "doctrine/couchdb": "Allow sending log messages to a CouchDB server",
+            "ext-amqp": "Allow sending log messages to an AMQP server (1.0+ required)",
+            "ext-mongo": "Allow sending log messages to a MongoDB server",
+            "graylog2/gelf-php": "Allow sending log messages to a GrayLog2 server",
+            "mongodb/mongodb": "Allow sending log messages to a MongoDB server via PHP Driver",
+            "php-amqplib/php-amqplib": "Allow sending log messages to an AMQP server using php-amqplib",
+            "php-console/php-console": "Allow sending log messages to Google Chrome",
+            "rollbar/rollbar": "Allow sending log messages to Rollbar",
+            "ruflin/elastica": "Allow sending log messages to an Elastic Search server",
+            "sentry/sentry": "Allow sending log messages to a Sentry server"
+        },
+        "time": "2017-03-13T07:08:03+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Monolog\\": "src/Monolog"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Jordi Boggiano",
+                "email": "j.boggiano@seld.be",
+                "homepage": "http://seld.be"
+            }
+        ],
+        "description": "Sends your logs to files, sockets, inboxes, databases and various web services",
+        "homepage": "http://github.com/Seldaek/monolog",
+        "keywords": [
+            "log",
+            "logging",
+            "psr-3"
+        ]
+    },
+    {
+        "name": "jdorn/sql-formatter",
+        "version": "v1.2.17",
+        "version_normalized": "1.2.17.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/jdorn/sql-formatter.git",
+            "reference": "64990d96e0959dff8e059dfcdc1af130728d92bc"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/jdorn/sql-formatter/zipball/64990d96e0959dff8e059dfcdc1af130728d92bc",
+            "reference": "64990d96e0959dff8e059dfcdc1af130728d92bc",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.2.4"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "3.7.*"
+        },
+        "time": "2014-01-12T16:20:24+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.3.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "lib"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Jeremy Dorn",
+                "email": "jeremy@jeremydorn.com",
+                "homepage": "http://jeremydorn.com/"
+            }
+        ],
+        "description": "a PHP SQL highlighting library",
+        "homepage": "https://github.com/jdorn/sql-formatter/",
+        "keywords": [
+            "highlight",
+            "sql"
+        ]
+    },
+    {
+        "name": "vatson/isolated-callback",
+        "version": "1.0.1",
+        "version_normalized": "1.0.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/vatson/isolated-callback.git",
+            "reference": "6b0bbdf7fa17ec05521832ff880c729df8288d45"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/vatson/isolated-callback/zipball/6b0bbdf7fa17ec05521832ff880c729df8288d45",
+            "reference": "6b0bbdf7fa17ec05521832ff880c729df8288d45",
+            "shasum": ""
+        },
+        "require": {
+            "ext-pcntl": "*",
+            "ext-sysvsem": "*",
+            "php": ">=5.3.2"
+        },
+        "require-dev": {
+            "fp/fumocker": ">=1.0-dev",
+            "phpunit/phpunit": "3.7.*"
+        },
+        "time": "2013-12-03T14:55:47+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Vatson": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Vadim Tyukov",
+                "email": "brainreflex@gmail.com"
+            },
+            {
+                "name": "Slava Hatnuke",
+                "email": "slava.hatnuke@gmail.com"
+            }
+        ],
+        "description": "Allows to execute a callback in a separate fork ",
+        "homepage": "https://github.com/vatson/isolated-callback",
+        "keywords": [
+            "callback",
+            "closure",
+            "daemon",
+            "fork",
+            "leakage"
+        ]
+    },
+    {
+        "name": "hoa/core",
+        "version": "2.15.11.09",
+        "version_normalized": "2.15.11.09",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Core.git",
+            "reference": "5538b1e90e2c66c90df5cc45e03fb85d047be900"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Core/zipball/5538b1e90e2c66c90df5cc45e03fb85d047be900",
+            "reference": "5538b1e90e2c66c90df5cc45e03fb85d047be900",
+            "shasum": ""
+        },
+        "require": {
+            "ext-spl": "*",
+            "php": ">=5.4.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "suggest": {
+            "ext-mbstring": "ext/mbstring must be present (or a third implementation).",
+            "hoa/cli": "To use the `hoa` script."
+        },
+        "time": "2015-11-09T06:51:06+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Core\\": "."
+            },
+            "files": [
+                "Core.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Core library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "consistency",
+            "core",
+            "data",
+            "event",
+            "library",
+            "listener",
+            "parameter",
+            "protocol"
+        ]
+    },
+    {
+        "name": "hoa/ustring",
+        "version": "3.15.11.09",
+        "version_normalized": "3.15.11.09",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Ustring.git",
+            "reference": "8506be4910212b1a2beb9014763a8a4fbd871001"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Ustring/zipball/8506be4910212b1a2beb9014763a8a4fbd871001",
+            "reference": "8506be4910212b1a2beb9014763a8a4fbd871001",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "suggest": {
+            "ext-iconv": "ext/iconv must be present (or a third implementation) to use Hoa\\Ustring::transcode().",
+            "ext-intl": "To get a better Hoa\\Ustring::toAscii() and Hoa\\Ustring::compareTo()."
+        },
+        "time": "2015-11-09T06:44:33+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "3.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Ustring\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Ustring library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "library",
+            "search",
+            "string",
+            "unicode"
+        ]
+    },
+    {
+        "name": "hoa/stream",
+        "version": "0.15.10.26",
+        "version_normalized": "0.15.10.26",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Stream.git",
+            "reference": "3bc446bc00849bf51166adc415d77aa375d48d8c"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Stream/zipball/3bc446bc00849bf51166adc415d77aa375d48d8c",
+            "reference": "3bc446bc00849bf51166adc415d77aa375d48d8c",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0"
+        },
+        "time": "2015-10-26T12:21:43+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Stream\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Stream library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "Context",
+            "bucket",
+            "composite",
+            "filter",
+            "in",
+            "library",
+            "out",
+            "protocol",
+            "stream",
+            "wrapper"
+        ]
+    },
+    {
+        "name": "hoa/console",
+        "version": "2.15.07.27",
+        "version_normalized": "2.15.07.27",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Console.git",
+            "reference": "3b871f5f1059a3664acb5380ebadd988daa7a0db"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Console/zipball/3b871f5f1059a3664acb5380ebadd988daa7a0db",
+            "reference": "3b871f5f1059a3664acb5380ebadd988daa7a0db",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0",
+            "hoa/stream": "~0.0",
+            "hoa/ustring": "~3.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "suggest": {
+            "ext-pcntl": "To enable hoa://Event/Console/Window:resize.",
+            "hoa/dispatcher": "To use the console kit.",
+            "hoa/router": "To use the console kit."
+        },
+        "time": "2015-07-27T07:52:10+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Console\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Console library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "autocompletion",
+            "chrome",
+            "cli",
+            "console",
+            "cursor",
+            "getoption",
+            "library",
+            "option",
+            "parser",
+            "processus",
+            "readline",
+            "terminfo",
+            "tput",
+            "window"
+        ]
+    }
+]

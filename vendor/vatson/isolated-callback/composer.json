@@ -1,0 +1,32 @@
+{
+    "name": "vatson/isolated-callback",
+    "type": "library",
+    "description": "Allows to execute a callback in a separate fork ",
+    "keywords": ["callback", "closure", "fork", "leakage", "daemon"],
+    "homepage": "https://github.com/vatson/isolated-callback",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vadim Tyukov",
+            "email": "brainreflex@gmail.com"
+        },
+        {
+            "name": "Slava Hatnuke",
+            "email": "slava.hatnuke@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.2",
+        "ext-pcntl": "*",
+        "ext-sysvsem": "*"
+    },
+    "require-dev": {
+        "fp/fumocker": ">=1.0-dev",
+        "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Vatson": "src/"
+        }
+    }
+}
