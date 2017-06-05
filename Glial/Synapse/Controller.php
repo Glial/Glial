@@ -6,9 +6,9 @@ namespace Glial\Synapse;
 use \Glial\Synapse\Variable;
 use \Glial\I18n\I18n;
 use \Glial\Utility\Inflector;
+use \Glial\Synapse\FactoryController;
 
-class Controller
-{
+class Controller {
 
     /**
      * 
@@ -32,6 +32,8 @@ class Controller
     var $ajax = false;
     var $error;
     var $html;
+    var $out;
+    var $cli;
     public $di = array();
     private $isRootNode;
     public $db;
@@ -46,8 +48,7 @@ class Controller
      * @return boolean Success
      * @access public
      */
-    final function __construct($controller, $action, $param)
-    {
+    final function __construct($controller, $action, $param) {
         $controller = Inflector::camelize($controller);
 
         if (AUTH_ACTIVE) {
@@ -66,13 +67,11 @@ class Controller
         $this->recursive = false;
     }
 
-    final public function setDi($di)
-    {
+    final public function setDi($di) {
         $this->di = $di;
     }
 
-    final function getController()
-    {
+    final function getController() {
         if (empty($this->controller)) {
             return;
         }
@@ -133,11 +132,14 @@ class Controller
 
         if (!$this->recursive) {
 
+
             if (!Variable::$_open) {
                 ob_start();
             }
 
             if ($this->view) {
+                
+                //used for rootNode
                 require APP_DIR . DS . "view" . DS . $this->controller . DS . $this->view . ".view.php";
             }
 
@@ -147,25 +149,66 @@ class Controller
             }
         } else {
             if ($this->view) {
-                include APP_DIR . DS . "view" . DS . $this->controller . DS . $this->view . ".view.php";
+
+
+                if (FactoryController::EXPORT === $this->out) {
+                    ob_start();
+                }
+
+                //used by addNode
+                require APP_DIR . DS . "view" . DS . $this->controller . DS . $this->view . ".view.php";
+
+
+                if (FactoryController::EXPORT === $this->out) {
+                    $this->html = ob_get_contents();
+                    ob_clean();
+                }
             }
         }
 
         //TODO to fix it
         // (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save($this->controller . "/" . $this->action) : "";
+
+        if (FactoryController::EXPORT == $this->out) {
+            return $this->html;
+        }
+
+
+
+
         return $resultat;
     }
 
-    final function display()
-    {
+    /**
+     * (Glial 2.1)<br/>
+     * What's that ?
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @param none
+     * @return html
+     * @package Controller
+     * @since 2.1 First time this was introduced.
+     * @description return one node of MVC
+     * @access public
+     */
+    final function display() {
         if (empty($this->controller)) { // certainement une meilleur maniere de procÃƒÂ©der
             return;
         }
         echo $this->html;
     }
 
-    final function setLayout()
-    {
+    /**
+     * (Glial 2.1)<br/>
+     * What's that ?
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @param none
+     * @return html
+     * @package Controller
+     * @since 2.1 First time this was introduced.
+     * @description return one node of MVC
+     * @access public
+     */
+    final function setLayout() {
         Variable::$_open = false;
 
         if (!IS_CLI) {
@@ -194,38 +237,58 @@ class Controller
             Variable::$_html = ob_get_clean();
             Variable::$_html = I18n::getTranslation(Variable::$_html);
 
-            echo Variable::$_html;
+            return Variable::$_html;
         }
     }
 
-    final function set($var, $valeur)
-    {
+    /**
+     * (Glial 2.1)<br/>
+     * This method set a variable in the array value in controller to be acceded from the view
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @param string, $variable
+     * @example $this->set('data',$data);
+     * @return void
+     * @package Controller
+     * @since 2.1 First time this was introduced.
+     * @description give variable to the view
+     * @access public
+     */
+    final function set($var, $valeur) {
         $this->value[$var] = $valeur;
     }
 
-    final function get()
-    {
+    final function get() {
         return $this->value;
     }
 
-    final function setRootNode()
-    {
+    final function setRootNode() {
         $this->isRootNode = true;
     }
 
-    function after($param)
-    {
+    function after($param) {
         
     }
 
-    function before($param)
-    {
+    function before($param) {
         
     }
 
-    function setJs($js)
-    {
+    /**
+     * (Glial 1.0)<br/>
+     * DEPRACATED deplaced in package javascript
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @return void
+     * @package Controller
+     * @since 2.1 DEPRACATED.
+     * @description give javascript name to be add at the bottom of the page
+     * @access public
+     */
+    function setJs($js) {
         $this->js = $js;
+    }
+
+    function setOut($out = FactoryController::DISPLAY) {
+        $this->out = $out;
     }
 
 }

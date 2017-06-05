@@ -2,8 +2,7 @@
 
 namespace Glial\Synapse;
 
-class Validation
-{
+class Validation {
 
     protected $db;
 
@@ -17,13 +16,11 @@ class Validation
         'hostname' => '(?:[a-z0-9][-a-z0-9]*\.)*(?:[a-z0-9][-a-z0-9]{0,62})\.(?:(?:[a-z]{2}\.)?[a-z]{2,4}|museum|travel)'
     );
 
-    function __construct($db)
-    {
+    function __construct($db) {
         $this->db = $db;
     }
 
-    function is_unique($elem)
-    {
+    function is_unique($elem) {
 
         //'
         $sql = "SELECT count(1) as cpt FROM " . $elem['table'] . " WHERE `" . $elem['field'] . "` = '" . $elem['value'] . "'";
@@ -44,8 +41,7 @@ class Validation
         }
     }
 
-    function alpha_numeric($elem)
-    {
+    function alpha_numeric($elem) {
         if (empty($elem['value']) && $elem['value'] != '0') {
             return false;
         }
@@ -58,8 +54,7 @@ class Validation
         }
     }
 
-    function alpha($elem)
-    {
+    function alpha($elem) {
         if (empty($elem['value']) && $elem['value'] != '0') {
             return false;
         }
@@ -71,14 +66,12 @@ class Validation
             return false;
         }
     }
-    
-    function decimal($elem)
-    {
+
+    function decimal($elem) {
         return true;
     }
 
-    function no_numeric($elem)
-    {
+    function no_numeric($elem) {
         if (empty($elem['value']) && $elem['value'] != '0') {
             return false;
         }
@@ -91,8 +84,7 @@ class Validation
         }
     }
 
-    function alpha_all_language($elem)
-    {
+    function alpha_all_language($elem) {
 
         include_once LIBRARY . "Zend/Validate/Alpha.php";
 
@@ -105,8 +97,7 @@ class Validation
         }
     }
 
-    function name_firstname($elem)
-    {
+    function name_firstname($elem) {
         if (empty($elem['value']) && $elem['value'] != '0') {
             return false;
         }
@@ -120,8 +111,7 @@ class Validation
         }
     }
 
-    function regex($elem, $regex)
-    {
+    function regex($elem, $regex) {
         if (empty($elem['value']) && $elem['value'] != '0') {
             return false;
         }
@@ -133,14 +123,12 @@ class Validation
         }
     }
 
-    function between($elem, $min, $max)
-    {
+    function between($elem, $min, $max) {
         $length = mb_strlen($elem['value']);
         return ($length >= $min && $length <= $max);
     }
 
-    function not_empty($elem)
-    {
+    function not_empty($elem) {
         if (empty($elem['value']) && $elem['value'] != '0') {
             return false;
         }
@@ -154,8 +142,7 @@ class Validation
         }
     }
 
-    function ip($elem)
-    {
+    function ip($elem) {
         //$success = false;
         //$success |= $this->ipv4($check);
         //$success |= $this->ipv6($check);
@@ -163,31 +150,27 @@ class Validation
         return filter_var($elem['value'], FILTER_VALIDATE_IP, array('flags' => FILTER_FLAG_IPV4)) !== false;
     }
 
-    function equal_to($elem, $to_test)
-    {
+    function equal_to($elem, $to_test) {
         return ($elem['value'] === $_POST[$elem['table']][$to_test]);
     }
 
-    function min_length($elem, $min)
-    {
+    function min_length($elem, $min) {
         $length = mb_strlen($elem['value']);
         return ($length >= $min);
     }
 
-    function reference_to($elem, $table, $field)
-    {
+    function reference_to($elem, $table, $field) {
 
-	switch(gettype($elem['value']))
-	{
-		case 'double':
-		case 'integer':
-		case 'string':
-		break;
-	
-		default:
-			throw new \Exception("This type is not supported (only : integer,double,string) : ".gettype($elem['value']." [check, data you set in sql_save]"),80);
-		break;
-	}
+        switch (gettype($elem['value'])) {
+            case 'double':
+            case 'integer':
+            case 'string':
+                break;
+
+            default:
+                throw new \Exception("This type is not supported (only : integer,double,string) : " . gettype($elem['value'] . " [check, data you set in sql_save]"), 80);
+                break;
+        }
 
         $sql = "SELECT count(1) as cpt FROM `" . $table . "` WHERE `" . $field . "` = '" . $elem['value'] . "'";
 
@@ -209,8 +192,7 @@ class Validation
      * @return boolean Success
      * @access protected
      */
-    function ipv4($check)
-    {
+    function ipv4($check) {
         if (function_exists('filter_var')) {
             return filter_var($check, FILTER_VALIDATE_IP, array('flags' => FILTER_FLAG_IPV4)) !== false;
         }
@@ -230,8 +212,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function blank($check)
-    {
+    function blank($check) {
         $_this = & Validation::getInstance();
         $_this->__reset();
         $_this->check = $check;
@@ -258,8 +239,7 @@ class Validation
      * @access public
      * @see Validation::_luhn()
      */
-    function cc($check, $type = 'fast', $deep = false, $regex = null)
-    {
+    function cc($check, $type = 'fast', $deep = false, $regex = null) {
         $_this = & Validation::getInstance();
         $_this->__reset();
         $_this->check = $check;
@@ -337,8 +317,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function comparison($check1, $operator = null, $check2 = null)
-    {
+    function comparison($check1, $operator = null, $check2 = null) {
         if (is_array($check1)) {
             extract($check1, EXTR_OVERWRITE);
         }
@@ -398,8 +377,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function custom($check, $regex = null)
-    {
+    function custom($check, $regex = null) {
 
         $_this->__reset();
         $_this->check = $check;
@@ -431,8 +409,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function date($check, $format = 'ymd')
-    {
+    function date($check, $format = 'ymd') {
 
 
         $regex['dmy'] = '%^(?:(?:31(\\/|-|\\.|\\x20)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(\\/|-|\\.|\\x20)(?:0?[1,3-9]|1[0-2])\\2))(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$|^(?:29(\\/|-|\\.|\\x20)0?2\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\\d|2[0-8])(\\/|-|\\.|\\x20)(?:(?:0?[1-9])|(?:1[0-2]))\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$%';
@@ -444,49 +421,40 @@ class Validation
         $regex['my'] = '%^(((0[123456789]|10|11|12)([- /.])(([1][9][0-9][0-9])|([2][0-9][0-9][0-9]))))$%';
         $regex['YYYY-MM-DD'] = '/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/';
 
-        
-        if (empty($regex[$format]))
-        {
+
+        if (empty($regex[$format])) {
             throw new \DomainException('GLI-009 : This format of date doesn\'t exist in checklist');
         }
-        
-        
-        if (preg_match($regex[$format], $check['value']))
-        {
+
+
+        if (preg_match($regex[$format], $check['value'])) {
             return true;
         }
-        
-        
+
+
         return false;
     }
-    
-    
-    
-    function dateTime($check, $format = 'YYYY-MM-DD H:i:s')
-    {
-       $sep = " ";
-        if (strstr($check['value'],'T'))
-        {
+
+    function dateTime($check, $format = 'YYYY-MM-DD H:i:s') {
+        $sep = " ";
+        if (strstr($check['value'], 'T')) {
             $sep = "T";
         }
-        
+
         $elems = explode($sep, $check['value']);
 
         $date['value'] = $elems[0];
         $time['value'] = $elems[1];
-        
-        
-        
-        if ($this->date($date) && $this->time($time))
-        {
+
+
+
+        if ($this->date($date) && $this->time($time)) {
             return true;
         }
 
-        
+
         return false;
     }
-    
-    
 
     /**
      * Time validation, determines if the string passed is a valid time.
@@ -497,8 +465,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function time($elem)
-    {
+    function time($elem) {
 
         if (empty($elem['value']) && $elem['value'] != '0') {
             return false;
@@ -519,8 +486,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function boolean($check)
-    {
+    function boolean($check) {
         $booleanList = array(0, 1, '0', '1', true, false);
         return in_array($check["value"], $booleanList, true);
     }
@@ -535,25 +501,23 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    
-    
     /*
-    function decimal($check, $places = null, $regex = null)
-    {
-        $_this = & Validation::getInstance();
-        $_this->__reset();
-        $_this->regex = $regex;
-        $_this->check = $check;
+      function decimal($check, $places = null, $regex = null)
+      {
+      $_this = & Validation::getInstance();
+      $_this->__reset();
+      $_this->regex = $regex;
+      $_this->check = $check;
 
-        if (is_null($_this->regex)) {
-            if (is_null($places)) {
-                $_this->regex = '/^[-+]?[0-9]*\\.{1}[0-9]+(?:[eE][-+]?[0-9]+)?$/';
-            } else {
-                $_this->regex = '/^[-+]?[0-9]*\\.{1}[0-9]{' . $places . '}$/';
-            }
-        }
-        return $_this->_check();
-    }*/
+      if (is_null($_this->regex)) {
+      if (is_null($places)) {
+      $_this->regex = '/^[-+]?[0-9]*\\.{1}[0-9]+(?:[eE][-+]?[0-9]+)?$/';
+      } else {
+      $_this->regex = '/^[-+]?[0-9]*\\.{1}[0-9]{' . $places . '}$/';
+      }
+      }
+      return $_this->_check();
+      } */
 
     /**
      * Validates for an email address.
@@ -564,8 +528,14 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function email($elem)
-    {
+    function email($elem) {
+
+
+        if (filter_var($elem['value'], FILTER_VALIDATE_EMAIL)) {
+            return true;
+        }
+
+        /*
         $regex = '/^[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+)*@' . $this->__pattern['hostname'] . '$/i';
 
         if (preg_match($regex, $elem['value'])) {
@@ -585,7 +555,7 @@ class Validation
                 return true;
             }
             return is_array(gethostbynamel($regs[1]));
-        }
+        }*/
         return false;
     }
 
@@ -606,8 +576,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function extension($check, $extensions = array('gif', 'jpeg', 'png', 'jpg'))
-    {
+    function extension($check, $extensions = array('gif', 'jpeg', 'png', 'jpg')) {
         if (is_array($check)) {
             return Validation::extension(array_shift($check), $extensions);
         }
@@ -641,8 +610,7 @@ class Validation
      * @return boolean Success
      * @access protected
      */
-    function _ipv6($check)
-    {
+    function _ipv6($check) {
         if (function_exists('filter_var')) {
             return filter_var($check, FILTER_VALIDATE_IP, array('flags' => FILTER_FLAG_IPV6)) !== false;
         }
@@ -660,8 +628,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function minLength($check, $min)
-    {
+    function minLength($check, $min) {
         $length = mb_strlen($check);
         return ($length >= $min);
     }
@@ -674,11 +641,10 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function maxLength($check, $max)
-    {
-        
-        
-        
+    function maxLength($check, $max) {
+
+
+
         $length = mb_strlen($check['value']);
         return ($length <= $max);
     }
@@ -691,8 +657,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function money($check, $symbolPosition = 'left')
-    {
+    function money($check, $symbolPosition = 'left') {
         $_this = & Validation::getInstance();
         $_this->check = $check;
 
@@ -718,8 +683,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function multiple($check, $options = array())
-    {
+    function multiple($check, $options = array()) {
         $defaults = array('in' => null, 'max' => null, 'min' => null);
         $options = array_merge($defaults, $options);
         $check = array_filter((array) $check);
@@ -749,8 +713,7 @@ class Validation
      * @return boolean Succcess
      * @access public
      */
-    function numeric($check)
-    {
+    function numeric($check) {
 
         //echo "-".$check['value']."-";
         return is_numeric($check['value']);
@@ -766,8 +729,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function phone($check, $regex = null, $country = 'all')
-    {
+    function phone($check, $regex = null, $country = 'all') {
         $_this = & Validation::getInstance();
         $_this->check = $check;
         $_this->regex = $regex;
@@ -801,8 +763,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function postal($check, $regex = null, $country = null)
-    {
+    function postal($check, $regex = null, $country = null) {
         $_this = & Validation::getInstance();
         $_this->check = $check;
         $_this->regex = $regex;
@@ -852,8 +813,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function range($check, $lower = null, $upper = null)
-    {
+    function range($check, $lower = null, $upper = null) {
         if (!is_numeric($check)) {
             return false;
         }
@@ -872,8 +832,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function ssn($check, $regex = null, $country = null)
-    {
+    function ssn($check, $regex = null, $country = null) {
         $_this = & Validation::getInstance();
         $_this->check = $check;
         $_this->regex = $regex;
@@ -908,8 +867,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function uuid($check)
-    {
+    function uuid($check) {
         $_this = & Validation::getInstance();
         $_this->check = $check;
         $_this->regex = '/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i';
@@ -934,8 +892,7 @@ class Validation
      * @return boolean Success
      * @access public
      */
-    function url($check, $strict = false)
-    {
+    function url($check, $strict = false) {
         $_this = & Validation::getInstance();
         $_this->__populateIp();
         $_this->check = $check;
@@ -957,8 +914,7 @@ class Validation
      * @return boolean Succcess
      * @access public
      */
-    function inList($check, $list)
-    {
+    function inList($check, $list) {
         return in_array($check, $list);
     }
 
@@ -972,8 +928,7 @@ class Validation
      * @return mixed user-defined class class method returns
      * @access public
      */
-    function userDefined($check, $object, $method, $args = null)
-    {
+    function userDefined($check, $object, $method, $args = null) {
         return call_user_func_array(array(&$object, $method), array($check, $args));
     }
 
@@ -988,8 +943,7 @@ class Validation
      * @return mixed Return of Passed method, false on failure
      * @access protected
      * */
-    function _pass($method, $check, $classPrefix)
-    {
+    function _pass($method, $check, $classPrefix) {
         $className = ucwords($classPrefix) . 'Validation';
         if (!class_exists($className)) {
             trigger_error(sprintf(__('Could not find %s class, unable to complete validation.', true), $className), E_USER_WARNING);
@@ -1009,8 +963,7 @@ class Validation
      * @return boolean Success of match
      * @access protected
      */
-    function _check()
-    {
+    function _check() {
         $_this = & Validation::getInstance();
         if (preg_match($_this->regex, $_this->check)) {
             $_this->error[] = false;
@@ -1029,8 +982,7 @@ class Validation
      * @return void
      * @access protected
      */
-    function _extract($params)
-    {
+    function _extract($params) {
         $_this = & Validation::getInstance();
         extract($params, EXTR_OVERWRITE);
 
@@ -1058,8 +1010,7 @@ class Validation
      * @return boolean Success
      * @access protected
      */
-    function _luhn()
-    {
+    function _luhn() {
         $_this = & Validation::getInstance();
         if ($_this->deep !== true) {
             return true;
@@ -1089,8 +1040,7 @@ class Validation
      * @access private
      */
 
-    function __populateIp()
-    {
+    function __populateIp() {
         if (!isset($this->__pattern['IPv6'])) {
             $pattern = '((([0-9A-Fa-f]{1,4}:){7}(([0-9A-Fa-f]{1,4})|:))|(([0-9A-Fa-f]{1,4}:){6}';
             $pattern .= '(:|((25[0-5]|2[0-4]\d|[01]?\d{1,2})(\.(25[0-5]|2[0-4]\d|[01]?\d{1,2})){3})';

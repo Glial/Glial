@@ -39,6 +39,11 @@ class Glial
         return $str;
     }
     
+        public static function name()
+    {
+        return "Glial";
+    }
+    
     
     public static function version()
     {

@@ -173,7 +173,7 @@ class Auth
                         die();
                     }
 
-                    $sql = "select * from " . self::$_tableName . " where " . self::$_login . " = '" . self::$_dbLink->sql_real_escape_string($ldap['samaccountname'][0]) . "'";
+                    $sql = "select * from `" . self::$_tableName . "` where `" . self::$_login . "` = '" . self::$_dbLink->sql_real_escape_string($ldap['samaccountname'][0]) . "';";
                     $res = self::$_dbLink->sql_query($sql);
                     $ob = self::$_dbLink->sql_fetch_object($res);
                     $this->_user = $ob;
@@ -187,7 +187,7 @@ class Auth
 
                 return false;
             } else {
-                $sql = "select * from " . self::$_tableName . " where " . self::$_login . " = '" . $Identity . "'";
+                $sql = "select * from `" . self::$_tableName . "` where `" . self::$_login . "` = '" . $Identity . "';";
                 
                 $res = self::$_dbLink->sql_query($sql);
 
@@ -209,7 +209,7 @@ class Auth
 
         if (empty($_POST[self::$_tableName][self::$_login])) {
             if (!empty($_COOKIE[self::$_name_cookie_login]) && !empty($_COOKIE[self::$_name_cookie_passwd])) {
-                $sql = "select * from " . self::$_tableName . " where " . self::$_login . " = '" . self::$_dbLink->sql_real_escape_string($_COOKIE[self::$_name_cookie_login]) . "'";
+                $sql = "select * from `" . self::$_tableName . "` where `" . self::$_login . "` = '" . self::$_dbLink->sql_real_escape_string($_COOKIE[self::$_name_cookie_login]) . "';";
 
                 $res = self::$_dbLink->sql_query($sql);
 
