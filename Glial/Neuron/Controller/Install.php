@@ -421,7 +421,7 @@ if (! defined('CRYPT_KEY'))
                 $user = "root";
             }
 
-            $link = @mysqli_connect($hostname . ":" . $port, $user, trim($password));
+            $link = @mysqli_connect($hostname, $user, trim($password), "mysql", $port);
 
             if ($link) {
                 $good = true;

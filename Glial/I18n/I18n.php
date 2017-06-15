@@ -269,7 +269,7 @@ namespace Glial\I18n {
         private static $_md5File;
         private static $file_path;
         private static $countNumberElemAtLoading = array();
-        private static $DEBUG = false;
+        private static $DEBUG                    = false;
 
         /**
          * Constructor
@@ -551,6 +551,8 @@ namespace Glial\I18n {
                         $out = false;
                     } else {
 
+                        $gg = array($default_lg, self::$_language, $string, $key);
+
                         $out = self::translate($default_lg, self::$_language, $string, $key);
                     }
                 } else {
@@ -658,17 +660,7 @@ namespace Glial\I18n {
 
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
 
-
-            //echo $content;
-
-
-
-
-
-            $out = explode("<br>", $content);
-
-
-
+            $out     = explode("<br>", $content);
             $content = str_replace('<br>', '', $content);
 
             $out = Grabber::getTagContents($content, '<span title="', true);
@@ -693,12 +685,15 @@ namespace Glial\I18n {
 
             if (count($nb) != count($out)) {
 
+
+                debug(self::$_translations);
+
                 debug($from);
                 debug($string);
 
                 echo '<hr>';
                 debug($nb);
-                debug($out);
+                debug(str_replace("\n", "<br />", $out));
 
                 echo $url."<br>\n";
                 throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
@@ -736,8 +731,6 @@ namespace Glial\I18n {
             } else {
 //chargement du fichier de cache en fonction de la BDD
                 $sql = "SELECT * FROM translation_".strtolower(self::$_language)." WHERE file_found ='".self::$file."'";
-
-
 
                 $res23 = self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
                 while ($ob    = self::$_SQL->sql(I18n::DATABASE)->sql_fetch_object($res23)) {
@@ -926,15 +919,28 @@ namespace {
 
     function __($text, $lgfrom = "auto")
     {
+
+
+
+        $calledFrom = debug_backtrace();
+
+
         //return $text;
 
-        if ($lgfrom === "auto") $lgfrom     = I18n::GetDefault();
-        $calledFrom = debug_backtrace();
+        if ($text !== strip_tags($text)) {
+            throw new \Exception("GLI-145 : html tag not supported for translation : '".htmlentities($text)."' (".$calledFrom[0]['file'].":".$calledFrom[0]['line'].")");
+        }
+
+        if ($lgfrom === "auto") {
+            $lgfrom = I18n::GetDefault();
+        }
+
+
 //return "<span id=\"".sha1($text)."\" lang=\"".$_LG->Get()."\">".$_LG->_($text,$lgfrom,$calledFrom[0]['file'],$calledFrom[0]['line'])."</span>";
+
 
         $file = str_replace(ROOT."/", '', $calledFrom[0]['file']);
         $var  = I18n::_($text, $lgfrom, $file, $calledFrom[0]['line']);
-
 
 
         //debug(I18n::$_translations);
@@ -942,7 +948,6 @@ namespace {
         if (preg_match_all('#\[(\w+)]#', $var, $m)) {
 //print_r( $m );
         }
-
 
         if (count($m[1]) > 0) {
             $replace_with = array();
