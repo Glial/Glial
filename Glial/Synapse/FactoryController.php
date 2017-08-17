@@ -101,6 +101,20 @@ class FactoryController {
         self::$di = $di;
     }
 
+
+    /**
+     * This method inject dependency
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @param string construct of controller
+     * @return boolean Success
+     * @description should be called 1 time by request. This factory create the (main) root MVC used in boot and display the output in standard flux. it's this controller witch will determine the layout.
+     * @access public
+     * @example \Glial\Synapse\FactoryController::init($array);
+     * @package Controller
+     * @since 4.0 First time this was introduced.
+     */
     public static function addDi($name, $object) {
         if (empty(self::$di[$name])) {
             self::$di[$name] = $object;

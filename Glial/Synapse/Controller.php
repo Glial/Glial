@@ -27,7 +27,6 @@ class Controller {
     var $javascript = array();
     var $code_javascript = array();
     var $js;
-    var $data = array();
     var $ariane;
     var $ajax = false;
     var $error;
@@ -84,8 +83,11 @@ class Controller {
             throw new \Exception("GLI-654 Error controller not found : '" . $this->controller . "'");
         }
 
+
+
         $page = new $this->controller($this->controller, $this->action, $this->param);
         $page->setDi($this->di);
+
 
         $this->param = json_decode($this->param);
 
@@ -104,6 +106,7 @@ class Controller {
 
         $page->after($this->param);
 
+        $this->value = $page->value;
 
         if (!IS_CLI) {
             $this->ajax = $page->ajax;
@@ -173,9 +176,6 @@ class Controller {
             return $this->html;
         }
 
-
-
-
         return $resultat;
     }
 
@@ -205,6 +205,7 @@ class Controller {
      * @return html
      * @package Controller
      * @since 2.1 First time this was introduced.
+     * @since 4.2.1 Added GLIALE_DATA to push data/GET from main page to other MVC
      * @description return one node of MVC
      * @access public
      */
@@ -218,7 +219,8 @@ class Controller {
             $GLIALE_CONTENT = $this->html;
             $GLIALE_TITLE = $this->title;
             $GLIALE_ARIANE = $this->ariane;
-
+            $GLIALE_DATA = (array) $this->value;
+            
             ob_implicit_flush(false);
 
             ob_start();
@@ -290,5 +292,6 @@ class Controller {
     function setOut($out = FactoryController::DISPLAY) {
         $this->out = $out;
     }
+    
 
 }

@@ -7,8 +7,7 @@ use \Glial\Sgbd\Sql\FactorySql;
 
 class Sgbd
 {
-
-    private $db = array();
+    private $db     = array();
     private $config = array();
     private $logger;
 
@@ -47,24 +46,24 @@ class Sgbd
      * @version 3.0
      */
     public function sql($name)
-    {   
+    {
 
-        if (! preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name))
-        {
-            throw new \Exception("GLI-025 : The name of identifier is invalid : '" . $name . "' (only letter / number and underscore are allowed) !",50);
+        if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name)) {
+            throw new \Exception("GLI-025 : The name of identifier is invalid : '".$name."' (only letter / number and underscore are allowed) !",
+            50);
         }
-        
+
         if (array_key_exists($name, $this->config)) {
 
             if (empty($this->db[$name]) || $this->db[$name]->is_connected === false) {
-                
+
                 FactorySql::setLogger($this->logger);
                 $this->db[$name] = FactorySql::connect($name, $this->config[$name]);
             }
 
             return $this->db[$name];
         } else {
-            throw new \Exception("GLI-19 : This connection was not configured : '" . $name . "' !");
+            throw new \Exception("GLI-19 : This connection was not configured : '".$name."' !");
         }
     }
 
@@ -110,10 +109,11 @@ class Sgbd
 
         $i = 1;
         foreach ($this->config as $name => $param) {
-            $port = (empty($param['port'])) ? "3306" : $param['port'];
+            $port        = (empty($param['port'])) ? "3306" : $param['port'];
             $isconnected = (empty($this->db[$name])) ? "" : "■";
 
-            $tab->addLine(array((string) $i, $name, $isconnected, $param['driver'], $param['hostname'], $port, $param['user'], str_repeat("*", strlen($param['password']))));
+            $tab->addLine(array((string) $i, $name, $isconnected, $param['driver'], $param['hostname'], $port, $param['user'], str_repeat("*",
+                    strlen($param['password']))));
             $i++;
         }
 
@@ -140,7 +140,7 @@ class Sgbd
         if (!empty($this->config[$db])) {
             return $this->config[$db];
         } else {
-            throw new \Exception("GLI-021 : Error this instances \"" . $db . "\" doesn't exit", 21);
+            throw new \Exception("GLI-021 : Error this instances \"".$db."\" doesn't exit", 21);
         }
     }
 
@@ -165,10 +165,30 @@ class Sgbd
             yield $name => $this->sql($name);
         }
     }
-    
+
     public function setLogger(\Monolog\Logger $logger)
     {
         $this->logger = $logger;
     }
-	
+
+    
+        /**
+     * This method is used to return all name of thread connected 
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GNU/GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @param void
+     * @return array with name of connections
+     * @description This method is used to return all name of thread connected 
+     * @access public
+     * @example foreach($this->di['db']->getConnected() as $db) {}
+     * @package Sgbd
+     * @See Also sql
+     * @since 4.1.8 First time this was introduced.
+     * @version 4.18
+     */
+    public function getConnected()
+    {
+        return array_keys($this->db);
+    }
 }
