@@ -37,7 +37,7 @@ class Aes {
                 
                 // Make sure php mcrypt is available here
                 if(!function_exists('mcrypt_decrypt')) {
-                        throw new Exception("Required PHP dependency library 'mcrypt' is not available - http://php.net/manual/en/book.mcrypt.php");
+                        throw new \Exception("Required PHP dependency library 'mcrypt' is not available - http://php.net/manual/en/book.mcrypt.php");
                 }
                 
                 // The options to use

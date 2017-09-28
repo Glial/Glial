@@ -20,7 +20,7 @@ class SetTimeLimit
      * 
      * $ret = SetTimeLimit(...);
      * 
-     * if ($ret['return'] & SetTimeLimit::EXIT_WITHOUT_ERROR !== 0)
+     * if ($ret['return'] && SetTimeLimit::EXIT_WITHOUT_ERROR !== 0)
      * //if it's ok
      * else
      * //if not
@@ -43,7 +43,7 @@ class SetTimeLimit
         $params = "'".implode("' '", $param)."'";
         $cmd = "php -f " . ROOT . "/application/webroot/index.php $controller $action $params";
 
-        //echo $cmd."\n<br>";
+        //echo $cmd."\n";
 
         $process = proc_open($cmd, [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes);
         if (!is_resource($process)) {
@@ -58,14 +58,21 @@ class SetTimeLimit
         fwrite($pipes[0], $stdin);
         fclose($pipes[0]);
 
+        
+        //$uniq = uniqid();
         while (1) {
             $stdout.=stream_get_contents($pipes[1]);
             $stderr.=stream_get_contents($pipes[2]);
 
+            
+            //echo $uniq."\tDELTA : ".(time()-$start)." - timeout : ".$timeout.""." \n";
+                    
+            
+            
             if (time() - $start > $timeout) {
                 //proc_terminate($process, 9);    
                 //only terminate subprocess, won't terminate sub-subprocess
-                posix_kill(-$status['pid'], 9);
+                posix_kill(trim($status['pid']), 9);
                 //sends SIGKILL to all processes inside group(negative means GPID, all subprocesses share the top process group, except nested my_timeout_exec)
                 //file_put_contents('debug.txt', time().":kill group {$status['pid']}\n", FILE_APPEND);
 
@@ -75,22 +82,28 @@ class SetTimeLimit
 
                 return array('return' => $output, 'exitcode' => $status['exitcode'], 'stdout' => $stdout, 'stderr' => $stderr);
             }
-
+            
             $status = proc_get_status($process);
+            
+            
+            
+            
             //file_put_contents('debug.txt', time().':status:'.var_export($status, true)."\n";
             if (!$status['running']) {
                 fclose($pipes[1]);
                 fclose($pipes[2]);
                 proc_close($process);
-
+                
                 $output |= empty($stderr) ? 0 : self::SCRIPT_WITH_STD_ERROR;
                 $output |= empty($stdout) ? 0 : self::SCRIPT_WITH_STD_OUT;
                 $output |= empty($status['exitcode']) ? self::EXIT_WITHOUT_ERROR : 0;
-
+                
+                //debug($status);
+                
                 return array('return' => $output, 'exitcode' => $status['exitcode'], 'stdout' => $stdout, 'stderr' => $stderr);
             }
 
-            usleep(100000);
+            usleep(1000);
         }
     }
 
