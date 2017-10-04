@@ -27,6 +27,8 @@ class PmaCliDraining
     public $foreign_keys    = array();
     private $table_impacted = array();
     public $id_cleaner      = 0;
+    public $backup_file = "/tmp/log.sql";
+
 
     function __construct($di)
     {
@@ -576,6 +578,34 @@ class PmaCliDraining
                     $join[]   = " `a`.`".$primary_key."` = b.`".$primary_key."` ";
                     $fields[] = " b.`".$primary_key."` ";
                 }
+
+
+
+                //export to file
+
+                $sql = "SELECT a.* FROM ".$table." a
+                    INNER JOIN `".$this->schema_delete."`.".$this->prefix.$table." as b ON  ".implode(" AND ", $join);
+
+                $res = $db->sql_query($sql);
+
+
+                $export = array();
+                while($arr = $db->sql_fetch_array($res , MYSQLI_NUM))
+                {
+                    $export[] = "(".implode(",",$arr).")";
+                }
+
+                $query = "INSERT INTO ".$table." VALUES ".implode(",",$export).";\n";
+
+                $fp = fopen ($this->backup_file, "a");
+
+                if ($fp)
+                {
+                    fwrite($fp, $query);
+                    fclose($fp);
+                }
+                
+
 
                 $field = implode(" ", $join);
                 $sql   = "DELETE a FROM ".$table." a
