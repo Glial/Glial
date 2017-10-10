@@ -277,13 +277,10 @@ class Auth {
     public function checkLdap($login, $password) {
 
         $ds = ldap_connect(LDAP_URL, LDAP_PORT);  // doit être un serveur LDAP valide !
-
         $r = ldap_bind($ds, LDAP_BIND_DN, LDAP_BIND_PASSWD);     // connexion anonyme, typique
 
         if ($r) {
-
-            //$sr = ldap_search($ds, LDAP_BIND_DN, "sAMAccountName=" . $login); // windows ?
-            $sr = ldap_search($ds, LDAP_ROOT_DN, "sAMAccountName=aurelien.lequoy");
+            $sr = ldap_search($ds, LDAP_ROOT_DN, "sAMAccountName=" . $login);
 
             $entries = ldap_count_entries($ds, $sr);
 
@@ -300,7 +297,6 @@ class Auth {
                     }
                 }
             }
-
 
             ldap_close($ds);
         } else {
