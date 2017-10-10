@@ -12,8 +12,7 @@ namespace Glial\Auth;
 
 use \Glial\I18n\I18n;
 
-class Auth
-{
+class Auth {
     /*
      * 
      * Link to connect to database
@@ -59,18 +58,13 @@ class Auth
      * function will be used to hash / crypt password
      */
     private $_fctToHashCookie;
-    
-    
-    
-    private $id_user=0;
+    private $id_user = 0;
 
-    public function __construct()
-    {
+    public function __construct() {
         
     }
 
-    public static function setInstance($DbLink, $TableName, $Param)
-    {
+    public static function setInstance($DbLink, $TableName, $Param) {
         if (get_parent_class($DbLink) != "Glial\Sgbd\Sql\Sql") {
             throw new \DomainException('GLI-001 : DbLink should be an object create by a children of the class Glial\Sgbd\Sql\Sql');
         }
@@ -104,13 +98,11 @@ class Auth
         self::$_passwd = $Param[1];
     }
 
-    public function setFctToHashCookie($function)
-    {
+    public function setFctToHashCookie($function) {
         $this->_fctToHashCookie = $function;
     }
 
-    public function authenticate($check_post = true)
-    {
+    public function authenticate($check_post = true) {
         if ($_SERVER['REQUEST_METHOD'] == "POST" && $check_post) {
 
             if (empty($_POST[self::$_tableName][self::$_login])) {
@@ -120,12 +112,10 @@ class Auth
             if (empty($_POST[self::$_tableName][self::$_passwd])) {
                 return false;
             }
-            
-            if (empty($_POST[self::$_tableName][self::$_login]) || empty($_POST[self::$_tableName][self::$_passwd]))
-            {
+
+            if (empty($_POST[self::$_tableName][self::$_login]) || empty($_POST[self::$_tableName][self::$_passwd])) {
                 return true;
             }
-            
 
             $Identity = self::$_dbLink->sql_real_escape_string($_POST[self::$_tableName][self::$_login]);
             $Credential = self::$_dbLink->sql_real_escape_string($_POST[self::$_tableName][self::$_passwd]);
@@ -151,6 +141,25 @@ class Auth
                         $data[self::$_tableName]['date_last_connected'] = date('Y-m-d H:i:s');
                     } elseif (self::$_dbLink->sql_num_rows($res) === 0) {
 
+                        
+                        //debug($ldap);
+                        
+                        
+                        $sql = "SELECT id FROM geolocalisation_country WHERE iso = '".$ldap['c'][0]."'";
+                        $res = self::$_dbLink->sql_query($sql);
+                        while ($ob = self::$_dbLink->sql_fetch_object($res)) {
+                            $data[self::$_tableName]['id_geolocalisation_country'] = $ob->id;
+                        }
+                        
+                        $sql = "select * from geolocalisation_city where libelle ='".$ldap['l'][0]."' LIMIT 1";
+                        $res = self::$_dbLink->sql_query($sql);
+                        while ($ob = self::$_dbLink->sql_fetch_object($res)) {
+                            $data[self::$_tableName]['id_geolocalisation_city'] = $ob->id;
+                        }
+                        
+                        
+                        
+                        $data[self::$_tableName]['key_auth'] = "";
                         $data[self::$_tableName]['date_last_login'] = date('Y-m-d H:i:s');
                         $data[self::$_tableName]['date_last_connected'] = date('Y-m-d H:i:s');
                         $data[self::$_tableName][self::$_passwd] = $hash_password;
@@ -177,7 +186,7 @@ class Auth
                     $res = self::$_dbLink->sql_query($sql);
                     $ob = self::$_dbLink->sql_fetch_object($res);
                     $this->_user = $ob;
-                    
+
                     $this->id_user = $ob->id;
 
                     setcookie(self::$_name_cookie_login, $ob->{self::$_login}, time() + AUTH_SESSION_TIME, '/', $_SERVER['SERVER_NAME'], false, true);
@@ -188,13 +197,13 @@ class Auth
                 return false;
             } else {
                 $sql = "select * from `" . self::$_tableName . "` where `" . self::$_login . "` = '" . $Identity . "';";
-                
+
                 $res = self::$_dbLink->sql_query($sql);
 
                 if (self::$_dbLink->sql_num_rows($res) === 1) {
                     $ob = self::$_dbLink->sql_fetch_object($res);
                     $this->id_user = $ob->id;
-                    
+
                     if ($hash_password === $ob->{self::$_passwd}) {
                         $this->_user = $ob;
 
@@ -242,20 +251,17 @@ class Auth
         return false;
     }
 
-    public function checkAuth($login, $password)
-    {
+    public function checkAuth($login, $password) {
         if ($_SERVER['REQUEST_METHOD'] == "POST") {
             
         }
     }
 
-    public function getUser()
-    {
+    public function getUser() {
         return $this->_user;
     }
 
-    public function getAccess()
-    {
+    public function getAccess() {
         if (empty($this->_user->id_group)) {
             return 1;
         } else {
@@ -263,27 +269,30 @@ class Auth
         }
     }
 
-    public function logout()
-    {
+    public function logout() {
         setcookie(self::$_name_cookie_login, '', time() - 1000, '/', $_SERVER['SERVER_NAME'], false, true);
         setcookie(self::$_name_cookie_passwd, '', time() - 1000, '/', $_SERVER['SERVER_NAME'], false, true);
     }
 
-    public function checkLdap($login, $password)
-    {
+    public function checkLdap($login, $password) {
 
         $ds = ldap_connect(LDAP_URL, LDAP_PORT);  // doit être un serveur LDAP valide !
 
         $r = ldap_bind($ds, LDAP_BIND_DN, LDAP_BIND_PASSWD);     // connexion anonyme, typique
 
         if ($r) {
-            $sr = ldap_search($ds, "CN=Users,DC=pws,DC=com", "sAMAccountName=" . $login);
-            if (ldap_count_entries($ds, $sr) === 1) {
+
+            //$sr = ldap_search($ds, LDAP_BIND_DN, "sAMAccountName=" . $login); // windows ?
+            $sr = ldap_search($ds, LDAP_ROOT_DN, "sAMAccountName=aurelien.lequoy");
+
+            $entries = ldap_count_entries($ds, $sr);
+
+            if ($entries === 1) {
                 $info = ldap_get_entries($ds, $sr);
                 if ($info["count"] === 1) {
 
                     $dn = $info[0]["dn"];
-                    $r = @ldap_bind($ds, $dn, $password);     // try credentials
+                    $r = ldap_bind($ds, $dn, $password);     // try credentials
 
                     if ($r) {
                         //debug($info[0]);
@@ -291,6 +300,8 @@ class Auth
                     }
                 }
             }
+
+
             ldap_close($ds);
         } else {
             throw new \Exception('GLI-067 : Impossible to connect to LDAP server :"' . LDAP_URL . ':' . LDAP_PORT . '"');
@@ -298,18 +309,18 @@ class Auth
         return false;
     }
 
-    public function getIdUserTriingLogin()
-    {
+    public function getIdUserTriingLogin() {
         return $this->id_user;
     }
-    
-    public function hash_password($login, $password)
-    {
-        return sha1(sha1($password . sha1($login)));;
+
+    public function hash_password($login, $password) {
+        return sha1(sha1($password . sha1($login)));
+        ;
     }
 
-    static public function hashPassword($login, $password)
-    {
-        return sha1(sha1($password . sha1($login)));;
+    static public function hashPassword($login, $password) {
+        return sha1(sha1($password . sha1($login)));
+        ;
     }
+
 }
