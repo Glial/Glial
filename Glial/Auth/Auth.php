@@ -151,13 +151,14 @@ class Auth {
                             $data[self::$_tableName]['id_geolocalisation_country'] = $ob->id;
                         }
                         
+                        
+                        
+                        //to do find the good city
                         $sql = "select * from geolocalisation_city where libelle ='".$ldap['l'][0]."' LIMIT 1";
                         $res = self::$_dbLink->sql_query($sql);
                         while ($ob = self::$_dbLink->sql_fetch_object($res)) {
                             $data[self::$_tableName]['id_geolocalisation_city'] = $ob->id;
                         }
-                        
-                        
                         
                         $data[self::$_tableName]['key_auth'] = "";
                         $data[self::$_tableName]['date_last_login'] = date('Y-m-d H:i:s');

@@ -608,9 +608,10 @@ class PmaCliDraining
 
 
                 $field = implode(" ", $join);
+                /*
                 $sql   = "DELETE a FROM ".$table." a
                     INNER JOIN `".$this->schema_delete."`.".$this->prefix.$table." as b ON  ".implode(" AND ", $join);
-
+*/
                 $db->sql_query($sql);
                 $this->log($sql);
 
@@ -651,8 +652,6 @@ class PmaCliDraining
 
     private function removeTableNotImpacted($fks)
     {
-
-
         do {
             $tmp  = $fks;
             $tmp2 = $fks;

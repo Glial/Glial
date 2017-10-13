@@ -12,33 +12,40 @@ namespace Glial\Acl;
 
 use Glial\Cli\Color;
 
-class Acl
-{
+class Acl {
 
     protected $roles = array();
     protected $resources = array();
     protected $access = array();
     protected $alias = array();
     protected $maxLength = array();
+    var $initfile;
 
     /*
      * if acl/acl.txt is undefined parse the right in CONFIG ."acl.config.ini.php" and serialize it in acl/acl.txt
      * if acl/acl.txt is defined just unserialize acl/acl.txt and setup the object
      * @since Glial 2.1.1
-     * @version 2.1.2
+     * @version 4.1.12 compare last update if neede we delete acl.ser
      * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
      * @description return an array to be serialized in a flat file
      * @access public
      */
 
-    public function __construct($inifile)
-    {
+    public function __construct($inifile) {
+
+        $this->inifile = $inifile;
+
         $path_to_acl_tmp = TMP . "acl/acl.ser";
 
+
         if (file_exists($path_to_acl_tmp)) {
-            
-            unlink($path_to_acl_tmp);
-            
+            if (filemtime($this->inifile) > filemtime($path_to_acl_tmp)) {
+                unlink($path_to_acl_tmp);
+            }
+        }
+
+        if (file_exists($path_to_acl_tmp)) {
+
             if (is_file($path_to_acl_tmp)) {
                 $s = implode('', file($path_to_acl_tmp));
                 $tmp = unserialize($s);
@@ -67,8 +74,7 @@ class Acl
      * @access public
      */
 
-    public function __sleep()
-    {
+    public function __sleep() {
         return array('roles', 'resources', 'access', 'maxLength', 'alias');
     }
 
@@ -82,8 +88,7 @@ class Acl
      * @access public
      */
 
-    function setResource()
-    {
+    function setResource() {
         $this->maxLength['ressource'] = 0;
 
         $class = new \ReflectionClass("\Glial\Synapse\Controller");
@@ -113,9 +118,9 @@ class Acl
                             require_once($dir . $file);
                         }
 
-			if (!class_exists($controller)) {
+                        if (!class_exists($controller)) {
 
-                            throw new \Exception('GLI-034 : The class must be with the same name (check '.ROOT.'application/controller/'.$controller.'.controller.php)');
+                            throw new \Exception('GLI-034 : The class must be with the same name (check ' . ROOT . 'application/controller/' . $controller . '.controller.php)');
                         }
 
                         $tab = get_class_methods($controller);
@@ -147,8 +152,7 @@ class Acl
      * @access public
      */
 
-    function loadIniFile($filename)
-    {
+    function loadIniFile($filename) {
         if (!is_file($filename)) {
             throw new \Exception('GLI-008 : impossible to load the ini file : "' . $filename . '".');
         }
@@ -157,15 +161,14 @@ class Acl
 
         $tab = parse_ini_file($filename, true);
 
-        
+
         //add alias
-        foreach ($tab['alias'] as $role => $alias)
-        {
+        foreach ($tab['alias'] as $role => $alias) {
             $this->alias[$alias] = $role;
         }
-        
-        
-        
+
+
+
         //definistion des roles
         foreach ($tab['role']['add'] as $role) {
             $this->addRole($role);
@@ -224,8 +227,7 @@ class Acl
      * @access public
      */
 
-    function addResource($resources)
-    {
+    function addResource($resources) {
         if (is_string($resources)) {
             $this->resources[$resources] = '';
         } else if (is_array($resources)) {
@@ -246,8 +248,7 @@ class Acl
      * @access public
      */
 
-    function addRole($role, $parents = '')
-    {
+    function addRole($role, $parents = '') {
         if (is_string($parents)) {
             if ($parents == '') {
                 $this->roles[$role] = array();
@@ -274,8 +275,7 @@ class Acl
      * @access public
      */
 
-    function deny($role, $resources)
-    {
+    function deny($role, $resources) {
         if (is_string($resources)) {
             $this->setAccess($role, $resources, 'deny');
         } else if (is_array($resources)) {
@@ -296,8 +296,7 @@ class Acl
      * @access public
      */
 
-    function allow($role, $resources)
-    {
+    function allow($role, $resources) {
         if (is_string($resources)) {
             $this->setAccess($role, $resources, 'allow');
         } else if (is_array($resources)) {
@@ -319,8 +318,7 @@ class Acl
      * @access public
      */
 
-    private function setAccess($role, $resource, $access = 'deny')
-    {
+    private function setAccess($role, $resource, $access = 'deny') {
         if ($this->checkIfRoleExist($role) || $this->checkIfResourceExist($resource)) {
             $this->access[$role][$resource] = $access;
         }
@@ -339,9 +337,8 @@ class Acl
      * @access public
      */
 
-    function isAllowed($role, $resource)
-    {
-        
+    function isAllowed($role, $resource) {
+
         $role = $this->getAliasIfExist($role);
 
         //We first check that the resource & role exist
@@ -355,7 +352,7 @@ class Acl
                         return true;
                     }
 
-                    //If he is not allowe we return false
+                    //If he is not allowed we return false
                     if ($this->access[$role][$resource] === 'deny') {
                         return false;
                     }
@@ -388,8 +385,7 @@ class Acl
      * @access public
      */
 
-    private function checkIfRoleExist($role)
-    {
+    private function checkIfRoleExist($role) {
         return array_key_exists($role, $this->roles);
     }
 
@@ -404,8 +400,7 @@ class Acl
      * @access public
      */
 
-    public function checkIfResourceExist($resource)
-    {
+    public function checkIfResourceExist($resource) {
         return array_key_exists($resource, $this->resources);
     }
 
@@ -419,8 +414,7 @@ class Acl
      * @access public
      */
 
-    public function __toString()
-    {
+    public function __toString() {
         if (IS_CLI) {
             $number_length = ceil(log(count($this->resources), 10));
 
@@ -503,7 +497,6 @@ class Acl
             return $html . '</ul>';
         }
     }
-    
 
     /*
      * This function looking for the index in array alias if exist return the value else return the string set in param
@@ -515,29 +508,145 @@ class Acl
      * @access private
      */
 
-    private function getAliasIfExist($role)
-    {
-        
-        return (!empty($this->alias[$role]))? $this->alias[$role]:$role;
+    private function getAliasIfExist($role) {
+
+        return (!empty($this->alias[$role])) ? $this->alias[$role] : $role;
     }
-    
-    public function getResources()
-    {
+
+    public function getResources() {
         return $this->resources;
     }
-    
-    
-    public function getRoles()
-    {
+
+    public function getRoles() {
         return $this->roles;
     }
-    
-    
-        public function getAlias()
-    {
+
+    public function getAlias() {
         return $this->alias;
     }
-    
-    
+
+    /*
+     * 
+     * @return array
+     * @since Glial 4.1.11
+     * @version 4.1.11
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @description Return all combinaison of roles / ressources
+     * @access public
+     */
+
+    public function exportCombinaison() {
+        $export = array();
+
+        foreach ($this->resources as $ressource => $vide) {
+            foreach ($this->roles as $role => $vide2) {
+                $export[$ressource][$role] = $this->isAllowed($role, $ressource);
+            }
+        }
+
+        return $export;
+    }
+
+    /*
+     * 
+     * @return array
+     * @since Glial 4.1.11
+     * @version 4.1.11
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @description Return all combinaison of roles / ressources
+     * @access public
+     */
+
+    public function getPathIniFile() {
+        return $this->inifile;
+    }
+
+    /*
+     * 
+     * @return array
+     * @since Glial 4.1.11
+     * @version 4.1.11
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @description Return all combinaison of roles / ressources
+     * @access public
+     */
+
+    public function export() {
+        return parse_ini_file($filename, true);
+    }
+
+    /*
+     * 
+     * @return void
+     * @param array
+     * @since Glial 4.1.11
+     * @version 4.1.11
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @description Return all combinaison of roles / ressources
+     * @access public
+     */
+
+    public function import($data) {
+
+        if ($this->checkValidity($data)) {
+
+
+
+            $fp = fopen($this->getPathIniFile(), "w");
+
+            if ($fp) {
+                fwrite($fp, "[alias]");
+
+                foreach ($data['alias'] as $id_group => $alias) {
+                    fwrite($fp, $id_group . " = " . $alias . "\n");
+                }
+
+                fwrite($fp, "[role]");
+
+                if (!empty($data['role']['add'])) {
+                    foreach ($data['role']['add'] as $value) {
+                        fwrite($fp, "add[] = " . $value . "\n");
+                    }
+
+
+                    unset($data['role']['add']);
+                }
+
+
+                if (!empty($data['role'])) {
+
+                    foreach ($data['role'] as $item => $parents) {
+
+                        foreach ($parents as $parent) {
+                            fwrite($fp, $item . "[] = " . $parent . "\n");
+                        }
+                    }
+                }
+
+
+                fwrite($fp, "[allow]");
+                foreach ($data['role'] as $role => $alias) {
+                    fwrite($fp, $id_group . " = " . $alias . "\n");
+                }
+
+                fwrite($fp, "[deny]");
+            }
+        }
+    }
+
+    private function checkValidity($data) {
+        $test = array('alias', 'role', 'allow', 'deny');
+
+        foreach ($test as $value) {
+            if (empty($data[$value])) {
+
+                throw new \Exception("GLI-581 : the format of array is not correct ('alias', 'role', 'allow', 'deny')", 80);
+                return false;
+            }
+        }
+
+
+        return true;
+    }
 
 }
