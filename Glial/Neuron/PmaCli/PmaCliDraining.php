@@ -1,4 +1,5 @@
 <?php
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -9,47 +10,56 @@ namespace Glial\Neuron\PmaCli;
 
 use \Glial\Cli\Color;
 
-class PmaCliDraining
-{
-    public $debug           = true;
-    public $color           = true;
-    public $prefix          = "DELETE_";
+class PmaCliDraining {
+
+    public $debug = true;
+    public $color = true;
+    public $prefix = "DELETE_";
     public $link_to_purge;
     public $schema_to_purge;
-    public $schema_delete   = "CLEANER";
-    public $table_to_purge  = array();
-    public $main_field      = array(); // => needed
+    public $schema_delete = "CLEANER";
+    public $table_to_purge = array();
+    public $main_field = array(); // => needed
     public $main_table;
     public $init_where;
     private $table_in_error = array();
-    private $di             = array();
+    private $di = array();
     private $rows_to_delete = array();
-    public $foreign_keys    = array();
+    public $foreign_keys = array();
     private $table_impacted = array();
-    public $id_cleaner      = 0;
-    public $backup_file = "/tmp/log.sql";
+    public $id_cleaner = 0;
+    public $backup_dir = DATA . "cleaner/";
+    private $path_to_orderby_tmp;
+    private $orderby = array();
 
-
-    function __construct($di)
-    {
+    function __construct($di) {
         $this->di['db'] = $di;
+
+        $this->path_to_orderby_tmp = TMP . "cleaner/orderby.ser";
+
+
+        $this->testDirectory(pathinfo($this->path_to_orderby_tmp)['dirname']);
+
+
+        if (file_exists($this->path_to_orderby_tmp)) {
+            unlink($this->path_to_orderby_tmp);
+        }
     }
 
-    public function start()
-    {
+    public function start() {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
-        // to not affect history server, read : https://mariadb.com/kb/en/mariadb/documentation/replication/standard-replication/selectively-skipping-replication-of-binlog-events/
+// to not affect history server, read : https://mariadb.com/kb/en/mariadb/documentation/replication/standard-replication/selectively-skipping-replication-of-binlog-events/
         $sql = "SET @@skip_replication = ON;";
 
         $this->log($sql);
         $db->sql_query($sql);
 
-        $sql = "CREATE DATABASE IF NOT EXISTS ".$this->schema_delete;
+        $sql = "CREATE DATABASE IF NOT EXISTS " . $this->schema_delete;
 
         if ($this->debug) {
-            echo $sql."\n";
+            echo $sql . "\n";
         }
 
         $db->sql_query($sql);
@@ -68,12 +78,12 @@ class PmaCliDraining
 
         $this->init();
 
-        //feed table in the right order to delete later
+//feed table in the right order to delete later
         $this->feedDeleteTableWithFk();
 
-        //delete items
+//delete items
         $temp = $this->rows_to_delete;
-        //purge table with empty row
+//purge table with empty row
         foreach ($temp as $key => $val) {
             if (empty($val)) {
                 unset($this->rows_to_delete[$key]);
@@ -94,84 +104,85 @@ class PmaCliDraining
         return $this->rows_to_delete;
     }
 
-    public function createTemporaryTable($table)
-    {
+    public function createTemporaryTable($table) {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
         $fields = $this->getTypeOfPrimaryKey($table);
 
         if (count($fields) === 0) {
-            throw new \Exception('GLI-071 : No primary key found on table "'.$table.'"');
+            throw new \Exception('GLI-071 : No primary key found on table "' . $table . '"');
 
             if ($this->debug) {
-                echo Color::getColoredString("--No Primary key found : '".$table."'", 'black', 'yellow', 'bold').PHP_EOL;
+                echo Color::getColoredString("--No Primary key found : '" . $table . "'", 'black', 'yellow', 'bold') . PHP_EOL;
             }
 
             $this->table_in_error[] = $table;
             return false;
         }
 
-        $line  = array();
+        $line = array();
         $index = array();
 
         foreach ($fields as $field) {
-            $line[]  = "`".$field['name']."` ".$field['type'];
-            $index[] = "`".$field['name']."`";
+            $line[] = "`" . $field['name'] . "` " . $field['type'];
+            $index[] = "`" . $field['name'] . "`";
         }
 
-        $sql = "CREATE TABLE IF NOT EXISTS `".$this->schema_delete."`.`".$this->prefix.$table."`(";
+        $sql = "CREATE TABLE IF NOT EXISTS `" . $this->schema_delete . "`.`" . $this->prefix . $table . "`(";
         $sql .= implode(",", $line);
-        $sql .= ", PRIMARY KEY (".implode(",", $index)."));";
+        $sql .= ", PRIMARY KEY (" . implode(",", $index) . "));";
         $db->sql_query($sql);
 
-        //$this->log($sql);
-        $sql = "DELETE FROM `".$this->schema_delete."`.`".$this->prefix.$table."`;";
+//$this->log($sql);
+        $sql = "DELETE FROM `" . $this->schema_delete . "`.`" . $this->prefix . $table . "`;";
         $db->sql_query($sql);
-        //$this->log($sql);
+//$this->log($sql);
     }
 
-    public function init()
-    {
+    public function init() {
         $this->view = false;
-        $db         = $this->di['db']->sql($this->link_to_purge);
+        $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
-        //feed id with main table
-        $pri         = $this->getPrimaryKey($this->main_table);
-        $primary_key = "`".implode('`,`', $pri)."`";
+//feed id with main table
+        $pri = $this->getPrimaryKey($this->main_table);
+        $primary_key = "`" . implode('`,`', $pri) . "`";
 
-        $sql  = "SELECT ".$primary_key." FROM `".$this->main_table."` WHERE ".$this->init_where.";"; // LOCK IN SHARE MODE
-        $res  = $db->sql_query($sql);
+        $sql = "SELECT " . $primary_key . " FROM `" . $this->main_table . "` WHERE " . $this->init_where . ";"; // LOCK IN SHARE MODE
+        $res = $db->sql_query($sql);
         $data = $db->sql_fetch_yield($sql);
 
         $this->log($sql);
 
         $have_data = false;
 
-        $sql = "INSERT IGNORE INTO `".$this->schema_delete."`.`".$this->prefix.$this->main_table."` (".$primary_key.") VALUES ";
+        $sql = "INSERT IGNORE INTO `" . $this->schema_delete . "`.`" . $this->prefix . $this->main_table . "` (" . $primary_key . ") VALUES ";
         foreach ($data as $line) {
             $have_data = true;
-            $sql .= "('".implode("','", $line)."'),";
+            $sql .= "('" . implode("','", $line) . "'),";
         }
+
+
 
         if ($have_data) {
             $sql = rtrim($sql, ",");
             $db->sql_query($sql);
             $this->setAffectedRows($this->main_table);
             $this->log($sql);
+
+            $this->exportToFile($this->main_table);
         } else {
             $this->rows_to_delete[$this->main_table] = 0;
             return $this->rows_to_delete;
         }
     }
 
-    public function feedDeleteTableWithFk()
-    {
+    public function feedDeleteTableWithFk() {
         if ($this->debug) {
-            echo "--###################################################################".PHP_EOL;
-            echo "--##################### FEED FROM FK ################################".PHP_EOL;
-            echo "--###################################################################".PHP_EOL;
+            echo "--###################################################################" . PHP_EOL;
+            echo "--##################### FEED FROM FK ################################" . PHP_EOL;
+            echo "--###################################################################" . PHP_EOL;
         }
 
         $db = $this->di['db']->sql($this->link_to_purge);
@@ -190,16 +201,16 @@ class PmaCliDraining
                 }
 
                 $sql = "SELECT * FROM `information_schema`.`KEY_COLUMN_USAGE` "
-                    ."WHERE CONSTRAINT_SCHEMA ='".$this->schema_to_purge."' "
-                    ."AND REFERENCED_TABLE_SCHEMA='".$this->schema_to_purge."' "
-                    ."AND TABLE_NAME ='".$table_name."';";
+                        . "WHERE CONSTRAINT_SCHEMA ='" . $this->schema_to_purge . "' "
+                        . "AND REFERENCED_TABLE_SCHEMA='" . $this->schema_to_purge . "' "
+                        . "AND TABLE_NAME ='" . $table_name . "';";
 
                 $res = $db->sql_query($sql);
                 $this->log($sql);
 
                 $fks = $db->sql_to_array($res);
 
-                //get virtual FK and merge to real FK
+//get virtual FK and merge to real FK
                 if (!empty($this->foreign_keys[$this->schema_to_purge][$table_name])) {
                     foreach ($this->foreign_keys[$this->schema_to_purge][$table_name] as $constraint_column => $line) {
                         $tab = explode("-", $line);
@@ -207,9 +218,9 @@ class PmaCliDraining
                         $tmp = [];
 
                         $tmp['REFERENCED_TABLE_SCHEMA'] = $tab[0];
-                        $tmp['REFERENCED_TABLE_NAME']   = $tab[1];
-                        $tmp['REFERENCED_COLUMN_NAME']  = $tab[2];
-                        $tmp['COLUMN_NAME']             = $constraint_column;
+                        $tmp['REFERENCED_TABLE_NAME'] = $tab[1];
+                        $tmp['REFERENCED_COLUMN_NAME'] = $tab[2];
+                        $tmp['COLUMN_NAME'] = $constraint_column;
 
                         $fks[] = $tmp;
                     }
@@ -218,52 +229,59 @@ class PmaCliDraining
 
                 foreach ($fks as $fk) {
 
-                    //don't take in consideration the table not impacted by cleaner
+//don't take in consideration the table not impacted by cleaner
                     if (!in_array($fk['REFERENCED_TABLE_NAME'], $tables_impacted)) {
                         continue;
                     }
 
-                    $pri          = $this->getPrimaryKey($table_name);
-                    $primary_key  = "a.`".implode('`,a.`', $pri)."`";
-                    $primary_keys = "`".implode('`,`', $pri)."`";
+                    $pri = $this->getPrimaryKey($table_name);
+                    $primary_key = "a.`" . implode('`,a.`', $pri) . "`";
+                    $primary_keys = "`" . implode('`,`', $pri) . "`";
 
-                    $sql  = "SELECT ".$primary_key." FROM `".$this->schema_to_purge."`.`".$table_name."` a
-                    INNER JOIN `".$this->schema_delete."`.`".$this->prefix.$fk['REFERENCED_TABLE_NAME']."` b ON b.`".$fk['REFERENCED_COLUMN_NAME']."` = a.`".$fk['COLUMN_NAME']."`";
+                    $sql = "SELECT " . $primary_key . " FROM `" . $this->schema_to_purge . "`.`" . $table_name . "` a
+                    INNER JOIN `" . $this->schema_delete . "`.`" . $this->prefix . $fk['REFERENCED_TABLE_NAME'] . "` b ON b.`" . $fk['REFERENCED_COLUMN_NAME'] . "` = a.`" . $fk['COLUMN_NAME'] . "`";
                     $data = $db->sql_fetch_yield($sql);
 
                     $this->log($sql);
 
                     $have_data = false;
-                    $sql       = "INSERT IGNORE INTO `".$this->schema_delete."`.`".$this->prefix.$table_name."` (".$primary_keys.") VALUES ";
+                    $sql = "INSERT IGNORE INTO `" . $this->schema_delete . "`.`" . $this->prefix . $table_name . "` (" . $primary_keys . ") VALUES ";
                     foreach ($data as $line) {
 
                         $have_data = true;
-                        $sql .= "('".implode("','", $line)."'),";
+                        $sql .= "('" . implode("','", $line) . "'),";
                     }
 
                     if ($have_data) {
                         $sql = rtrim($sql, ",");
                         $db->sql_query($sql);
+
                         $this->setAffectedRows($table_name);
                         $this->log($sql);
+
+
+
+
+//export to file
+                        $this->exportToFile($table_name);
+// fin export
                     }
                 }
             }
         }
     }
 
-    public function getPrimaryKey($table)
-    {
+    public function getPrimaryKey($table) {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
-        $sql = "SHOW INDEX FROM `".$table."` WHERE Key_name ='PRIMARY'";
+        $sql = "SHOW INDEX FROM `" . $table . "` WHERE Key_name ='PRIMARY'";
         $res = $db->sql_query($sql);
 
         $this->log($sql);
 
         if ($db->sql_num_rows($res) == "0") {
-            throw new \Exception("GLI-067 : this table '".$table."' haven't primary key !");
+            throw new \Exception("GLI-067 : this table '" . $table . "' haven't primary key !");
         } else {
 
             $index = array();
@@ -276,22 +294,21 @@ class PmaCliDraining
         }
     }
 
-    public function getTypeOfPrimaryKey($table)
-    {
+    public function getTypeOfPrimaryKey($table) {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
-        $sql = "SELECT COLUMN_TYPE, COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE `TABLE_NAME` = '".$table."' AND COLUMN_KEY ='PRI' AND `TABLE_SCHEMA` = '".$this->schema_to_purge."'";
+        $sql = "SELECT COLUMN_TYPE, COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE `TABLE_NAME` = '" . $table . "' AND COLUMN_KEY ='PRI' AND `TABLE_SCHEMA` = '" . $this->schema_to_purge . "'";
         $res = $db->sql_query($sql);
 
-        //$this->log($sql);
+//$this->log($sql);
 
         if ($db->sql_num_rows($res) === "0") { // should be == 1 have to fix it for PROD_LOT_ITEM
-            throw new \Exception("GLI-067 : this table [".$table."] haven't primary key !");
+            throw new \Exception("GLI-067 : this table [" . $table . "] haven't primary key !");
         } else {
 
             $ret = array();
-            while ($ob  = $db->sql_fetch_object($res)) {
+            while ($ob = $db->sql_fetch_object($res)) {
                 $line = array();
 
                 $line['name'] = $ob->COLUMN_NAME;
@@ -304,9 +321,8 @@ class PmaCliDraining
         }
     }
 
-    public function createAllTemporaryTable()
-    {
-        //$this->getImpactedTable();
+    public function createAllTemporaryTable() {
+
 
         $tables = $this->getOrderBy();
 
@@ -320,10 +336,9 @@ class PmaCliDraining
         }
     }
 
-    public function log($sql)
-    {
+    public function log($sql) {
 
-        //echo "GGGGGGGGGGGGGGGGGGGG";
+//echo "GGGGGGGGGGGGGGGGGGGG";
         if ($this->debug) {
 
             $db = $this->di['db']->sql($this->link_to_purge);
@@ -332,38 +347,35 @@ class PmaCliDraining
             if ($this->color) {
                 echo \SqlFormatter::highlight($sql);
             } else {
-                echo \SqlFormatter::format($sql, false).PHP_EOL;
+                echo \SqlFormatter::format($sql, false) . PHP_EOL;
             }
 
             if ($this->color) {
-                echo Color::getColoredString("--Row affected : ".end($db->query)['rows']." - Time : ".end($db->query)['time'], 'black',
-                    'green', 'bold')."\n";
+                echo Color::getColoredString("--Row affected : " . end($db->query)['rows'] . " - Time : " . end($db->query)['time'], 'black', 'green', 'bold') . "\n";
             } else {
-                echo "--Row affected : ".end($db->query)['rows'].PHP_EOL;
+                echo "--Row affected : " . end($db->query)['rows'] . PHP_EOL;
             }
         }
     }
 
-    public function getTableError()
-    {
+    public function getTableError() {
         return $this->table_in_error;
     }
 
-    private function getForeignKeys()
-    {
-        //get list of FK and put in array
+    private function getForeignKeys() {
+//get list of FK and put in array
         $db = $this->di['db']->sql($this->link_to_purge);
 
-        //$db->sql_select_db($this->schema_to_purge);
+//$db->sql_select_db($this->schema_to_purge);
 
         $sql = "SELECT * FROM `information_schema`.`KEY_COLUMN_USAGE` "
-            ."WHERE CONSTRAINT_SCHEMA ='".$this->schema_to_purge."' "
-            ."AND REFERENCED_TABLE_SCHEMA='".$this->schema_to_purge."' "
-            ."AND REFERENCED_TABLE_NAME IS NOT NULL ";
+                . "WHERE CONSTRAINT_SCHEMA ='" . $this->schema_to_purge . "' "
+                . "AND REFERENCED_TABLE_SCHEMA='" . $this->schema_to_purge . "' "
+                . "AND REFERENCED_TABLE_NAME IS NOT NULL ";
 
 
         if (!empty($this->prefix)) {
-            $sql .= "AND TABLE_NAME not like '".$this->prefix."%';";
+            $sql .= "AND TABLE_NAME not like '" . $this->prefix . "%';";
         }
 
 
@@ -385,13 +397,12 @@ class PmaCliDraining
         return $order_to_feed;
     }
 
-    private function getVirtualForeignKeys()
-    {
+    private function getVirtualForeignKeys() {
         $default = $this->di['db']->sql(DB_DEFAULT);
 
-        //get and set virtual Foreign keys.
+//get and set virtual Foreign keys.
         $params = $this->di['db']->sql(DB_DEFAULT)->getParams();
-        $sql    = "SELECT * FROM `".$params['database']."`.cleaner_foreign_key WHERE id_cleaner_main = '".$this->id_cleaner."'";
+        $sql = "SELECT * FROM `" . $params['database'] . "`.cleaner_foreign_key WHERE id_cleaner_main = '" . $this->id_cleaner . "'";
 
 
         $foreign_keys = $default->sql_fetch_yield($sql);
@@ -399,12 +410,11 @@ class PmaCliDraining
         $fk = array();
         foreach ($foreign_keys as $line) {
 
-            if (empty($line['constraint_schema']) || empty($line['constraint_table']) || empty($line['constraint_column']) || empty($line['referenced_schema'])
-                || empty($line['referenced_table']) || empty($line['referenced_column'])) {
+            if (empty($line['constraint_schema']) || empty($line['constraint_table']) || empty($line['constraint_column']) || empty($line['referenced_schema']) || empty($line['referenced_table']) || empty($line['referenced_column'])) {
                 throw new \Exception("PMACTRL-334 : Value empty in virtual FK");
             }
 
-            $fk[$line['constraint_schema']][$line['constraint_table']][$line['constraint_column']] = $line['referenced_schema']."-".$line['referenced_table']."-".$line['referenced_column'];
+            $fk[$line['constraint_schema']][$line['constraint_table']][$line['constraint_column']] = $line['referenced_schema'] . "-" . $line['referenced_table'] . "-" . $line['referenced_column'];
         }
 
         if (count($fk) != 0) {
@@ -417,7 +427,7 @@ class PmaCliDraining
             foreach ($tab_table as $constraint_table => $lines) {
 
                 foreach ($lines as $line) {
-                    $tab_referenced                      = explode('-', $line);
+                    $tab_referenced = explode('-', $line);
                     $order_to_feed[$tab_referenced[1]][] = $constraint_table;
                 }
             }
@@ -428,142 +438,176 @@ class PmaCliDraining
         return $order_to_feed;
     }
 
-    private function getOrderBy($order = 'ASC')
-    {
-        $real_fk = $this->getForeignKeys();
+    private function getOrderBy($order = 'ASC') {
+
+        if (!file_exists($this->path_to_orderby_tmp)) {
 
 
-        if ($this->debug) {
-            echo "REAL FOREIGN KEY :";
-            print_r($real_fk);
-        }
-
-        $virtual_fk = $this->getVirtualForeignKeys();
-
-        //debug($virtual_fk);
-
-        if ($this->debug) {
-            echo "VIRTUAL FOREIGN KEY :";
-            print_r($real_fk);
-        }
-
-        //debug($real_fk);
-
-        $fks = array_merge_recursive($real_fk, $virtual_fk);
-        $tmp = $fks;
+            $real_fk = $this->getForeignKeys();
 
 
-        //debug($fks);
-
-
-        if ($this->debug) {
-            echo "ALL FOREIGN KEY :";
-            //print_r($real_fk);
-        }
-
-        foreach ($tmp as $key => $tab) {
-            $fks[$key] = array_unique($fks[$key]);
-        }
-
-
-        if ($this->debug) {
-            echo "Remove key in dubble :";
-            //print_r($real_fk);
-        }
-
-        //remove all tables with no father from $this->main_table
-        $fks = $this->removeTableNotImpacted($fks);
-
-        if ($this->debug) {
-            echo "removed table not impacted :";
-            //debug($real_fk);
-        }
-
-        $level   = array();
-        $level[] = $this->table_to_purge;
-
-        $array = $fks;
-
-
-        //debug($array);
-
-        $i    = 0;
-        while ($last = count($array) != 0) {
-
-            //echo "level " . $i . PHP_EOL;
-            $temp = $array;
-
-            foreach ($temp as $father_name => $tab_father) {
-                foreach ($tab_father as $key_child => $table_child) {
-                    if (!in_array($table_child, array_keys($array))) {
-
-                        if (empty($level[$i]) || !in_array($table_child, $level[$i])) {
-                            $level[$i][] = $table_child;
-                        }
-                        //debug($level);
-                        unset($array[$father_name][$key_child]);
-                        //debug($array);
-                    }
-                }
+            if ($this->debug) {
+                echo "REAL FOREIGN KEY :";
+                print_r($real_fk);
             }
 
-            $temp = $array;
+            $virtual_fk = $this->getVirtualForeignKeys();
 
-            // retirer les tableaux vides, et remplissage avec clefs
-            foreach ($temp as $key => $tmp) {
-                if (count($tmp) == 0) {
-                    unset($array[$key]);
-                    if (empty($level[$i + 1]) || !in_array($key, $level[$i + 1])) {
-                        $level[$i + 1][] = $key;
-                    }
-                }
+//debug($virtual_fk);
+
+            if ($this->debug) {
+                echo "VIRTUAL FOREIGN KEY :";
+                print_r($real_fk);
+            }
+
+//debug($real_fk);
+
+            $fks = array_merge_recursive($real_fk, $virtual_fk);
+            $tmp = $fks;
+
+
+//debug($fks);
+
+
+            if ($this->debug) {
+                echo "ALL FOREIGN KEY :";
+//print_r($real_fk);
+            }
+
+            foreach ($tmp as $key => $tab) {
+                $fks[$key] = array_unique($fks[$key]);
             }
 
 
-            if ($last == count($array)) {
+            if ($this->debug) {
+                echo "Remove key in dubble :";
+//print_r($real_fk);
+            }
+
+//remove all tables with no father from $this->main_table
+            $fks = $this->removeTableNotImpacted($fks);
+
+            if ($this->debug) {
+                echo "removed table not impacted :";
+//debug($real_fk);
+            }
+
+            $level = array();
+            $level[] = $this->table_to_purge;
+
+            $array = $fks;
 
 
-                $cas_found = false;
+//debug($array);
 
-                //cas de deux chemins differents pour arrivé à la même table fille
+            $i = 0;
+            while ($last = count($array) != 0) {
+
+//echo "level " . $i . PHP_EOL;
                 $temp = $array;
-                foreach ($temp as $key1 => $tab2) {
-                    foreach ($tab2 as $key2 => $val) {
-                        //echo $val."\n";
 
-                        foreach ($level as $tab3) {
-                            if (in_array($val, $tab3)) {
-                                //echo "-- -- ".$array[$key1][$key2]." -- \n";
+                foreach ($temp as $father_name => $tab_father) {
+                    foreach ($tab_father as $key_child => $table_child) {
+                        if (!in_array($table_child, array_keys($array))) {
 
-                                unset($array[$key1][$key2]);
-                                $cas_found = true;
+                            if (empty($level[$i]) || !in_array($table_child, $level[$i])) {
+                                $level[$i][] = $table_child;
+                            }
+//debug($level);
+                            unset($array[$father_name][$key_child]);
+//debug($array);
+                        }
+                    }
+                }
+
+                $temp = $array;
+
+// retirer les tableaux vides, et remplissage avec clefs
+                foreach ($temp as $key => $tmp) {
+                    if (count($tmp) == 0) {
+                        unset($array[$key]);
+                        if (empty($level[$i + 1]) || !in_array($key, $level[$i + 1])) {
+                            $level[$i + 1][] = $key;
+                        }
+                    }
+                }
+
+
+                if ($last == count($array)) {
+
+
+                    $cas_found = false;
+
+//cas de deux chemins differents pour arrivé à la même table fille
+                    $temp = $array;
+                    foreach ($temp as $key1 => $tab2) {
+                        foreach ($tab2 as $key2 => $val) {
+//echo $val."\n";
+
+                            foreach ($level as $tab3) {
+                                if (in_array($val, $tab3)) {
+//echo "-- -- ".$array[$key1][$key2]." -- \n";
+
+                                    unset($array[$key1][$key2]);
+                                    $cas_found = true;
+                                }
                             }
                         }
                     }
+
+                    if (!$cas_found) {
+                        echo "\n";
+                        throw new \Exception("PMACTRL-333 Circular definition (table <-> table)");
+                    }
                 }
 
-                if (!$cas_found) {
-                    echo "\n";
-                    throw new \Exception("PMACTRL-333 Circular definition (table <-> table)");
-                }
+
+                sort($level[$i]);
+                $i++;
             }
 
 
-            sort($level[$i]);
-            $i++;
+//dans le cas où il a pas au moins table fille on ajoute la table principale
+            if (count($level[0]) == 0) {
+                $level[0][0] = $this->main_table;
+            }
+
+            if ($order === "ASC") {
+                krsort($level);
+            } else {
+                ksort($level);
+            }
+
+
+            $this->orderby = $level;
+
+
+
+            file_put_contents($this->path_to_orderby_tmp, serialize($this));
+        } else {
+
+            //on load le fichier précédement enregistré
+            if (is_file($this->path_to_orderby_tmp)) {
+                $s = implode('', file($this->path_to_orderby_tmp));
+                $tmp = unserialize($s);
+                $this->orderby = $tmp->orderby;
+            }
         }
+
 
         if ($order === "ASC") {
-            krsort($level);
+            krsort($this->orderby);
         } else {
-            ksort($level);
+            ksort($this->orderby);
         }
-        return $level;
+
+
+
+        return $this->orderby;
     }
 
-    public function delete()
-    {
-        $db          = $this->di['db']->sql($this->link_to_purge);
+    public function delete() {
+        $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
         $list_tables = $this->getOrderBy("DESC");
 
@@ -572,61 +616,38 @@ class PmaCliDraining
 
                 $primary_keys = $this->getPrimaryKey($table);
 
-                $join   = array();
+                $join = array();
                 $fields = array();
                 foreach ($primary_keys as $primary_key) {
-                    $join[]   = " `a`.`".$primary_key."` = b.`".$primary_key."` ";
-                    $fields[] = " b.`".$primary_key."` ";
+                    $join[] = " `a`.`" . $primary_key . "` = b.`" . $primary_key . "` ";
+                    $fields[] = " b.`" . $primary_key . "` ";
                 }
-
-
-
-                //export to file
-
-                $sql = "SELECT a.* FROM ".$table." a
-                    INNER JOIN `".$this->schema_delete."`.".$this->prefix.$table." as b ON  ".implode(" AND ", $join);
-
-                $res = $db->sql_query($sql);
-
-
-                $export = array();
-                while($arr = $db->sql_fetch_array($res , MYSQLI_NUM))
-                {
-                    $export[] = "(".implode(",",$arr).")";
-                }
-
-                $query = "INSERT INTO ".$table." VALUES ".implode(",",$export).";\n";
-
-                $fp = fopen ($this->backup_file, "a");
-
-                if ($fp)
-                {
-                    fwrite($fp, $query);
-                    fclose($fp);
-                }
-                
-
 
                 $field = implode(" ", $join);
-                /*
-                $sql   = "DELETE a FROM ".$table." a
-                    INNER JOIN `".$this->schema_delete."`.".$this->prefix.$table." as b ON  ".implode(" AND ", $join);
-*/
+
+
+
+                $sql = "DELETE a FROM " . $table . " a
+                  INNER JOIN `" . $this->schema_delete . "`." . $this->prefix . $table . " as b ON  " . implode(" AND ", $join);
+
                 $db->sql_query($sql);
                 $this->log($sql);
+
+
+
+
 
                 if (end($db->query)['rows'] == "-1") {
                     throw new \Exception('PMACLI-666 : Foreign key error, have to update lib of cleaner or order of table set in param');
                 }
 
-                $sql = "DELETE FROM `".$this->schema_delete."`.`".$this->prefix.$table."`";
+                $sql = "DELETE FROM `" . $this->schema_delete . "`.`" . $this->prefix . $table . "`";
                 $db->sql_query($sql);
             }
         }
     }
 
-    public function setAffectedRows($table)
-    {
+    public function setAffectedRows($table) {
         $db = $this->di['db']->sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
@@ -637,8 +658,7 @@ class PmaCliDraining
         }
     }
 
-    public function getAffectedTables()
-    {
+    public function getAffectedTables() {
         if (count($this->table_impacted) === 0) {
             $list_tables = $this->getOrderBy();
 
@@ -650,15 +670,14 @@ class PmaCliDraining
         return $this->table_impacted;
     }
 
-    private function removeTableNotImpacted($fks)
-    {
+    private function removeTableNotImpacted($fks) {
         do {
-            $tmp  = $fks;
+            $tmp = $fks;
             $tmp2 = $fks;
 
             $nbfound = 0;
             foreach ($fks as $table => $data) {
-                //we want keep main table
+//we want keep main table
                 if (trim($table) == $this->main_table) {
                     continue;
                 }
@@ -672,8 +691,7 @@ class PmaCliDraining
                 if (!$found) {
 
                     if ($this->debug) {
-                        echo Color::getColoredString("We removed this table (Not a child of : `".$this->schema_to_purge."`.`".$this->main_table."`) : ".$table,
-                            'black', 'yellow', 'bold').PHP_EOL;
+                        echo Color::getColoredString("We removed this table (Not a child of : `" . $this->schema_to_purge . "`.`" . $this->main_table . "`) : " . $table, 'black', 'yellow', 'bold') . PHP_EOL;
                     }
 
                     unset($tmp2[$table]);
@@ -683,38 +701,99 @@ class PmaCliDraining
             $fks = $tmp2;
 
             if ($this->debug) {
-                echo str_repeat("-", 80)."\n";
+                echo str_repeat("-", 80) . "\n";
             }
         } while ($nbfound != 0);
 
-        //debug($tmp2);
+//debug($tmp2);
 
         return $tmp2;
     }
 
-    function getImpactedTable()
-    {
-        $real_fk    = $this->getForeignKeys();
-        $virtual_fk = $this->getVirtualForeignKeys();
-        $fks        = array_merge_recursive($real_fk, $virtual_fk);
-        $keys       = array_keys($fks);
+    private function exportToFile($table) {
 
-        $list = array($this->main_table);
-        $last = $list;
+        $db = $this->di['db']->sql($this->link_to_purge);
 
-        do {
-            $tmp = [];
-            foreach ($last as $table) {
-                if (!empty($fks[$table])) {
-                    $list = array_merge($list, $fks[$table]);
-                    $tmp  = array_merge($tmp, $fks[$table]);
+        $primary_keys = $this->getPrimaryKey($table);
 
-                    unset($fks[$table]);
-                }
-            }
-            $last = $tmp;
-        } while (count($tmp) != 0);
+        $join = array();
+        $fields = array();
+        foreach ($primary_keys as $primary_key) {
+            $join[] = " `a`.`" . $primary_key . "` = b.`" . $primary_key . "` ";
+            $fields[] = " b.`" . $primary_key . "` ";
+        }
 
-        return $list;
+        $field = implode(" ", $join);
+
+        $sql = "SELECT a.* FROM " . $table . " a
+                    INNER JOIN `" . $this->schema_delete . "`." . $this->prefix . $table . " as b ON  " . implode(" AND ", $join);
+
+        $res = $db->sql_query($sql);
+
+        $export = array();
+        while ($arr = $db->sql_fetch_array($res, MYSQLI_NUM)) {
+            $export[] = "(" . implode(",", $arr) . ")";
+        }
+
+        $query = "INSERT IGNORE INTO " . $table . " VALUES " . implode(",", $export) . ";\n";
+
+        $path = $this->backup_dir . $this->id_cleaner;
+        $this->testDirectory($path);
+
+
+        $file = $path . "/" . date('Y-m-d') . "_log.sql";
+
+        $fp = fopen($file, "a");
+
+        if ($fp) {
+            fwrite($fp, $query);
+            fclose($fp);
+        }
     }
+
+    private function testDirectory($path) {
+
+        if (!is_dir($path)) {
+            mkdir($path, 0700, true);
+        }
+
+
+        if (!is_writable($path)) {
+            throw new \Exception("GLI-985 : Impossible to write in directory : (" . $path . ")", 80);
+        }
+    }
+
+    /*
+     * return an array with data to serialize
+     * @since Glial 4.2.11
+     * @version 4.2.11
+     * @return array contain the data to be serialized
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @description return an array to be serialized in a flat file
+     * @access public
+     */
+
+    public function __sleep() {
+        return array('orderby');
+    }
+
+    public function __call($method, $arguments) {
+
+        if (method_exists($this, $method)) {
+
+
+            $microtime = microtime(true);
+
+            $ret = call_user_func_array(array($this, $method), $arguments);
+
+
+
+            $diff = round(microtime(true) - $microtime, 5);
+
+            echo "merthod : $method -- temps d'execution : ".$diff."\n";
+
+            return $ret;
+        }
+    }
+
 }
