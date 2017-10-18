@@ -31,6 +31,7 @@ class PmaCliDraining {
     public $backup_dir = DATA . "cleaner/";
     private $path_to_orderby_tmp;
     private $orderby = array();
+    private $id_backup_storage_area = 0;
 
     function __construct($di) {
         $this->di['db'] = $di;
@@ -712,42 +713,44 @@ class PmaCliDraining {
 
     private function exportToFile($table) {
 
-        $db = $this->di['db']->sql($this->link_to_purge);
+        if (!empty($this->id_backup_storage_area)) {
+            $db = $this->di['db']->sql($this->link_to_purge);
 
-        $primary_keys = $this->getPrimaryKey($table);
+            $primary_keys = $this->getPrimaryKey($table);
 
-        $join = array();
-        $fields = array();
-        foreach ($primary_keys as $primary_key) {
-            $join[] = " `a`.`" . $primary_key . "` = b.`" . $primary_key . "` ";
-            $fields[] = " b.`" . $primary_key . "` ";
-        }
+            $join = array();
+            $fields = array();
+            foreach ($primary_keys as $primary_key) {
+                $join[] = " `a`.`" . $primary_key . "` = b.`" . $primary_key . "` ";
+                $fields[] = " b.`" . $primary_key . "` ";
+            }
 
-        $field = implode(" ", $join);
+            $field = implode(" ", $join);
 
-        $sql = "SELECT a.* FROM " . $table . " a
+            $sql = "SELECT a.* FROM " . $table . " a
                     INNER JOIN `" . $this->schema_delete . "`." . $this->prefix . $table . " as b ON  " . implode(" AND ", $join);
 
-        $res = $db->sql_query($sql);
+            $res = $db->sql_query($sql);
 
-        $export = array();
-        while ($arr = $db->sql_fetch_array($res, MYSQLI_NUM)) {
-            $export[] = "(" . implode(",", $arr) . ")";
-        }
+            $export = array();
+            while ($arr = $db->sql_fetch_array($res, MYSQLI_NUM)) {
+                $export[] = "(" . implode(",", $arr) . ")";
+            }
 
-        $query = "INSERT IGNORE INTO " . $table . " VALUES " . implode(",", $export) . ";\n";
+            $query = "INSERT IGNORE INTO " . $table . " VALUES " . implode(",", $export) . ";\n";
 
-        $path = $this->backup_dir . $this->id_cleaner;
-        $this->testDirectory($path);
+           
+            $this->testDirectory($this->backup_dir);
 
 
-        $file = $path . "/" . date('Y-m-d') . "_log.sql";
+            $file = $this->backup_dir . "/" . date('Y-m-d') . "_log.sql";
 
-        $fp = fopen($file, "a");
+            $fp = fopen($file, "a");
 
-        if ($fp) {
-            fwrite($fp, $query);
-            fclose($fp);
+            if ($fp) {
+                fwrite($fp, $query);
+                fclose($fp);
+            }
         }
     }
 
@@ -790,7 +793,7 @@ class PmaCliDraining {
 
             $diff = round(microtime(true) - $microtime, 5);
 
-            echo "merthod : $method -- temps d'execution : ".$diff."\n";
+            echo "merthod : $method -- temps d'execution : " . $diff . "\n";
 
             return $ret;
         }
