@@ -31,7 +31,8 @@ class PmaCliDraining {
     public $backup_dir = DATA . "cleaner/";
     private $path_to_orderby_tmp;
     private $orderby = array();
-    private $id_backup_storage_area = 0;
+    public $id_backup_storage_area = 0;
+    private $sql_hex_for_binary = false;
 
     function __construct($di) {
         $this->di['db'] = $di;
@@ -539,7 +540,7 @@ class PmaCliDraining {
 
                     $cas_found = false;
 
-//cas de deux chemins differents pour arrivé à la même table fille
+                    //cas de deux chemins differents pour arriver à la même table fille
                     $temp = $array;
                     foreach ($temp as $key1 => $tab2) {
                         foreach ($tab2 as $key2 => $val) {
@@ -631,7 +632,7 @@ class PmaCliDraining {
                 $sql = "DELETE a FROM " . $table . " a
                   INNER JOIN `" . $this->schema_delete . "`." . $this->prefix . $table . " as b ON  " . implode(" AND ", $join);
 
-                $db->sql_query($sql);
+                //$db->sql_query($sql);
                 $this->log($sql);
 
 
@@ -728,20 +729,13 @@ class PmaCliDraining {
             $field = implode(" ", $join);
 
             $sql = "SELECT a.* FROM " . $table . " a
-                    INNER JOIN `" . $this->schema_delete . "`." . $this->prefix . $table . " as b ON  " . implode(" AND ", $join);
+                    INNER JOIN `" . $this->schema_delete . "`." . $this->prefix . $table . " as b ON  " . implode(" AND ", $join).";";
 
             $res = $db->sql_query($sql);
 
-            $export = array();
-            while ($arr = $db->sql_fetch_array($res, MYSQLI_NUM)) {
-                $export[] = "(" . implode(",", $arr) . ")";
-            }
+            $query = "INSERT IGNORE INTO " . $table . " () VALUES " . $this->get_rows($res) . ";\n";
 
-            $query = "INSERT IGNORE INTO " . $table . " VALUES " . implode(",", $export) . ";\n";
-
-           
             $this->testDirectory($this->backup_dir);
-
 
             $file = $this->backup_dir . "/" . date('Y-m-d') . "_log.sql";
 
@@ -780,23 +774,111 @@ class PmaCliDraining {
         return array('orderby');
     }
 
-    public function __call($method, $arguments) {
+    private function get_rows($result) {
 
-        if (method_exists($this, $method)) {
+        $db = $this->di['db']->sql($this->link_to_purge);
+        $current_row = 0;
 
+        $fields_cnt = $db->sql_num_fields($result);
 
-            $microtime = microtime(true);
-
-            $ret = call_user_func_array(array($this, $method), $arguments);
-
-
-
-            $diff = round(microtime(true) - $microtime, 5);
-
-            echo "merthod : $method -- temps d'execution : " . $diff . "\n";
-
-            return $ret;
+        // Get field information
+        $fields_meta = $db->getFieldsMeta($result);
+        $field_flags = array();
+        for ($j = 0; $j < $fields_cnt; $j++) {
+            $field_flags[$j] = $db->fieldFlags($result, $j);
         }
+
+        while ($row = $db->sql_fetch_array($result, MYSQLI_NUM)) {
+
+
+            $values = array();
+            for ($j = 0; $j < $fields_cnt; $j++) {
+                // NULL
+                if (!isset($row[$j]) || is_null($row[$j])) {
+                    $values[] = 'NULL';
+                } elseif ($fields_meta[$j]->numeric && $fields_meta[$j]->type != 'timestamp' && !$fields_meta[$j]->blob) {
+                    // a number
+                    // timestamp is numeric on some MySQL 4.1, BLOBs are
+                    // sometimes numeric
+                    $values[] = $row[$j];
+                } elseif (stristr($field_flags[$j], 'BINARY') !== false && $this->sql_hex_for_binary) {
+                    // a true BLOB
+                    // - mysqldump only generates hex data when the --hex-blob
+                    //   option is used, for fields having the binary attribute
+                    //   no hex is generated
+                    // - a TEXT field returns type blob but a real blob
+                    //   returns also the 'binary' flag
+                    // empty blobs need to be different, but '0' is also empty
+                    // :-(
+                    if (empty($row[$j]) && $row[$j] != '0') {
+                        $values[] = '\'\'';
+                    } else {
+                        $values[] = '0x' . bin2hex($row[$j]);
+                    }
+                } elseif ($fields_meta[$j]->type == 'bit') {
+                    // detection of 'bit' works only on mysqli extension
+                    $values[] = "b'" . $db->sql_real_escape_string(
+                                    $this->printableBitValue(
+                                            $row[$j], $fields_meta[$j]->length
+                                    )
+                            )
+                            . "'";
+                } else {
+                    // something else -> treat as a string
+                    $values[] = '\'' . $db->sql_real_escape_string($row[$j]) . '\'';
+                } // end if
+
+            } // end for
+
+            $insert_elem[] = '(' . implode(',', $values) . ')';
+            
+        }
+        
+        $insert_line = implode(',', $insert_elem);
+
+       
+
+        return $insert_line;
+    }
+
+    public static function printableBitValue($value, $length) {
+        // if running on a 64-bit server or the length is safe for decbin()
+        if (PHP_INT_SIZE == 8 || $length < 33) {
+            $printable = decbin($value);
+        } else {
+            // FIXME: does not work for the leftmost bit of a 64-bit value
+            $i = 0;
+            $printable = '';
+            while ($value >= pow(2, $i)) {
+                ++$i;
+            }
+            if ($i != 0) {
+                --$i;
+            }
+
+            while ($i >= 0) {
+                if ($value - pow(2, $i) < 0) {
+                    $printable = '0' . $printable;
+                } else {
+                    $printable = '1' . $printable;
+                    $value = $value - pow(2, $i);
+                }
+                --$i;
+            }
+            $printable = strrev($printable);
+        }
+        $printable = str_pad($printable, $length, '0', STR_PAD_LEFT);
+        return $printable;
+    }
+
+    function getImpactedTable() {
+        $list = $this->getOrderby();
+        
+        $tables = array();
+        foreach ($list as $elem) {
+            $tables = array_merge($elem, $tables);
+        }
+        return $tables;
     }
 
 }
