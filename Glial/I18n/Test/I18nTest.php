@@ -35,8 +35,23 @@ class TestI18n extends \PHPUnit_Framework_TestCase
 
         $res = I18n::get_answer_from_google("Bienvenue, veuillez vous identifier\nContacter le créateur de l'application", "fr");
 
-        $this->assertEquals($res[0],"Welcome, please log" );
+        $this->assertEquals($res[0],"Welcome, please login" );
         $this->assertEquals($res[1],"Contact the creator of the application" );
+
+        
+         I18n::SetDefault("fr");
+        I18n::load("fr");
+
+
+        $res = I18n::get_answer_from_google("storage area\nProduct Version", "en");
+
+
+        print_r($res);
+
+        $this->assertEquals($res[0],"zone de stockage" );
+        $this->assertEquals($res[1],"Version du produit" );
+
+
     }
     
 
