@@ -538,6 +538,8 @@ class Acl {
     public function exportCombinaison() {
         $export = array();
 
+        ksort($this->resources);
+        
         foreach ($this->resources as $ressource => $vide) {
             foreach ($this->roles as $role => $vide2) {
                 $export[$ressource][$role] = $this->isAllowed($role, $ressource);
