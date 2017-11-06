@@ -79,9 +79,6 @@ class Form {
             $add_array = "";
         }
 
-
-
-
         if (!self::$ajax) {
             if ($indice != -1) {
                 $ret .= "<select id=\"" . $table . "-" . $indice . "-" . $field . "\" $extra name=\"" . $table . "[" . $indice . "]" . "[" . $field . "]" . $add_array . "\">\n";
@@ -124,14 +121,23 @@ class Form {
                     $style = 'style="background: #d9534f; color: #fff;"';
                 }
 
-
-
+                $extra ="";
+                if (!empty($val['extra']))
+                {
+                    
+                    foreach($val['extra'] as $opt => $v)
+                    {
+                        $extra .= ' '.$opt.'="'.$v.'"';
+                    }
+                }
+                
+                
 
                 if ((!empty($_GET[$table][$field]) && $_GET[$table][$field] == $val['id']) || (!empty($default_id) && $default_id == $val['id'] && self::$select_multiple === false) || (!empty($_GET[$table][$field]) && self::$select_multiple === true && in_array($val['id'], json_decode($_GET[$table][$field], true)))
                 ) {
                     $ret .= "<option value=\"" . $val['id'] . "\" selected=\"selected\" $style $disable>" . $val['libelle'] . "</option>\n";
                 } else {
-                    $ret .= "<option value=\"" . $val['id'] . "\" $style $disable>" . $val['libelle'] . "</option>\n";
+                    $ret .= "<option value=\"" . $val['id'] . "\" $style $disable$extra>" . $val['libelle'] . "</option>\n";
                 }
             }
         }
