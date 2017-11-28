@@ -40,6 +40,7 @@ class SetTimeLimit
         //file_put_contents('debug.txt', time().':cmd:'.$cmd."\n", FILE_APPEND);
         //file_put_contents('debug.txt', time().':stdin:'.$stdin."\n", FILE_APPEND);
 
+
         $params = "'".implode("' '", $param)."'";
         $cmd = "php -f " . ROOT . "/application/webroot/index.php $controller $action $params";
 
@@ -58,17 +59,13 @@ class SetTimeLimit
         fwrite($pipes[0], $stdin);
         fclose($pipes[0]);
 
-        
         //$uniq = uniqid();
         while (1) {
             $stdout.=stream_get_contents($pipes[1]);
             $stderr.=stream_get_contents($pipes[2]);
 
-            
             //echo $uniq."\tDELTA : ".(time()-$start)." - timeout : ".$timeout.""." \n";
                     
-            
-            
             if (time() - $start > $timeout) {
                 //proc_terminate($process, 9);    
                 //only terminate subprocess, won't terminate sub-subprocess
@@ -85,9 +82,6 @@ class SetTimeLimit
             
             $status = proc_get_status($process);
             
-            
-            
-            
             //file_put_contents('debug.txt', time().':status:'.var_export($status, true)."\n";
             if (!$status['running']) {
                 fclose($pipes[1]);
@@ -102,8 +96,6 @@ class SetTimeLimit
                 
                 return array('return' => $output, 'exitcode' => $status['exitcode'], 'stdout' => $stdout, 'stderr' => $stderr);
             }
-
-            usleep(1000);
         }
     }
 
@@ -118,7 +110,7 @@ class SetTimeLimit
         SetTimeLimit::my_timeout_exec($my_background_exec, json_encode($params), 2);
     }
 
-    static private function my_timeout_exec($cmd, $stdin = '', $timeout)
+    static private function my_timeout_exec($cmd, $stdin = '', $timeout, $debug)
     {
         $start = time();
         $stdout = '';

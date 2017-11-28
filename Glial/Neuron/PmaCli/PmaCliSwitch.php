@@ -13,10 +13,9 @@ use \Glial\Cli\Table;
 
 trait PmaCliSwitch
 {
-
     /*
      * 
-     * glial pma_cli switchMaster NewMaster NewSlave
+     * glial pma_cli switchMaster NewSlave NewMaster
      */
     
     

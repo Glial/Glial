@@ -70,7 +70,7 @@ class Table {
 
     private function checkLine($line) {
         foreach ($line as $elem) {
-            if (!empty($elem) && !is_string($elem) && !is_int($elem)) {
+            if (!empty($elem) && !is_string($elem) && !is_int($elem) && ! is_float($elem)) {
                 throw new \Exception("GLI-015 : \$line must be an array of string/int : '" . $elem . "'");
             }
         }

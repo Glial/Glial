@@ -106,8 +106,9 @@ abstract class Sql
 
             //error
             if (IS_CLI) {
-                echo "[".date("Y-m-d H:i:s")."] SQL : " . Color::getColoredString($sql, "yellow") . "\n" . Color::getColoredString($this->_error(), "grey", "red") . "" .
-                "\nFILE : " . $called_from[$indice]['file'] . " LINE : " . $called_from[$indice]['line'] . "\n";
+                fwrite(STDERR, "[".date("Y-m-d H:i:s")."] SQL : " . Color::getColoredString($sql, "yellow") . "\n" . Color::getColoredString($this->_error(), "grey", "red") . "" .
+                "\nFILE : " . $called_from[$indice]['file'] . " LINE : " . $called_from[$indice]['line'] . "\n");
+              
             } else {
                 echo "[".date("Y-m-d H:i:s")."] SQL : $sql<br /><b>" . $this->_error() . "</b>" .
                 "<br />FILE : " . $called_from[$indice]['file'] . ":" . $called_from[$indice]['line'] . "<br />";

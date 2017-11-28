@@ -129,7 +129,7 @@ class Sgbd
      * @return array with all options set i db.config.php (hostname / port / 
      * @description connect to all database in db.config.ini.php and return the object / dblink created
      * @access public
-     * @example $this->di['db']->getParam('default');
+     * @example $this->di['db']->getParam(DB_DEFAULT); // DB_DEFAULT is string
      * @package Sgbd
      * @See Also sql
      * @since 3.0 First time this was introduced.
