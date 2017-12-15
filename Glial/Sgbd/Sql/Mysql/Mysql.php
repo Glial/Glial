@@ -236,7 +236,6 @@ class Mysql extends Sql
         $ret['table'] = $table;
         $ret['view']  = $view;
 
-
         return $ret;
     }
 

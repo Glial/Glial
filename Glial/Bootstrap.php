@@ -55,14 +55,14 @@ FactoryController::addDi("config", $config);
 $log = new Logger('Glial');
 
 
-$file_log = TMP . 'log/glial.log';
+$file_log = LOG_FILE;
 
 $handler = new StreamHandler($file_log, Logger::NOTICE);
 $handler->setFormatter(new LineFormatter(null, null, false, true));
 $log->pushHandler($handler);
 
-
 FactoryController::addDi("log", $log);
+
 
 if (!IS_CLI) {
     $developer = $config->get("developer");

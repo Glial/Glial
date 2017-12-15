@@ -23,7 +23,7 @@ class Validation {
     function is_unique($elem) {
 
         //'
-        $sql = "SELECT count(1) as cpt FROM " . $elem['table'] . " WHERE `" . $elem['field'] . "` = '" . $elem['value'] . "'";
+        $sql = "SELECT count(1) as cpt FROM " . $elem['table'] . " WHERE `" . $elem['field'] . "` = '" . $elem['value'] . "';";
 
 
         if (!empty($elem['id'])) { //dans le cas d'un update
@@ -172,7 +172,7 @@ class Validation {
                 break;
         }
 
-        $sql = "SELECT count(1) as cpt FROM `" . $table . "` WHERE `" . $field . "` = '" . $elem['value'] . "'";
+        $sql = "SELECT count(1) as cpt FROM `" . $table . "` WHERE `" . $field . "` = '" . $elem['value'] . "';";
 
         $bb = $this->db->sql_query($sql);
         $okp = $this->db->sql_to_array($bb);

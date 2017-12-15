@@ -84,7 +84,7 @@ abstract class Sql
 
 
         if (IS_CLI) { //to save memory with crawler & bot
-            $this->serializeQuery();
+            //$this->serializeQuery();
         }
 
         if (!is_string($sql)) {
@@ -129,7 +129,6 @@ abstract class Sql
 
         $this->query[$this->number_of_query]['rows'] = $this->rows_affected;
         $this->query[$this->number_of_query]['last_id'] = $this->_insert_id();
-
 
         $this->number_of_query++;
 
@@ -296,7 +295,7 @@ abstract class Sql
                 
                 
             } else {
-                $sql = $insert_or_replace . " INTO " . static::ESC . "" . $table . "" . static::ESC . " (" . static::ESC . "" . implode("" . static::ESC . "," . static::ESC . "", $keys) . "" . static::ESC . ") VALUES ('" . implode("','", $data[$table]) . "') --";
+                $sql = $insert_or_replace . " INTO " . static::ESC . "" . $table . "" . static::ESC . " (" . static::ESC . "" . implode("" . static::ESC . "," . static::ESC . "", $keys) . "" . static::ESC . ") VALUES ('" . implode("','", $data[$table]) . "');";
                 
                 //debug($sql);
                 
@@ -435,9 +434,11 @@ abstract class Sql
 
     public function serializeQuery()
     {
-        if (count($this->query) > 50) {
+        
+        if (count($this->query) > 5000) {
             array_splice($this->query, 0, -10);
         }
+
     }
 
     private function unserializeKeys()
