@@ -37,6 +37,13 @@ class Mysql extends Sql
         MYSQLI_NOT_NULL_FLAG => 'not_null',
     );
 
+
+    /*
+     * Store in array cash
+     */
+    public $primary_key       = array();
+    public $primary_key_field = array();
+
     function __construct($name, $elem)
     {
         $this->setName($name, $elem);
@@ -74,8 +81,7 @@ class Mysql extends Sql
             }
 
 
-            throw new \Exception('GLI-012 : Can\'t connect to ('.$login.'@'.$host.":".$port.') MySQL server'.' {'.error_get_last()['message'].'}',
-            $level);
+            throw new \Exception('GLI-012 : Can\'t connect to ('.$login.'@'.$host.":".$port.') MySQL server'.' {'.error_get_last()['message'].'}', $level);
         } else {
             $this->is_connected = true;
 
@@ -114,8 +120,6 @@ class Mysql extends Sql
 
     protected function _query($sql)
     {
-
-
         return mysqli_query($this->link, $sql);
     }
 
@@ -391,8 +395,7 @@ class Mysql extends Sql
      */
     public function isMultiMaster()
     {
-        if ($this->getServerType() === "MariaDB" && version_compare($this->getVersion(),
-                "10", ">=")) {
+        if ($this->getServerType() === "MariaDB" && version_compare($this->getVersion(), "10", ">=")) {
             return true;
         } else {
             return false;
@@ -448,8 +451,14 @@ class Mysql extends Sql
      * @since 3.0.2 First time this was introduced.
      * @version 3.0.2
      */
-    public function getStatus($var = '')
+    public function getStatus($var = '', $refresh = false)
     {
+
+
+        if ($refresh) {
+            unset($this->status);
+        }
+
 
         if (empty($this->status)) {
 
@@ -682,8 +691,7 @@ class Mysql extends Sql
     {
 
         $grants = $this->getGrants();
-        if (in_array("ALL PRIVILEGES", $grants) || (in_array("SUPER", $grants) || in_array("REPLICATION CLIENT",
-                $grants))) {
+        if (in_array("ALL PRIVILEGES", $grants) || (in_array("SUPER", $grants) || in_array("REPLICATION CLIENT", $grants))) {
             return true;
         }
         return false;
@@ -792,9 +800,8 @@ class Mysql extends Sql
         // structure. Watch out: some types like DATE returns 63 in charsetnr
         // so we have to check also the type.
         // Unfortunately there is no equivalent in the mysql extension.
-        if (($type == MYSQLI_TYPE_TINY_BLOB || $type == MYSQLI_TYPE_BLOB || $type
-            == MYSQLI_TYPE_MEDIUM_BLOB || $type == MYSQLI_TYPE_LONG_BLOB || $type
-            == MYSQLI_TYPE_VAR_STRING || $type == MYSQLI_TYPE_STRING) && 63 == $charsetnr
+        if (($type == MYSQLI_TYPE_TINY_BLOB || $type == MYSQLI_TYPE_BLOB || $type == MYSQLI_TYPE_MEDIUM_BLOB || $type == MYSQLI_TYPE_LONG_BLOB || $type == MYSQLI_TYPE_VAR_STRING || $type == MYSQLI_TYPE_STRING)
+            && 63 == $charsetnr
         ) {
             $flags[] = 'binary';
         }
@@ -807,5 +814,65 @@ class Mysql extends Sql
 
 
         //$f = mysqli_fetch_field($result);
+    }
+
+    public function getPrimaryKey($table, $database)
+    {
+        if (empty($this->primary_key[$database][$table])) {
+
+            $sql = "SHOW INDEX FROM `".$database."`.`".$table."` WHERE `Key_name` ='PRIMARY';";
+            $res = $this->sql_query($sql);
+
+            if ($this->sql_num_rows($res) == "0") {
+                throw new \Exception("GLI-067 : this table '".$table."' haven't primary key !");
+            } else {
+
+                $index = array();
+
+                while ($ob = $this->sql_fetch_object($res)) {
+                    $this->primary_key[$database][$table][] = $ob->Column_name;
+                }
+            }
+        }
+
+        return $this->primary_key[$database][$table];
+    }
+    /*
+     *
+     * on accepte les tableau uniquement pour cashé les éléments
+     */
+
+    public function getTypeOfPrimaryKey($tables, $database)
+    {
+
+        if (is_array($tables)) {
+            $table = implode("','", $tables);
+        } else {
+            $table = $tables;
+        }
+
+        if (is_array($tables) || empty($this->primary_key_field[$database][$table])) {
+
+            $sql = "SELECT `COLUMN_TYPE`, `COLUMN_NAME`, `TABLE_NAME` FROM `information_schema`.`COLUMNS` WHERE `TABLE_NAME` IN ('".$table."') AND `COLUMN_KEY` ='PRI' AND `TABLE_SCHEMA` = '".$database."';";
+            $res = $this->sql_query($sql);
+
+            if ($this->sql_num_rows($res) === "0") {
+                throw new \Exception("GLI-067 : this table [".$table."] haven't primary key !");
+            } else {
+                while ($ob = $this->sql_fetch_object($res)) {
+
+                    $tmp = array();
+
+                    $tmp['name'] = $ob->COLUMN_NAME;
+                    $tmp['type'] = $ob->COLUMN_TYPE;
+
+                    $this->primary_key_field[$database][$ob->TABLE_NAME][] = $tmp;
+                }
+            }
+        }
+
+        if (!is_array($tables)) {
+            return $this->primary_key_field[$database][$table];
+        }
     }
 }

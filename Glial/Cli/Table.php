@@ -197,11 +197,9 @@ class Table
 
                 $i = 0;
                 foreach ($line as $cell) {
-
                     $cell_lines = explode("\n", $cell);
 
-
-                    if (empty($cell_lines[$h])) {
+                    if (! isset($cell_lines[$h])) {
                         $cell = "";
                     } else {
                         $cell = $cell_lines[$h];
