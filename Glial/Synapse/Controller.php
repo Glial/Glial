@@ -146,13 +146,10 @@ class Controller
                 //used for rootNode
                 if (IS_CLI) {
 
-                    if (file_exists(APP_DIR.DS."view".DS.$this->controller.DS.$this->view.".view.php"))
-                    {
+                    if (file_exists(APP_DIR.DS."view".DS.$this->controller.DS.$this->view.".view.php")) {
                         require APP_DIR.DS."view".DS.$this->controller.DS.$this->view.".view.php";
                     }
-                }
-                else
-                {
+                } else {
                     require APP_DIR.DS."view".DS.$this->controller.DS.$this->view.".view.php";
                 }
             }
@@ -283,12 +280,28 @@ class Controller
         $this->isRootNode = true;
     }
 
+    /**
+     * (Glial 2.0)<br/>
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @return void
+     * @package Controller
+     * @description this function is executed after controller/action (only overwritten)
+     * @access public
+     */
     function after($param)
     {
         
     }
 
-    function before($param)
+    /**
+     * (Glial 2.0)<br/>
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @return void
+     * @package Controller
+     * @description this function is executed before controller/action  (only overwritten)
+     * @access public
+     */
+    public function before($param)
     {
         
     }
