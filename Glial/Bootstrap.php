@@ -57,7 +57,7 @@ $log = new Logger('Glial');
 
 $file_log = LOG_FILE;
 
-$handler = new StreamHandler($file_log, Logger::NOTICE);
+$handler = new StreamHandler($file_log, Logger::DEBUG);
 $handler->setFormatter(new LineFormatter(null, null, false, true));
 $log->pushHandler($handler);
 

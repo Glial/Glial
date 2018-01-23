@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Glial Framework
  *
@@ -12,12 +11,12 @@ namespace Glial\Acl;
 
 use Glial\Cli\Color;
 
-class Acl {
-
-    protected $roles = array();
+class Acl
+{
+    protected $roles     = array();
     protected $resources = array();
-    protected $access = array();
-    protected $alias = array();
+    protected $access    = array();
+    protected $alias     = array();
     protected $maxLength = array();
     var $initfile;
 
@@ -31,11 +30,12 @@ class Acl {
      * @access public
      */
 
-    public function __construct($inifile) {
+    public function __construct($inifile)
+    {
 
         $this->inifile = $inifile;
 
-        $path_to_acl_tmp = TMP . "acl/acl.ser";
+        $path_to_acl_tmp = TMP."acl/acl.ser";
 
 
         if (file_exists($path_to_acl_tmp)) {
@@ -47,13 +47,13 @@ class Acl {
         if (file_exists($path_to_acl_tmp)) {
 
             if (is_file($path_to_acl_tmp)) {
-                $s = implode('', file($path_to_acl_tmp));
-                $tmp = unserialize($s);
-                $this->roles = $tmp->roles;
+                $s               = implode('', file($path_to_acl_tmp));
+                $tmp             = unserialize($s);
+                $this->roles     = $tmp->roles;
                 $this->resources = $tmp->resources;
-                $this->access = $tmp->access;
+                $this->access    = $tmp->access;
                 $this->maxLength = $tmp->maxLength;
-                $this->alias = $tmp->alias;
+                $this->alias     = $tmp->alias;
                 return true;
             }
         }
@@ -63,7 +63,6 @@ class Acl {
 
         file_put_contents($path_to_acl_tmp, serialize($this));
     }
-
     /*
      * return an array with data to serialize
      * @since Glial 2.1.1
@@ -74,10 +73,10 @@ class Acl {
      * @access public
      */
 
-    public function __sleep() {
+    public function __sleep()
+    {
         return array('roles', 'resources', 'access', 'maxLength', 'alias');
     }
-
     /*
      * parse application/controller/*.controller.php and define all the resources
      * @since Glial 2.1.1
@@ -88,25 +87,26 @@ class Acl {
      * @access public
      */
 
-    function setResource() {
+    function setResource()
+    {
         $this->maxLength['ressource'] = 0;
 
-        $class = new \ReflectionClass("\Glial\Synapse\Controller");
-        $methods = $class->getMethods();
+        $class                   = new \ReflectionClass("\Glial\Synapse\Controller");
+        $methods                 = $class->getMethods();
         $class_controller_method = array();
 
         foreach ($methods as $method) {
             $class_controller_method[] = $method->name;
         }
 
-        $dir = APP_DIR . DS . "controller" . DS;
+        $dir = APP_DIR.DS."controller".DS;
         if (is_dir($dir)) {
             $dh = opendir($dir);
             if ($dh) {
                 while (($file = readdir($dh)) !== false) {
                     if (strstr($file, '.controller.php')) {
 
-                        if (filetype($dir . $file) != "file" || substr($file, 0, 1) === ".") {
+                        if (filetype($dir.$file) != "file" || substr($file, 0, 1) === ".") {
                             continue;
                         }
 
@@ -115,23 +115,23 @@ class Acl {
 
                         if (!class_exists($controller)) {
 
-                            require_once($dir . $file);
+                            require_once($dir.$file);
                         }
 
                         if (!class_exists($controller)) {
 
-                            throw new \Exception('GLI-034 : The class must be with the same name (check ' . ROOT . 'application/controller/' . $controller . '.controller.php)');
+                            throw new \Exception('GLI-034 : The class must be with the same name (check '.ROOT.'application/controller/'.$controller.'.controller.php)');
                         }
 
-                        $tab = get_class_methods($controller);
+                        $tab  = get_class_methods($controller);
                         //substract methods from class parent (\Glial\Synapse\Controller)
                         $tab3 = array_diff($tab, $class_controller_method);
 
                         foreach ($tab3 as $action) {
-                            $this->addResource($controller . "/" . $action);
+                            $this->addResource($controller."/".$action);
 
-                            if (strlen($controller . "/" . $action) > $this->maxLength['ressource']) {
-                                $this->maxLength['ressource'] = strlen($controller . "/" . $action);
+                            if (strlen($controller."/".$action) > $this->maxLength['ressource']) {
+                                $this->maxLength['ressource'] = strlen($controller."/".$action);
                             }
                         }
                     }
@@ -141,7 +141,6 @@ class Acl {
             }
         }
     }
-
     /*
      * load an ini file and setup the roles and access
      * @since Glial 2.1.1
@@ -152,9 +151,10 @@ class Acl {
      * @access public
      */
 
-    function loadIniFile($filename) {
+    function loadIniFile($filename)
+    {
         if (!is_file($filename)) {
-            throw new \Exception('GLI-008 : impossible to load the ini file : "' . $filename . '".');
+            throw new \Exception('GLI-008 : impossible to load the ini file : "'.$filename.'".');
         }
 
         $this->maxLength['role'] = 0;
@@ -216,7 +216,6 @@ class Acl {
             }
         }
     }
-
     /*
      * Add a resource
      * @since Glial 2.1.1
@@ -227,7 +226,8 @@ class Acl {
      * @access public
      */
 
-    function addResource($resources) {
+    function addResource($resources)
+    {
         if (is_string($resources)) {
             $this->resources[$resources] = '';
         } else if (is_array($resources)) {
@@ -236,7 +236,6 @@ class Acl {
             }
         }
     }
-
     /*
      * Add a role or add a parent to a role
      * @since Glial 2.1.1
@@ -248,7 +247,8 @@ class Acl {
      * @access public
      */
 
-    function addRole($role, $parents = '') {
+    function addRole($role, $parents = '')
+    {
         if (is_string($parents)) {
             if ($parents == '') {
                 $this->roles[$role] = array();
@@ -263,7 +263,6 @@ class Acl {
             throw new Exception('Not an array or a string');
         }
     }
-
     /*
      * deny an access between a role and a resource
      * @since Glial 2.1.1
@@ -275,7 +274,8 @@ class Acl {
      * @access public
      */
 
-    function deny($role, $resources) {
+    function deny($role, $resources)
+    {
         if (is_string($resources)) {
             $this->setAccess($role, $resources, 'deny');
         } else if (is_array($resources)) {
@@ -284,7 +284,6 @@ class Acl {
             }
         }
     }
-
     /*
      * allow an access between a role and a resource
      * @since Glial 2.1.1
@@ -296,7 +295,8 @@ class Acl {
      * @access public
      */
 
-    function allow($role, $resources) {
+    function allow($role, $resources)
+    {
         if (is_string($resources)) {
             $this->setAccess($role, $resources, 'allow');
         } else if (is_array($resources)) {
@@ -305,7 +305,6 @@ class Acl {
             }
         }
     }
-
     /*
      * set the access in function of roles and resources
      * @since Glial 2.1.1
@@ -318,12 +317,12 @@ class Acl {
      * @access public
      */
 
-    private function setAccess($role, $resource, $access = 'deny') {
+    private function setAccess($role, $resource, $access = 'deny')
+    {
         if ($this->checkIfRoleExist($role) || $this->checkIfResourceExist($resource)) {
             $this->access[$role][$resource] = $access;
         }
     }
-
     /*
      * Return true if match between role and resource is allowed
      * Version 2.1.2 add Alias
@@ -337,7 +336,8 @@ class Acl {
      * @access public
      */
 
-    function isAllowed($role, $resource) {
+    function isAllowed($role, $resource)
+    {
 
         $role = $this->getAliasIfExist($role);
 
@@ -373,7 +373,6 @@ class Acl {
         //If we arrive here it means that he's not allowed
         return false;
     }
-
     /*
      * Return true if role exist else false
      * @since Glial 2.1.1
@@ -385,10 +384,10 @@ class Acl {
      * @access public
      */
 
-    private function checkIfRoleExist($role) {
+    private function checkIfRoleExist($role)
+    {
         return array_key_exists($role, $this->roles);
     }
-
     /*
      * Return true if resource exist else false
      * @since Glial 2.1.1
@@ -400,10 +399,10 @@ class Acl {
      * @access public
      */
 
-    public function checkIfResourceExist($resource) {
+    public function checkIfResourceExist($resource)
+    {
         return array_key_exists($resource, $this->resources);
     }
-
     /*
      * Return the string representation of the current element (List all roles, ressources and access defined)
      * @since Glial 2.1.1
@@ -414,14 +413,15 @@ class Acl {
      * @access public
      */
 
-    public function __toString() {
+    public function __toString()
+    {
         if (IS_CLI) {
             $number_length = ceil(log(count($this->resources), 10));
 
             $cli = "┌"
-                    . str_repeat("─", 2 + $this->maxLength['ressource'] + $number_length)
-                    . str_repeat("┬─", count($this->roles))
-                    . "┐\n";
+                .str_repeat("─", 2 + $this->maxLength['ressource'] + $number_length)
+                .str_repeat("┬─", count($this->roles))
+                ."┐\n";
 
 
             ksort($this->resources);
@@ -429,23 +429,23 @@ class Acl {
 
             $tab_role = array();
             foreach ($this->roles as $role => $var) {
-                $tab_role[] = str_split(str_repeat(" ", $this->maxLength['role'] - mb_strlen($role)) . $role);
+                $tab_role[] = str_split(str_repeat(" ", $this->maxLength['role'] - mb_strlen($role)).$role);
             }
 
             for ($i = 0; $i < $this->maxLength['role']; $i++) {
-                $cli .= "│ " . str_repeat(" ", $number_length + $this->maxLength['ressource']) . " ";
+                $cli .= "│ ".str_repeat(" ", $number_length + $this->maxLength['ressource'])." ";
 
                 foreach ($tab_role as $role) {
-                    $cli .= "│" . Color::getColoredString($role[$i], "grey");
+                    $cli .= "│".Color::getColoredString($role[$i], "grey");
                 }
 
                 $cli .= "│\n";
             }
 
             $cli .= "├"
-                    . str_repeat("─", $number_length + 2 + $this->maxLength['ressource'])
-                    . str_repeat("┼─", count($this->roles))
-                    . "┤\n";
+                .str_repeat("─", $number_length + 2 + $this->maxLength['ressource'])
+                .str_repeat("┼─", count($this->roles))
+                ."┤\n";
 
             $i = 1;
 
@@ -454,50 +454,49 @@ class Acl {
                 $background = (($i - 1) % 3 === 0) ? "blue" : "black";
 
                 $cli .= Color::getColoredString("│", null, $background)
-                        . Color::getColoredString(str_repeat(" ", $number_length - strlen($i)) . $i, null, $background)
-                        . Color::getColoredString(" " . $resource, null, $background)
-                        . Color::getColoredString(str_repeat(" ", $this->maxLength['ressource'] - mb_strlen($resource)), null, $background)
-                        . Color::getColoredString(" ", null, $background);
+                    .Color::getColoredString(str_repeat(" ", $number_length - strlen($i)).$i, null, $background)
+                    .Color::getColoredString(" ".$resource, null, $background)
+                    .Color::getColoredString(str_repeat(" ", $this->maxLength['ressource'] - mb_strlen($resource)), null, $background)
+                    .Color::getColoredString(" ", null, $background);
 
                 foreach ($this->roles as $role => $var) {
                     $cli .= ($this->isAllowed($role, $resource)) ? Color::getColoredString("│■", null, $background) : Color::getColoredString("│ ", null, $background);
                 }
 
-                $cli .= Color::getColoredString("│", null, $background) . "\n";
+                $cli .= Color::getColoredString("│", null, $background)."\n";
 
                 $i++;
             }
 
             $cli .= "└"
-                    . str_repeat("─", $number_length + 2 + $this->maxLength['ressource'])
-                    . str_repeat("┴─", count($this->roles))
-                    . "┘\n";
+                .str_repeat("─", $number_length + 2 + $this->maxLength['ressource'])
+                .str_repeat("┴─", count($this->roles))
+                ."┘\n";
 
             return $cli;
         } else {
 
             $html = '<ul><h1>Available Roles</h1>';
             foreach ($this->roles as $role => $parents) {
-                $html .= '<li>' . $role . '<br />';
+                $html .= '<li>'.$role.'<br />';
                 foreach ($parents as $parent) {
-                    $html .= '<i>inherits</i>  ' . $parent . '</li>';
+                    $html .= '<i>inherits</i>  '.$parent.'</li>';
                 }
                 $html .= '</li>';
             }
             $html .= '</ul><ul><h1>Available Resources</h1>';
             foreach ($this->resources as $resource => $parent) {
-                $html .= '<li>' . $resource . '</li>';
+                $html .= '<li>'.$resource.'</li>';
             }
             $html .= '</ul><ul><h1>Allow / Deny</h1>';
             foreach ($this->access as $group => $tab_ressource) {
                 foreach ($tab_ressource as $ressource => $allowed) {
-                    $html .= '<li>' . $group . '+' . $ressource . ': ' . $allowed . '</li>';
+                    $html .= '<li>'.$group.'+'.$ressource.': '.$allowed.'</li>';
                 }
             }
-            return $html . '</ul>';
+            return $html.'</ul>';
         }
     }
-
     /*
      * This function looking for the index in array alias if exist return the value else return the string set in param
      * @return String role
@@ -508,23 +507,26 @@ class Acl {
      * @access private
      */
 
-    private function getAliasIfExist($role) {
+    private function getAliasIfExist($role)
+    {
 
         return (!empty($this->alias[$role])) ? $this->alias[$role] : $role;
     }
 
-    public function getResources() {
+    public function getResources()
+    {
         return $this->resources;
     }
 
-    public function getRoles() {
+    public function getRoles()
+    {
         return $this->roles;
     }
 
-    public function getAlias() {
+    public function getAlias()
+    {
         return $this->alias;
     }
-
     /*
      * 
      * @return array
@@ -535,11 +537,12 @@ class Acl {
      * @access public
      */
 
-    public function exportCombinaison() {
+    public function exportCombinaison()
+    {
         $export = array();
 
         ksort($this->resources);
-        
+
         foreach ($this->resources as $ressource => $vide) {
             foreach ($this->roles as $role => $vide2) {
                 $export[$ressource][$role] = $this->isAllowed($role, $ressource);
@@ -548,7 +551,6 @@ class Acl {
 
         return $export;
     }
-
     /*
      * 
      * @return array
@@ -559,10 +561,10 @@ class Acl {
      * @access public
      */
 
-    public function getPathIniFile() {
+    public function getPathIniFile()
+    {
         return $this->inifile;
     }
-
     /*
      * 
      * @return array
@@ -573,10 +575,10 @@ class Acl {
      * @access public
      */
 
-    public function export() {
+    public function export()
+    {
         return parse_ini_file($filename, true);
     }
-
     /*
      * 
      * @return void
@@ -588,7 +590,8 @@ class Acl {
      * @access public
      */
 
-    public function import($data) {
+    public function import($data)
+    {
 
         if ($this->checkValidity($data)) {
 
@@ -600,14 +603,14 @@ class Acl {
                 fwrite($fp, "[alias]");
 
                 foreach ($data['alias'] as $id_group => $alias) {
-                    fwrite($fp, $id_group . " = " . $alias . "\n");
+                    fwrite($fp, $id_group." = ".$alias."\n");
                 }
 
                 fwrite($fp, "[role]");
 
                 if (!empty($data['role']['add'])) {
                     foreach ($data['role']['add'] as $value) {
-                        fwrite($fp, "add[] = " . $value . "\n");
+                        fwrite($fp, "add[] = ".$value."\n");
                     }
 
 
@@ -620,7 +623,7 @@ class Acl {
                     foreach ($data['role'] as $item => $parents) {
 
                         foreach ($parents as $parent) {
-                            fwrite($fp, $item . "[] = " . $parent . "\n");
+                            fwrite($fp, $item."[] = ".$parent."\n");
                         }
                     }
                 }
@@ -628,7 +631,7 @@ class Acl {
 
                 fwrite($fp, "[allow]");
                 foreach ($data['role'] as $role => $alias) {
-                    fwrite($fp, $id_group . " = " . $alias . "\n");
+                    fwrite($fp, $id_group." = ".$alias."\n");
                 }
 
                 fwrite($fp, "[deny]");
@@ -636,7 +639,8 @@ class Acl {
         }
     }
 
-    private function checkValidity($data) {
+    private function checkValidity($data)
+    {
         $test = array('alias', 'role', 'allow', 'deny');
 
         foreach ($test as $value) {
@@ -650,5 +654,102 @@ class Acl {
 
         return true;
     }
+    /*
+     *
+     * @return string
+     * @param array
+     * @since Glial 4.1.11
+     * @version 4.1.11
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @description défini le niveau le plus bas, celui qui n'a pas de parents.
+     * @access private
+     */
 
+    private function obtenirRangLePlusBas($roles)
+    {
+        $values = array();
+        foreach ($roles as $key => $role) {
+            if (count($role) === 0) {
+
+                unset($roles[$key]);
+                continue;
+            }
+
+            foreach ($role as $val) {
+                $values[] = $val;
+            }
+        }
+
+        $keys   = array_keys($roles);
+        $values = array_unique($values);
+        $main = array_diff($values, $keys);
+
+        if (count($main) !== 1) {
+            throw new \Exception('GLI-127 : There is two lowest rank');
+        }
+
+        return end($main);
+    }
+    /*
+     *
+     * @return private
+     * @param array
+     * @since Glial 4.1.11
+     * @version 4.1.11
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @description Return all combinaison of roles / ressources
+     * @access public
+     */
+
+    private function calculHierarchie($roles, $lowest, &$ret = array())
+    {
+
+        if (empty($ret)) {
+            $ret[1][] = $lowest;
+            $indice   = 2;
+        } else {
+            $indice = (max(array_keys($ret)) + 1);
+        }
+
+        foreach ($roles as $key => $role) {
+
+            foreach ($role as $val) {
+                if ($val == $lowest) {
+                    $ret[$indice][] = $key;
+
+                    unset($roles[$key]);
+
+                    if (count($roles) !== 0) {
+                        $this->calculHierarchie($roles, $key, $ret);
+                    }
+                }
+            }
+        }
+
+        return $ret;
+    }
+    /*
+     *
+     * @return array
+     * @param void
+     * @since Glial 4.1.11
+     * @version 4.1.11
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @description retourne la hiérarchie des groupes utilisateurs, le plus élévé est celui avec le plus de droit
+     * @access public
+     */
+
+    public function obtenirHierarchie()
+    {
+        $roles = $this->roles;
+
+        if (!empty($roles['add'])) {
+            unset($roles['add']);
+        }
+
+        $lowest = $this->obtenirRangLePlusBas($roles);
+        $ret = $this->calculHierarchie($roles, $lowest);
+
+        return $ret;
+    }
 }
