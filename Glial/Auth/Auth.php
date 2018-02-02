@@ -9,6 +9,7 @@
 
 namespace Glial\Auth;
 
+use \Glial\Acl\Acl;
 use \Glial\I18n\I18n;
 
 class Auth
@@ -51,6 +52,7 @@ class Auth
      * name used to store password in cookie
      */
     static private $_name_cookie_passwd = "RU2M5wpaAvpEqeDz";
+    private $log;
 
     /*
      *
@@ -127,16 +129,22 @@ class Auth
 
             $hash_password = $this->hashPassword($Identity, $Credential);
 
+            //$this->$log->info('hash : '.$hash_password);
 
             if (LDAP_CHECK) {
 
                 if ($ldap = $this->checkLdap($Identity, $Credential)) {
+
+
+
                     $sql = "select * from ".self::$_tableName." where ".self::$_login." = '".$Identity."'";
                     $res = self::$_dbLink->sql_query($sql);
 
                     $data = array();
 
                     if (self::$_dbLink->sql_num_rows($res) === 1) {
+
+                        $this->log->info("[AUTH][LDAP] $Identity : Login Successful");
 
                         $ob          = self::$_dbLink->sql_fetch_object($res);
                         $this->_user = $ob;
@@ -147,9 +155,9 @@ class Auth
                         $data[self::$_tableName]['date_last_connected'] = date('Y-m-d H:i:s');
                     } elseif (self::$_dbLink->sql_num_rows($res) === 0) {
 
-
+                        $this->log->info("[AUTH][ADD USER] $Identity");
+                        $this->log->info("[AUTH][LDAP] $Identity : Login Successful");
 //debug($ldap);
-
 
                         $sql = "SELECT id FROM geolocalisation_country WHERE iso = '".$ldap['c'][0]."'";
                         $res = self::$_dbLink->sql_query($sql);
@@ -182,10 +190,16 @@ class Auth
                         throw new \Exception('GLI-999 : Whilte list failed');
                     }
 
-                    if (!self::$_dbLink->sql_save($data)) {
+                    $id_user_main = self::$_dbLink->sql_save($data);
+
+                    if (!$id_user_main) {
                         debug($data);
                         debug(self::$_dbLink->sql_error());
                         die();
+                    } else {
+
+                        $id_group = $this->getIdGroup($id_user_main, $ldap);
+                        $this->log->info("[AUTH][GROUP] change group : ".$id_group." for user ($id_user_main)");
                     }
 
                     $sql         = "select * from `".self::$_tableName."` where `".self::$_login."` = '".self::$_dbLink->sql_real_escape_string($ldap['samaccountname'][0])."';";
@@ -199,23 +213,34 @@ class Auth
                     setcookie(self::$_name_cookie_passwd, $hash_password, time() + AUTH_SESSION_TIME, '/', $_SERVER['SERVER_NAME'], false, true);
                     return true;
                 }
-
-                return false;
-            } else {
-
-//test this in anycase for root account
-                $sql = "select * from `".self::$_tableName."` where `".self::$_login."` = '".$Identity."' AND is_ldap=0;";
-
-                $res = self::$_dbLink->sql_query($sql);
-
-                if (self::$_dbLink->sql_num_rows($res) === 1) {
-                    $ob            = self::$_dbLink->sql_fetch_object($res);
-                    $this->id_user = $ob->id;
+            }
 
 
-                    if ($ob->{self::$_passwd} === $hash_password)
-//if (password_verify($ob->{self::$_passwd}.sha1($Identity), $hash_password)) {
-                        $this->_user = $ob;
+            //test this in anycase for root account
+            $sql = "select * from `".self::$_tableName."` where `".self::$_login."` = '".$Identity."' AND is_ldap=0;";
+
+            $res = self::$_dbLink->sql_query($sql);
+
+            if (self::$_dbLink->sql_num_rows($res) === 1) {
+                $ob            = self::$_dbLink->sql_fetch_object($res);
+                $this->id_user = $ob->id;
+
+                $hash2 = self::hashPassword($Identity, $Credential);
+
+                if ($this->checkPassword($Identity, $Credential, $ob->{self::$_passwd})) {
+
+                    $this->log->info("[AUTH][POST] $Identity : Login Successful");
+
+                    $this->_user = $ob;
+
+                    $data[self::$_tableName][self::$_passwd] = $hash_password;
+                    $data[self::$_tableName]['id']           = $ob->id;
+
+                    if (!self::$_dbLink->sql_save($data)) {
+                        debug($data);
+                        debug(self::$_dbLink->sql_error());
+                        die();
+                    }
 
                     setcookie(self::$_name_cookie_login, $ob->{self::$_login}, time() + AUTH_SESSION_TIME, '/', $_SERVER['SERVER_NAME'], false, true);
                     setcookie(self::$_name_cookie_passwd, $hash_password, time() + AUTH_SESSION_TIME, '/', $_SERVER['SERVER_NAME'], false, true);
@@ -223,6 +248,10 @@ class Auth
                     return true;
                 }
             }
+
+            $this->log->info("[AUTH][POST] $Identity : Login FAILED ! ");
+
+            return false;
         }
 
 
@@ -236,9 +265,6 @@ class Auth
                     $ob = self::$_dbLink->sql_fetch_object($res);
 
                     if ($_COOKIE[self::$_name_cookie_passwd] === $ob->{self::$_passwd}) {
-
-//var_dump(password_verify($ob->{self::$_passwd}.sha1($ob->{self::$_login}), $_COOKIE[self::$_name_cookie_passwd]));
-//if (password_verify($ob->{self::$_passwd}.sha1($ob->{self::$_login}), $_COOKIE[self::$_name_cookie_passwd])) {
 
                         $this->_user = $ob;
 
@@ -327,7 +353,7 @@ class Auth
 
     static public function hashPassword($login, $password)
     {
-        return password_hash($password.sha1($login), PASSWORD_DEFAULT);
+        return password_hash(self::saltPassword($login, $password), PASSWORD_DEFAULT);
     }
 
     public function setFctToCryptCookie($function)
@@ -340,4 +366,77 @@ class Auth
         $this->_fctToUnCryptCookie = $function;
     }
 
+    static public function checkPassword($login, $password, $hash)
+    {
+        return password_verify(self::saltPassword($login, $password), $hash);
+    }
+
+    public function setLog($log)
+    {
+        $this->log = $log;
+    }
+
+    public function setIdGroup($id_group)
+    {
+        if (!is_int($id_group)) {
+            throw new \Exception("GLI-057 : id_group should be an int (id_group : ".$id_group.")");
+        }
+
+        $this->_user->id_group = $id_group;
+    }
+
+    private function getIdGroup($id_user_main, $ldap)
+    {
+        //in case we cannot linkto any group
+        $id_group = 1;
+
+        $sql = "SELECT id_group, cn FROM `ldap_group`";
+        $res = self::$_dbLink->sql_query($sql);
+
+        $cn = array();
+        while ($ob = self::$_dbLink->sql_fetch_object($res)) {
+            $cn[$ob->id_group] = $ob->cn;
+        }
+
+        $acl = new Acl(CONFIG."acl.config.ini");
+
+        $tree  = $acl->obtenirHierarchie();
+        $alias = $acl->getAlias();
+        $alias = array_flip($alias);
+
+        unset($ldap['memberof']['count']);
+
+        $memberof = $ldap['memberof'];
+
+        foreach ($memberof as $key => $value) {
+            $memberof[$key] = utf8_encode($value);
+        }
+
+        $resultat = array_intersect($cn, $memberof);
+
+        $this->log->info("[LDAP][CONFIGURED]", $cn);
+        $this->log->info("[LDAP][MEMBEROF]", $memberof);
+        $this->log->info("[LDAP][MATCH]", $resultat);
+
+        $id_group_available = array_keys($resultat);
+
+        $this->log->info("Tree ACL ",$tree);
+
+        foreach ($tree as $levels) {
+            foreach ($levels as $level) {
+                if (in_array($alias[$level], $id_group_available)) {
+                    $id_group = $alias[$level];
+                    
+                }
+            }
+        }
+
+        return $id_group;
+
+    }
+
+    static public function saltPassword($login, $password)
+    {
+        return sha1($password.sha1($login));
+    }
 }
