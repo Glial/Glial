@@ -153,6 +153,11 @@ class Auth
                         $data[self::$_tableName][self::$_passwd]        = $hash_password;
                         $data[self::$_tableName]['date_last_login']     = date('Y-m-d H:i:s');
                         $data[self::$_tableName]['date_last_connected'] = date('Y-m-d H:i:s');
+
+                        $id_group = $this->getIdGroup($id_user_main, $ldap);
+
+                        $data[self::$_tableName]['id_group'] = $id_group;
+
                     } elseif (self::$_dbLink->sql_num_rows($res) === 0) {
 
                         $this->log->info("[AUTH][ADD USER] $Identity");
@@ -199,6 +204,20 @@ class Auth
                     } else {
 
                         $id_group = $this->getIdGroup($id_user_main, $ldap);
+
+                        $data                                = array();
+                        $data[self::$_tableName]['id_group'] = $id_group;
+                        $data[self::$_tableName]['id']       = $id_user_main;
+                        $ret                                 = self::$_dbLink->sql_save($data);
+
+
+                        if (!$ret) {
+                            debug($data);
+                            debug(self::$_dbLink->sql_error());
+                            die();
+                        }
+
+
                         $this->log->info("[AUTH][GROUP] change group : ".$id_group." for user ($id_user_main)");
                     }
 
@@ -420,19 +439,17 @@ class Auth
 
         $id_group_available = array_keys($resultat);
 
-        $this->log->info("Tree ACL ",$tree);
+        $this->log->info("Tree ACL ", $tree);
 
         foreach ($tree as $levels) {
             foreach ($levels as $level) {
                 if (in_array($alias[$level], $id_group_available)) {
                     $id_group = $alias[$level];
-                    
                 }
             }
         }
 
         return $id_group;
-
     }
 
     static public function saltPassword($login, $password)
