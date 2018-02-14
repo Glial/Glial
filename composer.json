@@ -3,7 +3,7 @@
      "description": "A HMVC PHP framework (include CLI mode) made for high volumetry & batch process",
      "keywords": ["framework"],
      "type": "library",
-     "license": "GPL-3.0+",
+     "license": "MIT",
      "authors": [
          {
              "name": "Aurélien LEQUOY",
@@ -14,9 +14,9 @@
      ],
      "require": {
          "php": ">=5.5",
-         "monolog/monolog": ">1.10",
-         "jdorn/sql-formatter": ">1.2",
-         "vatson/isolated-callback": "*",
+         "monolog/monolog": "1.*",
+         "jdorn/sql-formatter": "1.2.*",
+         "vatson/isolated-callback": "1.0.*",
 	 "hoa/console": "~2.0"
      },
      "autoload": {
