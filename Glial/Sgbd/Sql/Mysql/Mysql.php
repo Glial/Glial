@@ -300,6 +300,7 @@ class Mysql extends Sql
     }
 
     /**
+     * DEPRECATED !
      * Returns server type for current connection
      *
      * Known types are: Drizzle, MariaDB and MySQL (default)
@@ -309,6 +310,7 @@ class Mysql extends Sql
      * @return string
      * @since 3.0a First time this was introduced.
      * @version 3.0.1a
+     *
      */
     public function getServerType()
     {
