@@ -10,6 +10,12 @@
 
 namespace Glial\Security\Crypt;
 
+
+/*
+ *
+ * DEPRECATED
+ *
+ */
 class Crypt {
         
         /**
