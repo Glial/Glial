@@ -17,7 +17,9 @@
          "monolog/monolog": "1.*",
          "jdorn/sql-formatter": "1.2.*",
          "vatson/isolated-callback": "1.0.*",
-	 "hoa/console": "~2.0"
+	 "hoa/console": "~2.0",
+	 "phpseclib/phpseclib": "^2.0",
+	 "phpseclib/mcrypt_compat": "*"
      },
      "autoload": {
          "psr-4": {

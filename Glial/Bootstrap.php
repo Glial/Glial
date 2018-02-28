@@ -40,6 +40,9 @@ use \Monolog\Formatter\LineFormatter;
 use \Monolog\Handler\StreamHandler;
 use Glial\Synapse\Glial;
 
+use \phpseclib\Crypt\AES;
+use \phpseclib\Crypt\Random;
+
 require ROOT.DS.'vendor/autoload.php';
 
 if (!IS_CLI) {
@@ -61,6 +64,14 @@ $handler->setFormatter(new LineFormatter(null, null, false, true));
 $log->pushHandler($handler);
 
 FactoryController::addDi("log", $log);
+
+
+
+$chiffrer = new AES(AES::MODE_CTR);
+$chiffrer->setKey(CRYPT_KEY);
+$chiffrer->setIV(Random::string($chiffrer->getBlockLength() >> 3));
+// $chiffrer->decrypt($chiffrer->encrypt($plaintext));
+FactoryController::addDi("chiffrer", $chiffrer);
 
 
 if (!IS_CLI) {
