@@ -237,6 +237,8 @@ class Auth
 
             //test this in anycase for root account
             $sql = "select * from `".self::$_tableName."` where `".self::$_login."` = '".$Identity."' AND is_ldap=0;";
+            $this->log->info("[AUTH][SQL] $sql");
+
 
             $res = self::$_dbLink->sql_query($sql);
 
