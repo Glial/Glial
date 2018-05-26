@@ -877,4 +877,13 @@ class Mysql extends Sql
             return $this->primary_key_field[$database][$table];
         }
     }
+
+    /*
+     *  Initialise la récupération d'un jeu de résultats
+     */
+
+    public function sql_use_result()
+    {
+        return mysqli_use_result($this->link);
+    }
 }

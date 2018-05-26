@@ -31,6 +31,7 @@ abstract class Sql
     public $_param = array();
     public $is_connected = false;
     private $logger;
+    public $db;
 
     //to be surcharged
     public function get_table_to_history()
@@ -518,5 +519,10 @@ abstract class Sql
     public function getLogger()
     {
         return $this->logger;
+    }
+
+    public function getDb()
+    {
+        return $this->db;
     }
 }

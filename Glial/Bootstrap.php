@@ -260,7 +260,6 @@ echo $html;
 /*
 $i = 10;
 
-
 (DEBUG) ? $_DEBUG->save("Layout loaded") : "";
 
 if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
@@ -271,7 +270,6 @@ if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
     $file_list = get_included_files();
     echo "<br />Nombre de fichier loaded : <b>" . count($file_list) . "</b><br />";
     debug($file_list);
-
 
     $_DEBUG->print_table();
 
