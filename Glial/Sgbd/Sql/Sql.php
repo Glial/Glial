@@ -25,7 +25,7 @@ abstract class Sql
     public $_history_user = null; // default 4 made by system
     public $_type_query = '';
     public $_table_to_history = '';
-    private $_table = '';
+    private $_table = array();
     private $_name = '';
     private $_keys = array();
     public $_param = array();
