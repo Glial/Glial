@@ -64,7 +64,7 @@ class PmaCliDraining
 
         $sql = "CREATE DATABASE IF NOT EXISTS ".$this->schema_delete;
 
-        if ($this->debug) {
+        if (Debug::$debug) {
             echo $sql."\n";
         }
 
@@ -73,12 +73,12 @@ class PmaCliDraining
         $this->rows_to_delete = array();
 
 
-        if ($this->debug) {
+        if (Debug::$debug) {
             echo "CREATE TEMP TABLE !\n";
         }
         $this->createAllTemporaryTable();
 
-        if ($this->debug) {
+        if (Debug::$debug) {
             echo "INIT !\n";
         }
 
@@ -128,7 +128,7 @@ class PmaCliDraining
         if (count($fields) === 0) {
             throw new \Exception('GLI-071 : No primary key found on table "'.$table.'"');
 
-            if ($this->debug) {
+            if (Debug::$debug) {
                 echo Color::getColoredString("--No Primary key found : '".$table."'", 'black', 'yellow', 'bold').PHP_EOL;
             }
 
@@ -215,7 +215,7 @@ class PmaCliDraining
 
     public function feedDeleteTableWithFk()
     {
-        if ($this->debug) {
+        if (Debug::$debug) {
             echo "--###################################################################".PHP_EOL;
             echo "--##################### FEED FROM FK ################################".PHP_EOL;
             echo "--###################################################################".PHP_EOL;
@@ -427,7 +427,7 @@ class PmaCliDraining
     {
 
 //echo "GGGGGGGGGGGGGGGGGGGG";
-        if ($this->debug) {
+        if (Debug::$debug) {
 
             $db = $this->di['db']->sql($this->link_to_purge);
             $db->sql_select_db($this->schema_to_purge);
@@ -470,7 +470,7 @@ class PmaCliDraining
 
 
         $res = $db->sql_query($sql);
-        if ($this->debug) {
+        if (Debug::$debug) {
             $this->log($sql);
         }
 
@@ -480,7 +480,7 @@ class PmaCliDraining
             $order_to_feed[$ob->REFERENCED_TABLE_NAME][] = $ob->TABLE_NAME;
         }
 
-        if ($this->debug) {
+        if (Debug::$debug) {
             debug($order_to_feed);
         }
 
@@ -538,7 +538,7 @@ class PmaCliDraining
             $real_fk = $this->getForeignKeys();
 
 
-            if ($this->debug) {
+            if (Debug::$debug) {
                 echo "REAL FOREIGN KEY :";
                 print_r($real_fk);
             }
@@ -547,7 +547,7 @@ class PmaCliDraining
 
 //debug($virtual_fk);
 
-            if ($this->debug) {
+            if (Debug::$debug) {
                 echo "VIRTUAL FOREIGN KEY :";
                 print_r($real_fk);
             }
@@ -561,7 +561,7 @@ class PmaCliDraining
 //debug($fks);
 
 
-            if ($this->debug) {
+            if (Debug::$debug) {
                 echo "ALL FOREIGN KEY :";
 //print_r($real_fk);
             }
@@ -571,7 +571,7 @@ class PmaCliDraining
             }
 
 
-            if ($this->debug) {
+            if (Debug::$debug) {
                 echo "Remove key in dubble :";
 //print_r($real_fk);
             }
@@ -579,7 +579,7 @@ class PmaCliDraining
 //remove all tables with no father from $this->main_table
             $fks = $this->removeTableNotImpacted($fks);
 
-            if ($this->debug) {
+            if (Debug::$debug) {
                 echo "removed table not impacted :";
 //debug($real_fk);
             }
@@ -794,7 +794,7 @@ class PmaCliDraining
                 }
                 if (!$found) {
 
-                    if ($this->debug) {
+                    if (Debug::$debug) {
                         echo "\n".Color::getColoredString("We removed this table (Not a child of : `".$this->schema_to_purge."`.`".$this->main_table."`) : ".$table, 'black', 'yellow', 'bold').PHP_EOL;
                     }
 
@@ -804,7 +804,7 @@ class PmaCliDraining
             }
             $fks = $tmp2;
 
-            if ($this->debug) {
+            if (Debug::$debug) {
                 echo str_repeat("-", 80)."\n";
             }
         } while ($nbfound != 0);
