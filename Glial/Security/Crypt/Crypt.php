@@ -11,11 +11,8 @@
 namespace Glial\Security\Crypt;
 
 
-/*
- *
- * DEPRECATED
- *
- */
+use phpseclib\mcrypt_compat;
+
 class Crypt {
         
         /**
