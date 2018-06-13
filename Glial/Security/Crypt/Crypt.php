@@ -10,6 +10,9 @@
 
 namespace Glial\Security\Crypt;
 
+
+use phpseclib\mcrypt_compat;
+
 class Crypt {
         
         /**

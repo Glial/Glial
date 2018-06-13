@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Glial Bootstrap.
  *
@@ -22,14 +21,14 @@
  */
 header("Charset: UTF-8");
 
-ini_set('error_log', TMP . 'log' . DS . 'error_php.log');
-ini_set('APACHE_LOG_DIR', TMP . 'log' . DS);
+ini_set('error_log', TMP.'log'.DS.'error_php.log');
+ini_set('APACHE_LOG_DIR', TMP.'log'.DS);
 
 //tput cols tells you the number of columns.
 //tput lines tells you the number of rows.
 
 use \Glial\Synapse\Config;
-use \Glial\Debug\Debug;
+use \Glial\Debug\Debug as DebugGlial;
 use \Glial\Synapse\FactoryController;
 use \Glial\I18n\I18n;
 use \Glial\Acl\Acl;
@@ -41,7 +40,7 @@ use \Monolog\Formatter\LineFormatter;
 use \Monolog\Handler\StreamHandler;
 use Glial\Synapse\Glial;
 
-require ROOT . DS . 'vendor/autoload.php';
+require ROOT.DS.'vendor/autoload.php';
 
 if (!IS_CLI) {
     session_start();
@@ -55,14 +54,14 @@ FactoryController::addDi("config", $config);
 $log = new Logger('Glial');
 
 
-$file_log = TMP . 'log/glial.log';
+$file_log = LOG_FILE;
 
-$handler = new StreamHandler($file_log, Logger::NOTICE);
+$handler = new StreamHandler($file_log, Logger::DEBUG);
 $handler->setFormatter(new LineFormatter(null, null, false, true));
 $log->pushHandler($handler);
 
-
 FactoryController::addDi("log", $log);
+
 
 if (!IS_CLI) {
     $developer = $config->get("developer");
@@ -82,7 +81,7 @@ if (!IS_CLI) {
 
 
 if (DEBUG) {
-    $_DEBUG = new Debug;
+    $_DEBUG = new DebugGlial;
     $_DEBUG->save("Starting...");
 }
 
@@ -90,22 +89,22 @@ if (DEBUG) {
 spl_autoload_register(function($className) {
 
     //echo LIBRARY . str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')) . '.php';
-    if (file_exists(LIBRARY . str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')) . '.php')) {
-        require(LIBRARY . str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')) . '.php');
+    if (file_exists(LIBRARY.str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')).'.php')) {
+        require(LIBRARY.str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')).'.php');
     } else {
         return;
         //debug(debug_backtrace());
-        require(APP_DIR . DS . "controller" . DS . $className . '.controller.php');
+        require(APP_DIR.DS."controller".DS.$className.'.controller.php');
     }
 });
 
 //$_POST = ArrayTools::array_map_recursive("htmlentities", $_POST);
-require __DIR__ . "/Basic.php";
+require __DIR__."/Basic.php";
 
 //debug($_GET);
 (DEBUG) ? $_DEBUG->save("Loading class") : "";
 
-$db = $config->get("db");
+$db  = $config->get("db");
 $_DB = new Sgbd($db);
 $_DB->setLogger($log);
 
@@ -115,11 +114,11 @@ FactoryController::addDi("db", $_DB);
 
 
 if (!IS_CLI) {
-    include __DIR__ . DS . 'Router.php';
+    include __DIR__.DS.'Router.php';
 
     $route = new router();
     $route->parse($_GET['glial_path']);
-    $url = $route->get_routes();
+    $url   = $route->get_routes();
 
     if (isset($_GET['lg'])) {
         $_SESSION['language'] = $_GET['lg'];
@@ -132,7 +131,7 @@ if (!IS_CLI) {
 
 I18n::injectDb($_DB);
 I18n::SetDefault("en");
-I18n::SetSavePath(TMP . "translations");
+I18n::SetSavePath(TMP."translations");
 
 if (empty($_SESSION['language'])) {
     $_SESSION['language'] = "en";
@@ -142,7 +141,7 @@ $lg = explode(",", LANGUAGE_AVAILABLE);
 
 if (!in_array($_SESSION['language'], $lg)) {
     $_SESSION['URL_404'] = $_SERVER['QUERY_STRING'];
-    header("location: " . WWW_ROOT . I18n::Get() . "/error_web/error404/");
+    header("location: ".WWW_ROOT.I18n::Get()."/error_web/error404/");
 
 
     Glial::getOut($_DB->sql(DB_DEFAULT));
@@ -156,8 +155,8 @@ I18n::load($_SESSION['language']);
 if (IS_CLI) {
     if ($_SERVER["argc"] >= 3) {
         $_SYSTEM['controller'] = $_SERVER["argv"][1];
-        $_SYSTEM['action'] = $_SERVER["argv"][2];
-        $_SYSTEM['param'] = !empty($_SERVER["argv"][3]) ? $_SERVER["argv"][3] : '';
+        $_SYSTEM['action']     = $_SERVER["argv"][2];
+        $_SYSTEM['param']      = !empty($_SERVER["argv"][3]) ? $_SERVER["argv"][3] : '';
 
         if ($_SERVER["argc"] > 3) {
             $params = array();
@@ -172,56 +171,71 @@ if (IS_CLI) {
 
         Throw new InvalidArgumentException('usage : gial <controlleur> <action> [params]');
     }
-    define('LINK', WWW_ROOT . "en" . "/");
+    define('LINK', WWW_ROOT."en"."/");
 } else {  //mode with apache
-    define('LINK', WWW_ROOT . I18n::Get() . "/");
+    define('LINK', WWW_ROOT.I18n::Get()."/");
 
 
     if (AUTH_ACTIVE) {
         $auth = new Auth();
         $auth->setInstance($_DB->sql(DB_DEFAULT), "user_main", array("login", "password"));
+
+        $auth->setLog($log);
+
+        //not used yet
         $auth->setFctToHashCookie(function ($password) {
-            return password_hash($password . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR'], PASSWORD_DEFAULT);
+            return password_hash($password.$_SERVER['HTTP_USER_AGENT'].$_SERVER['REMOTE_ADDR'], PASSWORD_DEFAULT);
         });
-        $auth->authenticate(false);
+
+        $is_auth = $auth->authenticate(false);
+
+
+
+
+
+
         FactoryController::addDi("auth", $auth);
     }
 
     (ENVIRONEMENT) ? $_DEBUG->save("User connexion") : "";
 
     $_SYSTEM['controller'] = \Glial\Utility\Inflector::camelize($url['controller']);
-    $_SYSTEM['action'] = $url['action'];
-    $_SYSTEM['param'] = $url['param'];
+    $_SYSTEM['action']     = $url['action'];
+    $_SYSTEM['param']      = $url['param'];
 
-    $acl = new Acl(CONFIG . "acl.config.ini");
+    $acl = new Acl(CONFIG."acl.config.ini");
 
     FactoryController::addDi("acl", $acl);
+
+
+
 
     $js = new Javascript();
     FactoryController::addDi("js", $js);
 
-    if ($acl->checkIfResourceExist($_SYSTEM['controller'] . "/" . $_SYSTEM['action'])) {
+    if ($acl->checkIfResourceExist($_SYSTEM['controller']."/".$_SYSTEM['action'])) {
         if (AUTH_ACTIVE) {
-            if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller'] . "/" . $_SYSTEM['action'])) {
+            if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller']."/".$_SYSTEM['action'])) {
                 if ($auth->getAccess() == 1) {
 
                     $url = ROUTE_LOGIN;
-                    $msg = $_SYSTEM['controller'] . "/" . $_SYSTEM['action'] . "<br />" . __("You have to be registered to acces to this page");
+                    $msg = $_SYSTEM['controller']."/".$_SYSTEM['action']."<br />".__("You have to be registered to acces to this page");
                 } else {
                     //die("here");
                     $url = ROUTE_DEFAULT;
-                    $msg = $_SYSTEM['controller'] . "/" . $_SYSTEM['action'] . "<br />" . __("Your rank to this website is not enough to acess to this page");
+                    $msg = $_SYSTEM['controller']."/".$_SYSTEM['action']."<br />".__("Your rank to this website is not enough to acess to this page");
                 }
 
-                set_flash("error", __("Acess denied"), __("Acess denied") . " : " . $msg);
-                header("location: " . LINK . $url);
+                set_flash("error", __("Acess denied"), __("Acess denied")." : ".$msg);
+                header("location: ".LINK.$url);
 
                 Glial::getOut($_DB->sql(DB_DEFAULT));
             }
         }
     } else {
-        set_flash("error", __("Error 404"), __("Page not found") . " : " . __("Sorry, the page you requested : \"" . $_SYSTEM['controller'] . "/" . $_SYSTEM['action'] . "\"is not on this server. Please contact us if you have questions or concerns"));
-        header("location: " . LINK . "error_web/error404");
+        set_flash("error", __("Error 404"),
+            __("Page not found")." : ".__("Sorry, the page you requested : \"".$_SYSTEM['controller']."/".$_SYSTEM['action']."\"is not on this server. Please contact us if you have questions or concerns"));
+        header("location: ".LINK."error_web/error404");
         Glial::getOut($_DB->sql(DB_DEFAULT));
     }
 }
@@ -237,7 +251,7 @@ $html = FactoryController::rootNode($_SYSTEM['controller'], $_SYSTEM['action'], 
 
 if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {
     $debug = FactoryController::addNode("Debug", "toolbar", array(TIME_START), FactoryController::EXPORT);
-    $html = str_replace("[GLIAL_DEBUG_TOOLBAR]", $debug, $html);
+    $html  = str_replace("[GLIAL_DEBUG_TOOLBAR]", $debug, $html);
 }
 
 echo $html;
@@ -245,7 +259,6 @@ echo $html;
 
 /*
 $i = 10;
-
 
 (DEBUG) ? $_DEBUG->save("Layout loaded") : "";
 
@@ -257,7 +270,6 @@ if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
     $file_list = get_included_files();
     echo "<br />Nombre de fichier loaded : <b>" . count($file_list) . "</b><br />";
     debug($file_list);
-
 
     $_DEBUG->print_table();
 

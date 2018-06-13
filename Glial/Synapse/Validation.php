@@ -23,7 +23,7 @@ class Validation {
     function is_unique($elem) {
 
         //'
-        $sql = "SELECT count(1) as cpt FROM " . $elem['table'] . " WHERE `" . $elem['field'] . "` = '" . $elem['value'] . "'";
+        $sql = "SELECT count(1) as cpt FROM " . $elem['table'] . " WHERE `" . $elem['field'] . "` = '" . $elem['value'] . "';";
 
 
         if (!empty($elem['id'])) { //dans le cas d'un update
@@ -161,18 +161,22 @@ class Validation {
 
     function reference_to($elem, $table, $field) {
 
+
+
+
         switch (gettype($elem['value'])) {
             case 'double':
             case 'integer':
             case 'string':
+            case 'boolean':
                 break;
 
             default:
-                throw new \Exception("This type is not supported (only : integer,double,string) : " . gettype($elem['value'] . " [check, data you set in sql_save]"), 80);
+                throw new \Exception("GLI-061 : This type is not supported (only : integer,double,string) : " . gettype($elem['value']) . " (".$elem['value'].") [check, data you set in sql_save]", 80);
                 break;
         }
 
-        $sql = "SELECT count(1) as cpt FROM `" . $table . "` WHERE `" . $field . "` = '" . $elem['value'] . "'";
+        $sql = "SELECT count(1) as cpt FROM `" . $table . "` WHERE `" . $field . "` = '" . $elem['value'] . "';";
 
         $bb = $this->db->sql_query($sql);
         $okp = $this->db->sql_to_array($bb);
@@ -714,6 +718,12 @@ class Validation {
      * @access public
      */
     function numeric($check) {
+
+
+        if (is_null($check['value']))
+        {
+            return true;
+        }
 
         //echo "-".$check['value']."-";
         return is_numeric($check['value']);

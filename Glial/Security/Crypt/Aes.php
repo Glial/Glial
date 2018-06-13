@@ -36,9 +36,10 @@ class Aes {
         function __construct($key=null,$options=array()) {
                 
                 // Make sure php mcrypt is available here
-                if(!function_exists('mcrypt_decrypt')) {
+                /*
+		if(!function_exists('mcrypt_decrypt')) {
                         throw new \Exception("Required PHP dependency library 'mcrypt' is not available - http://php.net/manual/en/book.mcrypt.php");
-                }
+                }*/
                 
                 // The options to use
                 $this->options = array_merge(

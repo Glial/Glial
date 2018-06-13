@@ -16,6 +16,8 @@ class Glial
 
     static public function AddStat($db)
     {
+
+
         if (!IS_CLI) {
             $data['statistics']['id_user_main'] = 2;
             $data['statistics']['date']         = date('Y-m-d H:i:s');
@@ -27,7 +29,7 @@ class Glial
             $data['statistics']['user_agent']   = $_SERVER['HTTP_USER_AGENT'];
 
 
-
+            /*
             $err = $db->sql_save($data);
 
             if (!$err) {
@@ -37,6 +39,8 @@ class Glial
                 debug($db->sql_error());
                 debug($data);
             }
+             * 
+             */
         }
     }
 }
