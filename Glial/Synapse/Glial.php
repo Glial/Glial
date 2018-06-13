@@ -34,7 +34,7 @@ class Glial
                 $db->sql_error();
 
 
-                debug($err);
+                debug($db->sql_error());
                 debug($data);
             }
         }
