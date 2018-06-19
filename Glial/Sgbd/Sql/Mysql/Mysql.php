@@ -886,4 +886,7 @@ class Mysql extends Sql
     {
         return mysqli_use_result($this->link);
     }
+
+
+
 }

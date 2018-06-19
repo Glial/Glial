@@ -28,7 +28,7 @@ ini_set('APACHE_LOG_DIR', TMP.'log'.DS);
 //tput lines tells you the number of rows.
 
 use \Glial\Synapse\Config;
-use \Glial\Debug\Debug;
+use \Glial\Debug\Debug as DebugGlial;
 use \Glial\Synapse\FactoryController;
 use \Glial\I18n\I18n;
 use \Glial\Acl\Acl;
@@ -81,7 +81,7 @@ if (!IS_CLI) {
 
 
 if (DEBUG) {
-    $_DEBUG = new Debug;
+    $_DEBUG = new DebugGlial;
     $_DEBUG->save("Starting...");
 }
 
