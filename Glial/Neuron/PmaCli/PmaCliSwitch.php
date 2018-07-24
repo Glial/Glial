@@ -194,7 +194,7 @@ trait PmaCliSwitch
 
         
        
-        $sql ="CHANGE MASTER".$slave_master_host[$ip_of_master]." TO MASTER_HOST = '".$param['master']['hostname']."', MASTER_LOG_FILE='".$master_file."', MASTER_LOG_POS=".$master_position.", MASTER_LOG_PORT=".$param['master']['port'].";";
+        $sql ="CHANGE MASTER".$slave_master_host[$ip_of_master]." TO MASTER_HOST = '".$param['master']['hostname']."', MASTER_LOG_FILE='".$master_file."', MASTER_LOG_POS=".$master_position.", MASTER_PORT=".$param['master']['port'].";";
         echo $servers[0] . "> " . $sql . "\n";
         $slave->sql_query($sql);
 
