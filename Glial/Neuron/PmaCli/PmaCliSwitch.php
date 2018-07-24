@@ -18,7 +18,11 @@ trait PmaCliSwitch
      * glial pma_cli switchMaster NewSlave NewMaster
      */
     
-    
+    //à ajouter le test de version slave >= master    ==>> mandatory
+    // gérer le changement de port aussi
+    //test login password
+    // slave lag = 0
+
     public function switchMaster($servers)
     {
         $this->view = false;
@@ -89,7 +93,7 @@ trait PmaCliSwitch
             }
         }
 
-        sleep(1);
+        sleep(2);
 
 
 //stop slave n°2 (future master)
@@ -190,7 +194,7 @@ trait PmaCliSwitch
 
         
        
-        $sql ="CHANGE MASTER".$slave_master_host[$ip_of_master]." TO MASTER_HOST = '".$param['master']['hostname']."', MASTER_LOG_FILE='".$master_file."', MASTER_LOG_POS=".$master_position.";";
+        $sql ="CHANGE MASTER".$slave_master_host[$ip_of_master]." TO MASTER_HOST = '".$param['master']['hostname']."', MASTER_LOG_FILE='".$master_file."', MASTER_LOG_POS=".$master_position.", MASTER_LOG_PORT=".$param['master']['port'].";";
         echo $servers[0] . "> " . $sql . "\n";
         $slave->sql_query($sql);
 
@@ -204,6 +208,12 @@ trait PmaCliSwitch
         echo $servers[0] . "> " . $sql . "\n";
         $slave->sql_query($sql);
 //$slave->sql_query($sql);
+    }
+
+
+    public function testUser($db,$user)
+    {
+        
     }
 
 }
