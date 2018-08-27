@@ -877,7 +877,6 @@ class Mysql extends Sql
             return $this->primary_key_field[$database][$table];
         }
     }
-
     /*
      *  Initialise la récupération d'un jeu de résultats
      */
@@ -888,5 +887,16 @@ class Mysql extends Sql
     }
 
 
+    /*
+     * Déplace le pointeur interne de résultat
+     * @param $result Un identifiant de jeu de résultats retourné par la fonction sql_query(), sql_store_result() ou sql_use_result().
+     * @param Le paramètre offset doit être compris entre zéro et sql_num_rows() - 1 (0..sql_num_rows() - 1).
+     * @return bool
+     * @more : http://php.net/manual/fr/mysqli-result.data-seek.php
+     */
 
+    public function sql_data_seek($result, $offset)
+    {
+        return mysqli_data_seek($result, $offset);
+    }
 }
