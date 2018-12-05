@@ -160,10 +160,12 @@ class Auth {
                         $this->log->info("[AUTH][LDAP] $Identity : Login Successful");
 //debug($ldap);
 
-                        $sql = "SELECT id FROM geolocalisation_country WHERE iso = '" . $ldap['c'][0] . "'";
-                        $res = self::$_dbLink->sql_query($sql);
-                        while ($ob = self::$_dbLink->sql_fetch_object($res)) {
-                            $data[self::$_tableName]['id_geolocalisation_country'] = $ob->id;
+                        if (!empty($ldap['c'][0])) {
+                            $sql = "SELECT id FROM geolocalisation_country WHERE iso = '" . $ldap['c'][0] . "'";
+                            $res = self::$_dbLink->sql_query($sql);
+                            while ($ob = self::$_dbLink->sql_fetch_object($res)) {
+                                $data[self::$_tableName]['id_geolocalisation_country'] = $ob->id;
+                            }
                         }
 
                         if (empty($data[self::$_tableName]['id_geolocalisation_country'])) {

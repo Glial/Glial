@@ -25,5 +25,10 @@
              
              }
      },
-     "minimum-stability": "stable"
+     "minimum-stability": "stable",
+     "scripts": {
+  	"pre-install-cmd": [
+  	  "php ./glial install update"
+  	]
+	}
  }
