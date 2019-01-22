@@ -5,16 +5,15 @@ namespace Glial\Synapse;
 use \Glial\Synapse\Controller;
 use \Glial\I18n\I18n;
 
-class FactoryController {
-
-    const EXPORT = 1;
+class FactoryController
+{
+    const EXPORT  = 1;
     const DISPLAY = 2;
-    const CALCUL = 4;
+    const CALCUL  = 4;
 
     static $di = array();
     static $controller;
     static $method;
-
 
     /**
      * (Glial 2.1)<br/>
@@ -29,14 +28,15 @@ class FactoryController {
      * @description create a new MVC and display the output in standard flux
      * @access public
      */
-    public static function addNode($controller, $action, $param = array(), $out = self::DISPLAY) {
+    public static function addNode($controller, $action, $param = array(), $out = self::DISPLAY)
+    {
         $node = new Controller($controller, $action, json_encode($param));
         $node->setDi(self::$di);
 
         $node->setOut($out);
 
         $node->recursive = true;
-        
+
 
         return $node->getController();
     }
@@ -57,13 +57,14 @@ class FactoryController {
      * @since 2.1 First time this was introduced.
      * @version 2.1
      */
-    public static function rootNode($controller, $action, $param = array()) {
+    public static function rootNode($controller, $action, $param = array())
+    {
 
         $node = new Controller($controller, $action, json_encode($param));
         $node->setDi(self::$di);
 
         self::$controller = $controller;
-        self::$method = $action;
+        self::$method     = $action;
 
         $node->setRootNode();
         $node->getController();
@@ -97,10 +98,10 @@ class FactoryController {
      * @since 2.1.2 First time this was introduced.
      * @version 2.1.3
      */
-    public static function setDi(array $di) {
+    public static function setDi(array $di)
+    {
         self::$di = $di;
     }
-
 
     /**
      * This method inject dependency
@@ -115,7 +116,8 @@ class FactoryController {
      * @package Controller
      * @since 4.0 First time this was introduced.
      */
-    public static function addDi($name, $object) {
+    public static function addDi($name, $object)
+    {
         if (empty(self::$di[$name])) {
             self::$di[$name] = $object;
         } else {
@@ -123,4 +125,20 @@ class FactoryController {
         }
     }
 
+    /**
+     * This method inject dependency
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @return array with controller and method used for rood node
+     * @description to know whitch controller and method was called as root node
+     * @access public
+     * @example \Glial\Synapse\FactoryController::GetRootNode();
+     * @package Controller
+     * @since 4.2.6 First time this was introduced.
+     */
+    public static function GetRootNode()
+    {
+        return array(self::$controller,self::$method);
+    }
 }
