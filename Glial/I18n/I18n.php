@@ -920,7 +920,10 @@ namespace {
     function __($text, $lgfrom = "auto")
     {
 
-
+        if (! LANGUAGE_ACTIVE)
+        {
+            return $text;
+        }
 
         $calledFrom = debug_backtrace();
 
@@ -974,5 +977,6 @@ namespace {
             $var = str_replace($m[0], $replace_with, $var);
         }
         return $var;
+
     }
 }

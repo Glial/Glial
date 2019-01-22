@@ -161,14 +161,18 @@ class Validation {
 
     function reference_to($elem, $table, $field) {
 
+
+
+
         switch (gettype($elem['value'])) {
             case 'double':
             case 'integer':
             case 'string':
+            case 'boolean':
                 break;
 
             default:
-                throw new \Exception("This type is not supported (only : integer,double,string) : " . gettype($elem['value'] . " [check, data you set in sql_save]"), 80);
+                throw new \Exception("GLI-061 : This type is not supported (only : integer,double,string) : " . gettype($elem['value']) . " (".$elem['value'].") [check, data you set in sql_save]", 80);
                 break;
         }
 
@@ -714,6 +718,12 @@ class Validation {
      * @access public
      */
     function numeric($check) {
+
+
+        if (is_null($check['value']))
+        {
+            return true;
+        }
 
         //echo "-".$check['value']."-";
         return is_numeric($check['value']);

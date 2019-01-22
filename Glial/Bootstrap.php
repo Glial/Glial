@@ -28,7 +28,7 @@ ini_set('APACHE_LOG_DIR', TMP.'log'.DS);
 //tput lines tells you the number of rows.
 
 use \Glial\Synapse\Config;
-use \Glial\Debug\Debug;
+use \Glial\Debug\Debug as DebugGlial;
 use \Glial\Synapse\FactoryController;
 use \Glial\I18n\I18n;
 use \Glial\Acl\Acl;
@@ -81,7 +81,7 @@ if (!IS_CLI) {
 
 
 if (DEBUG) {
-    $_DEBUG = new Debug;
+    $_DEBUG = new DebugGlial;
     $_DEBUG->save("Starting...");
 }
 
@@ -260,7 +260,6 @@ echo $html;
 /*
 $i = 10;
 
-
 (DEBUG) ? $_DEBUG->save("Layout loaded") : "";
 
 if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
@@ -271,7 +270,6 @@ if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
     $file_list = get_included_files();
     echo "<br />Nombre de fichier loaded : <b>" . count($file_list) . "</b><br />";
     debug($file_list);
-
 
     $_DEBUG->print_table();
 

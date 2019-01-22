@@ -95,6 +95,17 @@ class Form
 
         $i = 0;
 
+
+        $tab_to_compare = array();
+        if (self::$select_multiple === true) {
+
+            if (!empty($_GET[$table][$field])) {
+                $tab_to_compare = explode(",", substr($_GET[$table][$field], 1, -1));
+            }
+        }
+
+        //debug($tab_to_compare);
+
         foreach ($data as $val) {
             if (!empty($val['group']) && 1 === $val['group']) {
 
@@ -128,10 +139,14 @@ class Form
                     }
                 }
 
+
+
+
+
                 if ((!empty($_GET[$table][$field]) && $_GET[$table][$field] == $val['id']) || (!empty($default_id) && $default_id == $val['id'] && self::$select_multiple === false) || (!empty($_GET[$table][$field])
-                    && self::$select_multiple === true && in_array($val['id'], json_decode($_GET[$table][$field], true)))
+                    && self::$select_multiple === true && in_array($val['id'], $tab_to_compare))
                 ) {
-                    $ret .= "<option value=\"".$val['id']."\" selected=\"selected\" $style $disable>".$val['libelle']."</option>\n";
+                    $ret .= "<option value=\"".$val['id']."\" selected=\"selected\" $style $disable$extra>".$val['libelle']."</option>\n";
                 } else {
                     $ret .= "<option value=\"".$val['id']."\" $style $disable$extra>".$val['libelle']."</option>\n";
                 }

@@ -25,12 +25,13 @@ abstract class Sql
     public $_history_user = null; // default 4 made by system
     public $_type_query = '';
     public $_table_to_history = '';
-    private $_table = '';
+    private $_table = array();
     private $_name = '';
     private $_keys = array();
     public $_param = array();
     public $is_connected = false;
     private $logger;
+    public $db;
 
     //to be surcharged
     public function get_table_to_history()
@@ -518,5 +519,10 @@ abstract class Sql
     public function getLogger()
     {
         return $this->logger;
+    }
+
+    public function getDb()
+    {
+        return $this->db;
     }
 }
