@@ -10,6 +10,7 @@ class FactoryController
     const EXPORT  = 1;
     const DISPLAY = 2;
     const CALCUL  = 4;
+    const RESULT  = 8;
 
     static $di = array();
     static $controller;
@@ -32,11 +33,8 @@ class FactoryController
     {
         $node = new Controller($controller, $action, json_encode($param));
         $node->setDi(self::$di);
-
         $node->setOut($out);
-
         $node->recursive = true;
-
 
         return $node->getController();
     }

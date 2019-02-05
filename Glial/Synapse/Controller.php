@@ -109,6 +109,11 @@ class Controller
 
         $this->value = $page->value;
 
+        if (FactoryController::RESULT === $this->out) {
+            return $resultat;
+        }
+
+
         if (!IS_CLI) {
             $this->ajax = $page->ajax;
             //$this->js = $page->getJavascript();
