@@ -147,7 +147,7 @@ class Validation {
         //$success |= $this->ipv4($check);
         //$success |= $this->ipv6($check);
         //return $success;
-        return filter_var($elem['value'], FILTER_VALIDATE_IP, array('flags' => FILTER_FLAG_IPV4)) !== false;
+        return filter_var($elem['value'], FILTER_VALIDATE_IP) !== false;
     }
 
     function equal_to($elem, $to_test) {
