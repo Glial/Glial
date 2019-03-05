@@ -58,7 +58,7 @@ class Validation {
         if (empty($elem['value']) && $elem['value'] != '0') {
             return false;
         }
-        $regex = '#^[^-][[:alpha:]-]+[^-]$#';
+        $regex = '#^[\w]+$#';
 
         if (preg_match($regex, $elem['value'])) {
             return true;
