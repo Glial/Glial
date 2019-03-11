@@ -123,22 +123,6 @@ class FactoryController
         }
     }
 
-    /**
-     * This method inject dependency
-     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
-     * @license GPL
-     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
-     * @return array with controller and method used for rood node
-     * @description to know whitch controller and method was called as root node
-     * @access public
-     * @example \Glial\Synapse\FactoryController::GetRootNode();
-     * @package Controller
-     * @since 4.2.6 First time this was introduced.
-     */
-    public static function GetRootNode()
-    {
-        return array(self::$controller,self::$method);
-    }
 
 
     /**
