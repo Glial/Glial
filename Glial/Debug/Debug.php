@@ -11,7 +11,7 @@ class Debug
     public $memory = "";
     public $memorydiff = "";
     public $memory_get_peak_usage = array();
-    public $debug = "";
+    public $debug = array();
     public $comment = "";
     public $i = 0;
 
