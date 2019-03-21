@@ -123,6 +123,8 @@ class FactoryController
         }
     }
 
+
+
     /**
      * This method inject dependency
      * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
@@ -135,8 +137,9 @@ class FactoryController
      * @package Controller
      * @since 4.2.6 First time this was introduced.
      */
-    public static function GetRootNode()
+    public static function getRootNode()
     {
         return array(self::$controller,self::$method);
     }
+
 }
