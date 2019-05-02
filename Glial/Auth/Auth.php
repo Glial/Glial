@@ -78,8 +78,9 @@ class Auth
             throw new \DomainException('GLI-002 : TableName "'.$TableName.'" seem doesnt exist in the database');
         }
 
-        if (!file_exists(TMP."/database/".$TableName.".table.txt")) {
-            throw new \Exception('GLI-003 : the file cash of "'.$TableName.'" doent exist');
+        $path = TMP."/database/".$TableName.".table.txt";
+        if (!file_exists($path)) {
+            throw new \Exception('GLI-003 : the file cash of "'.$TableName.'" ('.$path.') doent exist');
         }
 
         $fields = $DbLink->getInfosTable($TableName)['field'];
