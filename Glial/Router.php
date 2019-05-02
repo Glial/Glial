@@ -80,8 +80,13 @@ class Router
 
                     if ($nb_profondeur == 2) {
                         $_GET[$tb[0]] = $tb[1];
-                    } elseif ($nb_profondeur == 3) {
-                        $_GET[$tb[0]][$tb[1]] = $tb[2];
+                    } elseif ($nb_profondeur >= 3) {
+
+                        $tmp = $tb;
+                        unset($tmp[0]);
+                        unset($tmp[1]);
+
+                        $_GET[$tb[0]][$tb[1]] = implode(":",$tmp);
                     }
                 }
             }

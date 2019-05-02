@@ -80,8 +80,14 @@ class Mysql extends Sql
                 $level = 60;
             }
 
+            $this->is_connected = false;
 
-            throw new \Exception('GLI-012 : Can\'t connect to ('.$login.'@'.$host.":".$port.') MySQL server'.' {'.error_get_last()['message'].'}', $level);
+            if ($level === 80) {
+                throw new \Exception('GLI-012 : Can\'t connect to ('.$login.'@'.$host.":".$port.') MySQL server'.' {'.error_get_last()['message'].'}', $level);
+            } else {
+                //return $this->link;
+                //return 'Can\'t connect to (' . $login . '@' . $host . ":" . $port . ') MySQL server' . ' {' . error_get_last()['message'] . '}';
+            }
         } else {
             $this->is_connected = true;
 
@@ -149,6 +155,11 @@ class Mysql extends Sql
 
     public function sql_insert_id()
     {
+
+        if (empty($this->last_id)) {
+            return $this->_insert_id();
+        }
+
         return $this->last_id;
     }
 
@@ -877,7 +888,6 @@ class Mysql extends Sql
             return $this->primary_key_field[$database][$table];
         }
     }
-
     /*
      *  Initialise la récupération d'un jeu de résultats
      */
@@ -886,7 +896,16 @@ class Mysql extends Sql
     {
         return mysqli_use_result($this->link);
     }
+    /*
+     * Déplace le pointeur interne de résultat
+     * @param $result Un identifiant de jeu de résultats retourné par la fonction sql_query(), sql_store_result() ou sql_use_result().
+     * @param Le paramètre offset doit être compris entre zéro et sql_num_rows() - 1 (0..sql_num_rows() - 1).
+     * @return bool
+     * @more : http://php.net/manual/fr/mysqli-result.data-seek.php
+     */
 
-
-
+    public function sql_data_seek($result, $offset)
+    {
+        return mysqli_data_seek($result, $offset);
+    }
 }

@@ -76,23 +76,26 @@ trait Administration
         $this->layout_name = false;
         $this->view        = false;
 
-        foreach ($this->di['db']->connectAll() as $key => $db) {
-            $listTable = $db->getListTable();
+        //foreach ($this->di['db']->connectAll() as $key => $db) {
 
-            $list_index = array();
-            foreach ($listTable['table'] as $table_name) {
-                $list_index[$table_name] = $db->getIndexUnique($table_name);
-            }
+        $key = DB_DEFAULT;
+        $db = $this->di['db']->sql(DB_DEFAULT);
 
-            $json = json_encode($list_index);
+        $listTable = $db->getListTable();
 
-            if (is_writable(TMP."keys/")) {
-                file_put_contents(TMP."keys/".$key."_index_unique.txt", $json);
-            } else {
-                throw new \Exception("GLI-016 : This directory should be writable : ".TMP."keys/", 16);
-            }
+        $list_index = array();
+        foreach ($listTable['table'] as $table_name) {
+            $list_index[$table_name] = $db->getIndexUnique($table_name);
         }
 
+        $json = json_encode($list_index);
+
+        if (is_writable(TMP."keys/")) {
+            file_put_contents(TMP."keys/".$key."_index_unique.txt", $json);
+        } else {
+            throw new \Exception("GLI-016 : This directory should be writable : ".TMP."keys/", 16);
+        }
+        //}
         //exit(95);
     }
 
@@ -117,100 +120,102 @@ trait Administration
         $this->view        = false;
 
 
-        foreach ($this->di['db']->getAll() as $key) {
+        //foreach ($this->di['db']->getAll() as $key) {
+        //$dbLink = $this->di['db']->sql($key);
+        $dbLink = $this->di['db']->sql(DB_DEFAULT);
 
-            $dbLink = $this->di['db']->sql($key);
+        $key = DB_DEFAULT;
 
-            $tab_object = $dbLink->getListTable();
+        $tab_object = $dbLink->getListTable();
 
-            foreach ($tab_object['table'] as $table_name) {
+        foreach ($tab_object['table'] as $table_name) {
 
 
-                if ($key == DB_DEFAULT) {
-                    $table = $table_name;
+            if ($key == DB_DEFAULT) {
+                $table = $table_name;
 
-                    $model_name = "Identifier".Inflector::camelize(str_replace('-', '_', $key));
-                    $dir        = APP_DIR."/model/Identifier".ucfirst(strtolower($key));
+                $model_name = "Identifier".Inflector::camelize(str_replace('-', '_', $key));
+                $dir        = APP_DIR."/model/Identifier".ucfirst(strtolower($key));
 
-                    if (!is_dir($dir)) {
-                        mkdir($dir);
+                if (!is_dir($dir)) {
+                    mkdir($dir);
+                }
+
+                $file = $dir."/".strtolower($table).".php";
+
+                if (!file_exists($file)) {
+                    $fp = fopen($file, "w");
+
+                    echo "model : ".$file."\n";
+
+                    $text = "<?php\n\nnamespace Application\Model\\".$model_name.";\n";
+                    $text .= "use \Glial\Synapse\Model;\n";
+                    $text .= "class ".$table." extends Model\n{\nvar \$schema = \"";
+
+                    $create_table = $dbLink->getCreateTable($table);
+                    $des_table    = $dbLink->getDescription($table);
+
+
+                    $i = 0;
+
+                    $data  = array();
+                    $field = array();
+
+                    foreach ($des_table as $tab) {
+                        $field[]                    = "\"".$tab[0]."\"";
+                        $data[$table][$i]['field']  = $tab[0];
+                        $data[$table][$i]['type']   = $tab[1];
+                        $data[$table][$i]['length'] = $tab[2];
+                        $i++;
                     }
 
-                    $file = $dir."/".strtolower($table).".php";
 
-                    if (!file_exists($file)) {
-                        $fp = fopen($file, "w");
+                    $text .= $create_table;
+                    $text .= "\";\n\nvar \$field = array(".implode(",", $field).");\n\nvar \$validate = array(\n";
 
-                        echo "model : ".$file."\n";
-
-                        $text = "<?php\n\nnamespace Application\Model\\".$model_name.";\n";
-                        $text .= "use \Glial\Synapse\Model;\n";
-                        $text .= "class ".$table." extends Model\n{\nvar \$schema = \"";
-
-                        $create_table = $dbLink->getCreateTable($table);
-                        $des_table    = $dbLink->getDescription($table);
-
-
-                        $i = 0;
-
-                        $data  = array();
-                        $field = array();
-
-                        foreach ($des_table as $tab) {
-                            $field[]                    = "\"".$tab[0]."\"";
-                            $data[$table][$i]['field']  = $tab[0];
-                            $data[$table][$i]['type']   = $tab[1];
-                            $data[$table][$i]['length'] = $tab[2];
-                            $i++;
+                    foreach ($data[$table] as $field) {
+                        if ($field['field'] == "id") {
+                            continue;
                         }
+                        if (mb_substr($field['field'], 0, 2) === "id") {
+                            $text .= "\t'".$field['field']."' => array(\n\t\t'reference_to' => array('The constraint to ".mb_substr($field['field'], 3).".id isn\'t respected.','".mb_substr($field['field'],
+                                    3)."', 'id')\n\t),\n";
+                        } elseif (mb_substr($field['field'], 0, 2) === "ip") {
+                            $text .= "\t'".$field['field']."' => array(\n\t\t'ip' => array('your IP is not valid')\n\t),\n";
+                        } elseif ($field['field'] === "email") {
+                            $text .= "\t'".$field['field']."' => array(\n\t\t'email' => array('your email is not valid')\n\t),\n";
+                        } else {
 
-
-                        $text .= $create_table;
-                        $text .= "\";\n\nvar \$field = array(".implode(",", $field).");\n\nvar \$validate = array(\n";
-
-                        foreach ($data[$table] as $field) {
-                            if ($field['field'] == "id") {
-                                continue;
-                            }
-                            if (mb_substr($field['field'], 0, 2) === "id") {
-                                $text .= "\t'".$field['field']."' => array(\n\t\t'reference_to' => array('The constraint to ".mb_substr($field['field'], 3).".id isn\'t respected.','".mb_substr($field['field'],
-                                        3)."', 'id')\n\t),\n";
-                            } elseif (mb_substr($field['field'], 0, 2) === "ip") {
-                                $text .= "\t'".$field['field']."' => array(\n\t\t'ip' => array('your IP is not valid')\n\t),\n";
-                            } elseif ($field['field'] === "email") {
-                                $text .= "\t'".$field['field']."' => array(\n\t\t'email' => array('your email is not valid')\n\t),\n";
+                            if (mb_strstr($field['type'], "int")) {
+                                $text .= "\t'".$field['field']."' => array(\n\t\t'numeric' => array('This must be an int.')\n\t),\n";
+                            } elseif (mb_stristr($field['type'], "datetime")) {
+                                $text .= "\t'".$field['field']."' => array(\n\t\t'dateTime' => array('This must be a datetime.')\n\t),\n";
+                            } elseif (mb_stristr($field['type'], "time")) {
+                                $text .= "\t'".$field['field']."' => array(\n\t\t'time' => array('This must be a time.')\n\t),\n";
+                            } elseif (mb_stristr($field['type'], "date")) {
+                                $text .= "\t'".$field['field']."' => array(\n\t\t'date' => array('This must be a date.')\n\t),\n";
+                            } elseif (mb_stristr($field['type'], "float")) {
+                                $text .= "\t'".$field['field']."' => array(\n\t\t'decimal' => array('This must be a float.')\n\t),\n";
+                            } elseif (mb_stristr($field['type'], "VARCHAR2")) {
+                                $text .= "\t'".$field['field']."' => array(\n\t\t'maxLength' => array('You execed the max length (".$field['length']." chars)', ".$field['length'].")\n\t),\n";
+                            } elseif (mb_stristr($field['type'], "NUMBER")) {
+                                $text .= "\t'".$field['field']."' => array(\n\t\t'numeric' => array('This must be an int.')\n\t),\n";
                             } else {
-
-                                if (mb_strstr($field['type'], "int")) {
-                                    $text .= "\t'".$field['field']."' => array(\n\t\t'numeric' => array('This must be an int.')\n\t),\n";
-                                } elseif (mb_stristr($field['type'], "datetime")) {
-                                    $text .= "\t'".$field['field']."' => array(\n\t\t'dateTime' => array('This must be a datetime.')\n\t),\n";
-                                } elseif (mb_stristr($field['type'], "time")) {
-                                    $text .= "\t'".$field['field']."' => array(\n\t\t'time' => array('This must be a time.')\n\t),\n";
-                                } elseif (mb_stristr($field['type'], "date")) {
-                                    $text .= "\t'".$field['field']."' => array(\n\t\t'date' => array('This must be a date.')\n\t),\n";
-                                } elseif (mb_stristr($field['type'], "float")) {
-                                    $text .= "\t'".$field['field']."' => array(\n\t\t'decimal' => array('This must be a float.')\n\t),\n";
-                                } elseif (mb_stristr($field['type'], "VARCHAR2")) {
-                                    $text .= "\t'".$field['field']."' => array(\n\t\t'maxLength' => array('You execed the max length (".$field['length']." chars)', ".$field['length'].")\n\t),\n";
-                                } elseif (mb_stristr($field['type'], "NUMBER")) {
-                                    $text .= "\t'".$field['field']."' => array(\n\t\t'numeric' => array('This must be an int.')\n\t),\n";
-                                } else {
-                                    //$text .= "\t'" . $field['field'] . "' => array(\n\t\t'not_empty' => array('This field is requiered.')\n\t),\n";
-                                }
+                                //$text .= "\t'" . $field['field'] . "' => array(\n\t\t'not_empty' => array('This field is requiered.')\n\t),\n";
                             }
                         }
-
-                        $text .= ");\n\nfunction get_validate()\n{\nreturn \$this->validate;\n}\n}\n";
-
-                        fwrite($fp, $text);
-                        fclose($fp);
-
-                        unset($data);
                     }
+
+                    $text .= ");\n\nfunction get_validate()\n{\nreturn \$this->validate;\n}\n}\n";
+
+                    fwrite($fp, $text);
+                    fclose($fp);
+
+                    unset($data);
                 }
             }
         }
+        //}
     }
 
     public function index()

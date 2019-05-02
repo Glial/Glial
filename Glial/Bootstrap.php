@@ -66,17 +66,23 @@ FactoryController::addDi("log", $log);
 if (!IS_CLI) {
     $developer = $config->get("developer");
     if (in_array($_SERVER['REMOTE_ADDR'], $developer['ip']) || ENVIRONEMENT) {
-        define("DEBUG", true);
+        if (!defined('DEBUG')) {
+            define("DEBUG", true);
+        }
         error_reporting(-1);
         ini_set('display_errors', 1);
     } else {
-        define("DEBUG", false);
+        if (!defined('DEBUG')) {
+            define("DEBUG", false);
+        }
     }
 } else {
 
     error_reporting(-1);
     ini_set('display_errors', 1);
-    define("DEBUG", false);
+    if (!defined('DEBUG')) {
+        define("DEBUG", false);
+    }
 }
 
 

@@ -579,11 +579,11 @@ database=" . $server['database'] . "";
         $DB = $this->di['db']->sql(DB_DEFAULT);
 
         createOragnisation:
-        $this->cadre("create oraganisation");
+        $this->cadre("Create organisation");
 
         do {
             $rl = new \Hoa\Console\Readline\Readline();
-            $oraganisation = $rl->readLine('Your Oraganisation : ');
+            $oraganisation = $rl->readLine('Your Organisation : ');
         } while (strlen($oraganisation) < 3);
 
 

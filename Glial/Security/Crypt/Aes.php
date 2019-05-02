@@ -24,7 +24,7 @@ class Aes {
          * @var bool
          */
         public $debug = true;
-
+        
         /**
          * __construct()
          * 

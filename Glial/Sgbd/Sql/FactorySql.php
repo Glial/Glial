@@ -50,8 +50,7 @@ class FactorySql
         self::$db[$name]->setLogger(self::$logger);
 
         if (!empty($elem['crypted']) && $elem['crypted'] === "1") {
-            Crypt::$key = CRYPT_KEY;
-            $elem['password'] = Crypt::decrypt($elem['password']);
+            $elem['password'] = Crypt::decrypt($elem['password'],CRYPT_KEY);
         }
 
         self::$db[$name]->sql_connect($addr, $elem['user'], $elem['password'], $dbname, $port);
