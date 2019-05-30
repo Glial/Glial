@@ -563,7 +563,7 @@ database=" . $server['database'] . "";
 
         foreach (glob($path) as $filename) {
             //echo "$filename size ".filesize($filename)."\n";
-            $cmd = "mysql -h " . $server["hostname"] . " -u " . $server['user'] . " -P " . $server['port'] . " -p" . $server['password'] . " " . $server['database'] . " < " . $filename . "";
+            $cmd = "mysql -h " . $server["hostname"] . " -u " . $server['user'] . " -P " . $server['port'] . " -p'" . $server['password'] . "' " . $server['database'] . " < " . $filename . "";
             $this->cmd($cmd, "Loading " . pathinfo($filename)['basename']);
         }
     }
