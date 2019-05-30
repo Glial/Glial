@@ -85,7 +85,7 @@ abstract class Sql
 
 
         if (IS_CLI) { //to save memory with crawler & bot
-            //$this->serializeQuery();
+            $this->serializeQuery();
         }
 
         if (!is_string($sql)) {
@@ -436,7 +436,7 @@ abstract class Sql
     public function serializeQuery()
     {
         
-        if (count($this->query) > 5000) {
+        if (count($this->query) > 100) {
             array_splice($this->query, 0, -10);
         }
 

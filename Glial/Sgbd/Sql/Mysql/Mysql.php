@@ -126,7 +126,20 @@ class Mysql extends Sql
 
     protected function _query($sql)
     {
-        return mysqli_query($this->link, $sql);
+        $ret = mysqli_query($this->link, $sql);
+
+
+        if (mysqli_warning_count($this->link)) {
+            $e = mysqli_get_warnings($this->link);
+            do {
+                echo "Warning: $e->errno: $e->message\n";
+            } while ($e->next());
+
+
+            exit;
+        }
+
+        return $ret;
     }
 
     public function sql_num_rows($res)
