@@ -3,6 +3,7 @@
 namespace Glial\Sgbd\Sql\Mysql;
 
 use \Glial\Sgbd\Sql\Sql;
+use \Glial\Cli\Color;
 
 class Mysql extends Sql
 {
@@ -124,19 +125,55 @@ class Mysql extends Sql
      * @see mysqli_query http://php.net/manual/en/mysqli.query.php
      */
 
-    protected function _query($sql)
+    public function _query($sql)
     {
         $ret = mysqli_query($this->link, $sql);
 
 
         if (mysqli_warning_count($this->link)) {
             $e = mysqli_get_warnings($this->link);
+
+
+            /*
             do {
-                echo "Warning: $e->errno: $e->message\n";
+                debug($e);
+                echo "Warning $e->errno : $e->message\n";
             } while ($e->next());
+            */
 
 
-            exit;
+            if ($e->errno != 0) {
+                if ($result = $this->_query("SHOW WARNINGS")) {
+                    $row = $result->fetch_row();
+
+                    $called_from = debug_backtrace();
+
+                    //debug($called_from);
+
+                    $indice = 0;
+                    if (strstr($called_from[0]['file'], "/Sgbd/Sql/Sql.php")) {
+                        $indice = 1;
+                    }
+
+
+                    $msg = "[".date("Y-m-d H:i:s")."] SQL : ".Color::getColoredString($sql, "yellow")."\n"
+                            .Color::getColoredString($row[0]." (".$row[1]."): ".$row[2], "black", "yellow")."".
+                            "\nFILE : ".$called_from[$indice]['file']." LINE : ".$called_from[$indice]['line']."\n";
+
+                    if (IS_CLI) {
+                        fwrite(STDERR,$msg);
+                    } else {
+                        echo "[".date("Y-m-d H:i:s")."] SQL : $sql<br /><b>ERROR ".$this->_error_num()." : ".$this->_error()."</b>".
+                        "<br />FILE : ".$called_from[$indice]['file'].":".$called_from[$indice]['line']."<br />";
+                    }
+
+
+                    error_log($msg, 3, TMP."log/sql.log");
+
+
+                    $result->close();
+                }
+            }
         }
 
         return $ret;
@@ -184,6 +221,11 @@ class Mysql extends Sql
     public function _error()
     {
         return mysqli_error($this->link);
+    }
+
+    public function _error_num()
+    {
+        return mysqli_errno($this->link);
     }
 
     public function sql_fetch_array($res, $resulttype = MYSQLI_BOTH)

@@ -9,27 +9,26 @@ use \Glial\Cli\Color;
 
 abstract class Sql
 {
-
     public $link;
-    public $number_of_query = 0;
-    public $query = array();
-    public $error = array();
-    public $data = array();
+    public $number_of_query   = 0;
+    public $query             = array();
+    public $error             = array();
+    public $data              = array();
     public $rows_affected;
     public $last_id;
     public $called_from;
-    public $validate = array();
+    public $validate          = array();
     public $res;
-    public $_history_type = 4; // default 4 made by system
-    public $_history_active = false; // default 4 made by system
-    public $_history_user = null; // default 4 made by system
-    public $_type_query = '';
+    public $_history_type     = 4; // default 4 made by system
+    public $_history_active   = false; // default 4 made by system
+    public $_history_user     = null; // default 4 made by system
+    public $_type_query       = '';
     public $_table_to_history = '';
-    private $_table = array();
-    private $_name = '';
-    private $_keys = array();
-    public $_param = array();
-    public $is_connected = false;
+    private $_table           = array();
+    private $_name            = '';
+    private $_keys            = array();
+    public $_param            = array();
+    public $is_connected      = false;
     private $logger;
     public $db;
 
@@ -81,9 +80,6 @@ abstract class Sql
 
     final public function sql_query($sql, $table = "", $type = "")
     {
-
-
-
         if (IS_CLI) { //to save memory with crawler & bot
             $this->serializeQuery();
         }
@@ -92,11 +88,11 @@ abstract class Sql
             throw new \Exception('GLI-056 : the var $sql must be a string in sql_query !');
         }
 
-        $this->res = "";
+        $this->res  = "";
         $this->stid = "";
 
         $called_from = debug_backtrace();
-        $startmtime = microtime(true);
+        $startmtime  = microtime(true);
 
         if (!$res = $this->_query($sql)) {
 
@@ -105,15 +101,22 @@ abstract class Sql
                 $indice = 1;
             }
 
+
+
+            $msg = "[".date("Y-m-d H:i:s")."] SQL : ".Color::getColoredString($sql, "yellow")."\n".Color::getColoredString("Error (".$this->_error_num().") : ".$this->_error(), "grey", "red")."".
+                    "\nFILE : ".$called_from[$indice]['file']." LINE : ".$called_from[$indice]['line']."\n";
+
             //error
             if (IS_CLI) {
-                fwrite(STDERR, "[".date("Y-m-d H:i:s")."] SQL : " . Color::getColoredString($sql, "yellow") . "\n" . Color::getColoredString($this->_error(), "grey", "red") . "" .
-                "\nFILE : " . $called_from[$indice]['file'] . " LINE : " . $called_from[$indice]['line'] . "\n");
-              
+                fwrite(STDERR,$msg);
             } else {
-                echo "[".date("Y-m-d H:i:s")."] SQL : $sql<br /><b>" . $this->_error() . "</b>" .
-                "<br />FILE : " . $called_from[$indice]['file'] . ":" . $called_from[$indice]['line'] . "<br />";
+                echo "[".date("Y-m-d H:i:s")."] SQL : $sql<br /><b>ERROR ".$this->_error_num()." : ".$this->_error()."</b>".
+                "<br />FILE : ".$called_from[$indice]['file'].":".$called_from[$indice]['line']."<br />";
             }
+
+            error_log($msg, 3, TMP."log/sql.log");
+
+
         }
 
         $this->res = $res;
@@ -121,14 +124,14 @@ abstract class Sql
         $totaltime = round(microtime(true) - $startmtime, 5);
 
         $this->query[$this->number_of_query]['query'] = $sql;
-        $this->query[$this->number_of_query]['time'] = $totaltime;
-        $this->query[$this->number_of_query]['file'] = $called_from[0]['file'];
-        $this->query[$this->number_of_query]['line'] = $called_from[0]['line'];
+        $this->query[$this->number_of_query]['time']  = $totaltime;
+        $this->query[$this->number_of_query]['file']  = $called_from[0]['file'];
+        $this->query[$this->number_of_query]['line']  = $called_from[0]['line'];
 
 
         $this->rows_affected = $this->sql_affected_rows();
 
-        $this->query[$this->number_of_query]['rows'] = $this->rows_affected;
+        $this->query[$this->number_of_query]['rows']    = $this->rows_affected;
         $this->query[$this->number_of_query]['last_id'] = $this->_insert_id();
 
         $this->number_of_query++;
@@ -159,23 +162,23 @@ abstract class Sql
 
         $table = array_keys($data);
         $table = $table[0];
-        $keys = array_keys($data[$table]);
+        $keys  = array_keys($data[$table]);
 
-        
+
         $this->getInfosTable($table);
 
         $validation = new Validation($this);
 
-        
-        include_once APP_DIR . DS . "model" . DS . "Identifier" . ucwords(strtolower($this->_name)) . DS . $table . ".php";
+
+        include_once APP_DIR.DS."model".DS."Identifier".ucwords(strtolower($this->_name)).DS.$table.".php";
 
 
-        $model_name = "Identifier" . Inflector::camelize($this->_name);
-        $table2 = str_replace("-", "", $table);
+        $model_name = "Identifier".Inflector::camelize($this->_name);
+        $table2     = str_replace("-", "", $table);
 
 
         //$my_table = singleton::getInstance('glial\synapse\model\table\\'.$table2);
-        $my_table = Singleton::getInstance('application\\model\\' . $model_name . '\\' . $table2);
+        $my_table = Singleton::getInstance('application\\model\\'.$model_name.'\\'.$table2);
         $validate = $my_table->validate;
 
         //debug($validate);
@@ -189,7 +192,7 @@ abstract class Sql
                         $elem['value'] = $data[$table][$field];
 
                         if (in_array("id", $keys, true)) {
-                            $elem['id'] = "AND id != " . $data[$table]['id'];
+                            $elem['id'] = "AND id != ".$data[$table]['id'];
                         }
 
                         if (!empty($param[0])) {
@@ -248,7 +251,7 @@ abstract class Sql
                 if (strstr($this->_table_to_history, $table)) {
 
                     if (in_array("id", $keys, true)) {
-                        $sql = "SELECT * FROM " . static::ESC . "" . $table . "" . static::ESC . " WHERE id ='" . $data[$table]['id'] . "'";
+                        $sql = "SELECT * FROM ".static::ESC."".$table."".static::ESC." WHERE id ='".$data[$table]['id']."'";
                         $res = $this->sql_query($sql);
 
                         if ($this->sql_num_rows($res) === 1) {
@@ -267,39 +270,37 @@ abstract class Sql
 
                 $str = array();
                 foreach ($keys as $key) {
-                    if ($key === 'id')
-                        continue;
+                    if ($key === 'id') continue;
 
-                    $str[] = "" . static::ESC . "" . $key . "" . static::ESC . " = '" . $data[$table][$key] . "'";
+                    $str[] = "".static::ESC."".$key."".static::ESC." = '".$data[$table][$key]."'";
                 }
 
-                $sql = "UPDATE " . static::ESC . "" . $table . "" . static::ESC . " SET " . implode(",", $str) . " WHERE id= " . $this->sql_real_escape_string($id) . "";
-                
-                
+                $sql = "UPDATE ".static::ESC."".$table."".static::ESC." SET ".implode(",", $str)." WHERE id= ".$this->sql_real_escape_string($id)."";
+
+
                 $this->sql_query($sql, $table, "UPDATE");
 
 
-                
+
                 if ($this->query[$this->number_of_query - 1]['rows'] === 0) {
                     $this->query[$this->number_of_query - 1]['last_id'] = $id;
                 }
 
-                
+
                 // have to see if any problem in update
                 /*
-                if ($this->query[$this->number_of_query - 1]['rows'] == 0) {
-                    //$sql = "INSERT INTO ".static::ESC."".$table."".static::ESC." SET ".implode(",", $str)."";
-                    //$sql = "INSERT INTO ".static::ESC."".$table."".static::ESC." (".implode(",", $keys).") VALUES (".$this->sql_real_escape_string($id).",'".implode("','", $data[$table])."') --";
-                    $sql = $insert_or_replace . " INTO " . static::ESC . "" . $table . "" . static::ESC . " SET id=" . $this->sql_real_escape_string($id) . " , " . implode(",", $str) . ""; //not supported by sybase A amÃ©liorer
-                    $this->sql_query($sql, $table, "INSERT");
-                }*/
-                
-                
+                  if ($this->query[$this->number_of_query - 1]['rows'] == 0) {
+                  //$sql = "INSERT INTO ".static::ESC."".$table."".static::ESC." SET ".implode(",", $str)."";
+                  //$sql = "INSERT INTO ".static::ESC."".$table."".static::ESC." (".implode(",", $keys).") VALUES (".$this->sql_real_escape_string($id).",'".implode("','", $data[$table])."') --";
+                  $sql = $insert_or_replace . " INTO " . static::ESC . "" . $table . "" . static::ESC . " SET id=" . $this->sql_real_escape_string($id) . " , " . implode(",", $str) . ""; //not supported by sybase A amÃ©liorer
+                  $this->sql_query($sql, $table, "INSERT");
+                  } */
             } else {
-                $sql = $insert_or_replace . " INTO " . static::ESC . "" . $table . "" . static::ESC . " (" . static::ESC . "" . implode("" . static::ESC . "," . static::ESC . "", $keys) . "" . static::ESC . ") VALUES ('" . implode("','", $data[$table]) . "');";
-                
+                $sql = $insert_or_replace." INTO ".static::ESC."".$table."".static::ESC." (".static::ESC."".implode("".static::ESC.",".static::ESC."", $keys)."".static::ESC.") VALUES ('".implode("','",
+                        $data[$table])."');";
+
                 //debug($sql);
-                
+
                 $this->sql_query($sql, $table, "INSERT");
             }
 
@@ -311,14 +312,14 @@ abstract class Sql
                 $this->last_id = $this->query[$this->number_of_query - 1]['last_id'];
                 if ($this->last_id == 0) {
 
-                    $sql = "SELECT id FROM " . static::ESC . "" . $table . "" . static::ESC . " WHERE 1=1 ";
+                    $sql = "SELECT id FROM ".static::ESC."".$table."".static::ESC." WHERE 1=1 ";
 
                     if (!empty($this->_keys[$table])) {
                         foreach ($data[$table] as $key => $value) {
 
                             //select only unique key
                             if (in_array($key, $this->_keys[$table])) {
-                                $sql .= " AND " . static::ESC . "" . $key . "" . static::ESC . " = '" . $value . "' ";
+                                $sql .= " AND ".static::ESC."".$key."".static::ESC." = '".$value."' ";
                             }
                         }
                     }
@@ -341,12 +342,12 @@ abstract class Sql
             if ($this->_history_active) { //traitement specifique
                 if (strstr($this->_table_to_history, $table)) {
                     if (!empty($before_update)) {
-                        $param = \history::compare($before_update[0], $data[$table]);
-                        $id_table = $id;
+                        $param      = \history::compare($before_update[0], $data[$table]);
+                        $id_table   = $id;
                         $type_query = 'UPDATE';
                     } else {
-                        $param = \history::compare(array(), $data[$table]);
-                        $id_table = $this->last_id;
+                        $param      = \history::compare(array(), $data[$table]);
+                        $id_table   = $this->last_id;
                         $type_query = 'INSERT';
                     }
 
@@ -402,13 +403,13 @@ abstract class Sql
         //TODO implement verification of child table before delete
 
         foreach ($data as $table => $field) {
-            if (file_exists(TMP . "/database/" . $table . ".table.txt")) {
+            if (file_exists(TMP."/database/".$table.".table.txt")) {
                 if (!empty($field['id'])) {
 
                     if (static::HISTORY_ACTIVE) { //traitement specifique
                         if (strstr($this->_table_to_history, $table)) {
 
-                            $sql = "SELECT * FROM " . static::ESC . "" . $table . "" . static::ESC . " WHERE id ='" . $data[$table]['id'] . "'";
+                            $sql = "SELECT * FROM ".static::ESC."".$table."".static::ESC." WHERE id ='".$data[$table]['id']."'";
                             $res = $this->sql_query($sql);
 
                             if ($this->sql_num_rows($res) === 1) {
@@ -417,7 +418,7 @@ abstract class Sql
                                 return false;
                             }
 
-                            $param = \history::compare($before_update[0], array());
+                            $param    = \history::compare($before_update[0], array());
                             $id_table = $data[$table]['id'];
 
                             \history::insert($table, $id_table, $param, $this->_history_type, $this->_history_user, 'DELETE');
@@ -426,7 +427,7 @@ abstract class Sql
                         }
                     }
 
-                    $sql = "UPDATE " . $table . " SET id_history_etat = 3 WHERE id =" . $field['id'];
+                    $sql = "UPDATE ".$table." SET id_history_etat = 3 WHERE id =".$field['id'];
                     $this->sql_query($sql, $table, "UPDATE");
                 }
             }
@@ -435,17 +436,16 @@ abstract class Sql
 
     public function serializeQuery()
     {
-        
+
         if (count($this->query) > 100) {
             array_splice($this->query, 0, -10);
         }
-
     }
 
     private function unserializeKeys()
     {
         //set
-        $filename = TMP . "keys/" . $this->_name . "_index_unique.txt";
+        $filename = TMP."keys/".$this->_name."_index_unique.txt";
 
         if (file_exists($filename)) {
             $this->_keys = json_decode(file_get_contents($filename), true);
@@ -458,9 +458,9 @@ abstract class Sql
             }
 
             $this->_keys = $list_index;
-            $json = json_encode($list_index);
-            if (!file_put_contents(TMP . "keys/" . $this->_name . "_index_unique.txt", $json)) {
-                trigger_error("make sure is writable : " . $filename, E_USER_NOTICE);
+            $json        = json_encode($list_index);
+            if (!file_put_contents(TMP."keys/".$this->_name."_index_unique.txt", $json)) {
+                trigger_error("make sure is writable : ".$filename, E_USER_NOTICE);
             }
         }
     }
@@ -469,14 +469,13 @@ abstract class Sql
     {
         if (empty($this->_table[$table])) {
             try {
-                $this->_table[$table] = unserialize(file_get_contents(TMP . "database" . DS . $table . ".table.txt"));
+                $this->_table[$table] = unserialize(file_get_contents(TMP."database".DS.$table.".table.txt"));
                 return $this->_table[$table];
             } catch (\Exception $e) {
                 throw new \Exception("GLI-010 : This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
             }
         }
     }
-
     /*
      * @since Glial 2.1.2
      * @param $name String Name of the db link defined in db.config.ini
@@ -485,7 +484,7 @@ abstract class Sql
 
     public function setName($name, $elem)
     {
-        $this->_name = $name;
+        $this->_name  = $name;
         $this->_param = $elem;
     }
 
@@ -493,7 +492,6 @@ abstract class Sql
     {
         return $this->_param;
     }
-
     /*
      *
      * @since glial 3.1.1
@@ -510,10 +508,10 @@ abstract class Sql
     {
         return $this->sql_save($data, true);
     }
-    
+
     public function setLogger($logger)
     {
-        $this->logger = $logger;   
+        $this->logger = $logger;
     }
 
     public function getLogger()
