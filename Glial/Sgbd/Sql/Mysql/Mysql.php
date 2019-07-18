@@ -4,6 +4,7 @@ namespace Glial\Sgbd\Sql\Mysql;
 
 use \Glial\Sgbd\Sql\Sql;
 use \Glial\Cli\Color;
+use Glial\Cli\Table;
 
 class Mysql extends Sql
 {
@@ -133,45 +134,53 @@ class Mysql extends Sql
         if (mysqli_warning_count($this->link)) {
             $e = mysqli_get_warnings($this->link);
 
-
-            /*
-            do {
-                debug($e);
-                echo "Warning $e->errno : $e->message\n";
-            } while ($e->next());
-            */
-
+            \SqlFormatter::$cli = true;
 
             if ($e->errno != 0) {
                 if ($result = $this->_query("SHOW WARNINGS")) {
-                    $row = $result->fetch_row();
 
                     $called_from = debug_backtrace();
-
-                    //debug($called_from);
 
                     $indice = 0;
                     if (strstr($called_from[0]['file'], "/Sgbd/Sql/Sql.php")) {
                         $indice = 1;
                     }
 
+                    $file = $called_from[$indice]['file'];
+                    $line = $called_from[$indice]['line'];
 
-                    $msg = "[".date("Y-m-d H:i:s")."] SQL : ".Color::getColoredString($sql, "yellow")."\n"
-                            .Color::getColoredString($row[0]." (".$row[1]."): ".$row[2], "black", "yellow")."".
-                            "\nFILE : ".$called_from[$indice]['file']." LINE : ".$called_from[$indice]['line']."\n";
+                    $table = new Table(2);
+                    $table->addHeader(array(" Level ", " Code ", " Message "));
+
+                    $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")." ".Color::getColoredString(" [SHOW WARNINGS] ", "black", "yellow")."\n"
+                    .\SqlFormatter::format($sql)."\n";
+
+                    $msg .= Color::getColoredString($file.":".$line,"cyan")."\n";
+
+                    $i = 0;
+                    while ($row = $result->fetch_row()) {
+                        
+                        $table->addLine(array(" ".$row[0]." ", " ".$row[1]." ", " ".$row[2]." "));
+                        $i++;
+                    }
+
+
+                    $result->close();
+
+                    $msg .= $table->display();
+                    $msg .= $i." rows\n";
+
 
                     if (IS_CLI) {
-                        fwrite(STDERR,$msg);
+                        fwrite(STDERR, $msg);
                     } else {
-                        echo "[".date("Y-m-d H:i:s")."] SQL : $sql<br /><b>ERROR ".$this->_error_num()." : ".$this->_error()."</b>".
-                        "<br />FILE : ".$called_from[$indice]['file'].":".$called_from[$indice]['line']."<br />";
+
+
+                        // echo dans le navigateur if debug = yes ?
                     }
 
 
                     error_log($msg, 3, TMP."log/sql.log");
-
-
-                    $result->close();
                 }
             }
         }
