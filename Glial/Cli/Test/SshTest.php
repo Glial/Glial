@@ -4,7 +4,14 @@ namespace Glial\Cli\Test;
 
 use \Glial\Cli\Ssh;
 
-class TestSsh extends \PHPUnit_Framework_TestCase
+
+
+
+
+use PHPUnit\Framework\TestCase;
+
+
+class TestSsh extends TestCase
 {
 
     
@@ -23,7 +30,7 @@ class TestSsh extends \PHPUnit_Framework_TestCase
 
             $tmp[0][0] = $test;
             
-            $this->assertEquals(json_encode($tmp), json_encode($output_array));
+            $this->assertEquals($tmp, $output_array);
         }
     }
 

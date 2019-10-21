@@ -40,7 +40,7 @@ class Crypt {
         /**
          * encrypt
          * 
-         * @param mixed $data
+         * @param mixed $dat 
          * @param string $key
          * @return string 
          */

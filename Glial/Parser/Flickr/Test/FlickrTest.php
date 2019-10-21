@@ -4,10 +4,10 @@ namespace Glial\Parser\Flickr\Test;
 
 use \Glial\Parser\Flickr\Flickr;
 
-class FlickrTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class FlickrTest extends TestCase
 {
-
-
     public function testExif()
     {
         $res = Flickr::get_photo_exif("https://www.flickr.com/photos/gregbm/9570385391/meta/");
@@ -23,13 +23,11 @@ class FlickrTest extends \PHPUnit_Framework_TestCase
         //print_r($res);
         //echo json_encode($res);
 
-        $data = '{"size_available":["q","t","s","n","m","z","c","l"],"best":"l","url":{"img":"https:\/\/c2.staticflickr.com\/4\/3782\/9570385391_9eae844e46_b.jpg"}}';
+        $data = '{"size_available":["q","t","s","n","m","z","c","l"],"best":"c","url":{"img":"https:\/\/live.staticflickr.com\/3782\/9570385391_9eae844e46_c.jpg"}}';
         $this->assertEquals($res, json_decode($data, true));
     }
 
-
-
-
+    
     /* have to fix getPhotoInfo
     public function testGetPhotoInfo()
     {

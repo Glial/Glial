@@ -153,13 +153,13 @@ class Mysql extends Sql
                     $table->addHeader(array(" Level ", " Code ", " Message "));
 
                     $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")." ".Color::getColoredString(" [SHOW WARNINGS] ", "black", "yellow")."\n"
-                    .\SqlFormatter::format($sql)."\n";
+                        .\SqlFormatter::format($sql)."\n";
 
-                    $msg .= Color::getColoredString($file.":".$line,"cyan")."\n";
+                    $msg .= Color::getColoredString($file.":".$line, "cyan")."\n";
 
-                    $i = 0;
+                    $i   = 0;
                     while ($row = $result->fetch_row()) {
-                        
+
                         $table->addLine(array(" ".$row[0]." ", " ".$row[1]." ", " ".$row[2]." "));
                         $i++;
                     }
@@ -971,5 +971,29 @@ class Mysql extends Sql
     public function sql_data_seek($result, $offset)
     {
         return mysqli_data_seek($result, $offset);
+    }
+    /*
+     * Compare la version de MySQL / MariaDB / Percona Server, si une des occurances correspond retourne "true" sinon "false"
+     * @param array provider => version
+     * @return bool
+     * @see 
+     */
+
+    public function checkVersion($versions)
+    {
+        $v = $this->getVersion();
+        $p = $this->getServerType();
+
+        foreach ($versions as $provider => $version) {
+            if (version_compare($v, $version) >= 0 && $p === $provider) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function provider()
+    {
+        return array('MySQL', 'MariaDB', 'Percona Server');
     }
 }

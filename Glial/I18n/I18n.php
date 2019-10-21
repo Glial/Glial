@@ -2,7 +2,9 @@
 
 namespace Glial\I18n {
 
+
     use Glial\Extract\Grabber;
+    use \App\Library\Debug;
 
     class I18n
     {
@@ -630,6 +632,13 @@ namespace Glial\I18n {
             return self::$_language;
         }
 
+
+        /*
+         * Deprecated since 01/2018
+         * doesnt work with Google anymore:/
+         */
+
+
         public static function get_answer_from_google($string, $from)
         {
             //debug(self::$_language);
@@ -658,7 +667,13 @@ namespace Glial\I18n {
 //$body = iconv(self::charset[$to], "UTF-8", $body);
 //	debug($body);
 
+            Debug::debug($body);
+
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
+
+
+            Debug::debug($content);
+
 
             $out     = explode("<br>", $content);
             $content = str_replace('<br>', '', $content);
@@ -686,16 +701,9 @@ namespace Glial\I18n {
             if (count($nb) != count($out)) {
 
 
-                debug(self::$_translations);
 
-                debug($from);
-                debug($string);
 
-                echo '<hr>';
-                debug($nb);
-                debug(str_replace("\n", "<br />", $out));
 
-                echo $url."<br>\n";
                 throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
                 return false;
             }

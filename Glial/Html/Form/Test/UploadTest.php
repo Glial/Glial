@@ -1,5 +1,4 @@
 <?php
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -9,10 +8,10 @@
 namespace Glial\Html\Form\test;
 
 use Glial\Html\Form\Upload;
+use PHPUnit\Framework\TestCase;
 
-class UploadTest extends \PHPUnit_Framework_TestCase
+class UploadTest extends TestCase
 {
-
     /**
      * @var Upload
      */
@@ -29,12 +28,12 @@ class UploadTest extends \PHPUnit_Framework_TestCase
                 'name' => 'test.jpg',
                 'type' => 'image/jpeg',
                 'size' => 542,
-                'tmp_name' => __DIR__ . '/_files/source-test.jpg',
+                'tmp_name' => __DIR__.'/_files/source-test.jpg',
                 'error' => 0
             )
         );
 
-        $this->_object = new Upload(__DIR__ . '/_files/');
+        $this->_object = new Upload(__DIR__.'/_files/');
     }
 
     /**
@@ -46,8 +45,8 @@ class UploadTest extends \PHPUnit_Framework_TestCase
         unset($_FILES);
         unset($this->_object);
 
-        if (file_exists(__DIR__ . '/_files/test.jpg')) {
-            unlink(__DIR__ . '/_files/test.jpg');
+        if (file_exists(__DIR__.'/_files/test.jpg')) {
+            unlink(__DIR__.'/_files/test.jpg');
         }
     }
 
@@ -61,7 +60,6 @@ class UploadTest extends \PHPUnit_Framework_TestCase
 
     public function testReceiveWithUnknowFile()
     {
-        //$this->assertFalse($this->_object->receive('test2'));
+        $this->assertFileExists($this->_object->receive('test2'));
     }
-
 }
