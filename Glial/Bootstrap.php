@@ -91,7 +91,7 @@ if (DEBUG) {
     $_DEBUG->save("Starting...");
 }
 
-
+/*
 spl_autoload_register(function($className) {
 
     //echo LIBRARY . str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')) . '.php';
@@ -100,9 +100,11 @@ spl_autoload_register(function($className) {
     } else {
         return;
         //debug(debug_backtrace());
-        require(APP_DIR.DS."controller".DS.$className.'.controller.php');
+        require(APP_DIR.DS.DS.$className.'.php');
     }
 });
+ * 
+ */
 
 //$_POST = ArrayTools::array_map_recursive("htmlentities", $_POST);
 require __DIR__."/Basic.php";
@@ -196,30 +198,30 @@ if (IS_CLI) {
         $is_auth = $auth->authenticate(false);
 
 
-
-
-
-
         FactoryController::addDi("auth", $auth);
     }
 
     (ENVIRONEMENT) ? $_DEBUG->save("User connexion") : "";
 
+    //$_SYSTEM['controller'] = $url['controller'];
     $_SYSTEM['controller'] = \Glial\Utility\Inflector::camelize($url['controller']);
     $_SYSTEM['action']     = $url['action'];
     $_SYSTEM['param']      = $url['param'];
 
+    
+    
+    
     $acl = new Acl(CONFIG."acl.config.ini");
 
     FactoryController::addDi("acl", $acl);
 
 
-
-
     $js = new Javascript();
     FactoryController::addDi("js", $js);
 
+    
     if ($acl->checkIfResourceExist($_SYSTEM['controller']."/".$_SYSTEM['action'])) {
+        
         if (AUTH_ACTIVE) {
             if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller']."/".$_SYSTEM['action'])) {
                 if ($auth->getAccess() == 1) {
@@ -239,9 +241,13 @@ if (IS_CLI) {
             }
         }
     } else {
+        
+        echo $acl;
+        exit;
+        
         set_flash("error", __("Error 404"),
             __("Page not found")." : ".__("Sorry, the page you requested : \"".$_SYSTEM['controller']."/".$_SYSTEM['action']."\"is not on this server. Please contact us if you have questions or concerns"));
-        header("location: ".LINK."error_web/error404");
+        header("location: ".LINK."ErrorWeb/error404/".$_SYSTEM['controller']."/".$_SYSTEM['action']);
         Glial::getOut($_DB->sql(DB_DEFAULT));
     }
 }
