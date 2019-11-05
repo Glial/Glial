@@ -28,7 +28,7 @@ ini_set('APACHE_LOG_DIR', TMP.'log'.DS);
 //tput lines tells you the number of rows.
 
 use \Glial\Synapse\Config;
-use \Glial\Debug\Debug;
+use \Glial\Debug\Debug as DebugGlial;
 use \Glial\Synapse\FactoryController;
 use \Glial\I18n\I18n;
 use \Glial\Acl\Acl;
@@ -38,10 +38,14 @@ use \Glial\Synapse\Javascript;
 use \Monolog\Logger;
 use \Monolog\Formatter\LineFormatter;
 use \Monolog\Handler\StreamHandler;
+use Glial\Synapse\Glial;
 
 require ROOT.DS.'vendor/autoload.php';
 
-session_start();
+if (!IS_CLI) {
+    session_start();
+}
+
 
 $config = new Config;
 $config->load(CONFIG);
@@ -50,37 +54,44 @@ FactoryController::addDi("config", $config);
 $log = new Logger('Glial');
 
 
-$file_log = TMP.'log/glial.log';
+$file_log = LOG_FILE;
 
-$handler = new StreamHandler($file_log, Logger::NOTICE);
+$handler = new StreamHandler($file_log, Logger::DEBUG);
 $handler->setFormatter(new LineFormatter(null, null, false, true));
 $log->pushHandler($handler);
 
-
 FactoryController::addDi("log", $log);
+
 
 if (!IS_CLI) {
     $developer = $config->get("developer");
     if (in_array($_SERVER['REMOTE_ADDR'], $developer['ip']) || ENVIRONEMENT) {
-        define("DEBUG", true);
+        if (!defined('DEBUG')) {
+            define("DEBUG", true);
+        }
         error_reporting(-1);
         ini_set('display_errors', 1);
     } else {
-        define("DEBUG", false);
+        if (!defined('DEBUG')) {
+            define("DEBUG", false);
+        }
     }
 } else {
-    define("DEBUG", false);
+
+    error_reporting(-1);
+    ini_set('display_errors', 1);
+    if (!defined('DEBUG')) {
+        define("DEBUG", false);
+    }
 }
 
 
 if (DEBUG) {
-    $_DEBUG = new Debug;
+    $_DEBUG = new DebugGlial;
     $_DEBUG->save("Starting...");
 }
 
-
-
-
+/*
 spl_autoload_register(function($className) {
 
     //echo LIBRARY . str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')) . '.php';
@@ -89,9 +100,11 @@ spl_autoload_register(function($className) {
     } else {
         return;
         //debug(debug_backtrace());
-        require(APP_DIR.DS."controller".DS.$className.'.controller.php');
+        require(APP_DIR.DS.DS.$className.'.php');
     }
 });
+ * 
+ */
 
 //$_POST = ArrayTools::array_map_recursive("htmlentities", $_POST);
 require __DIR__."/Basic.php";
@@ -136,8 +149,12 @@ $lg = explode(",", LANGUAGE_AVAILABLE);
 
 if (!in_array($_SESSION['language'], $lg)) {
     $_SESSION['URL_404'] = $_SERVER['QUERY_STRING'];
-    header("location: ".WWW_ROOT."en/error/_404/");
+    header("location: ".WWW_ROOT.I18n::Get()."/error_web/error404/");
+
+
+    Glial::getOut($_DB->sql(DB_DEFAULT));
 }
+
 
 I18n::load($_SESSION['language']);
 (DEBUG) ? $_DEBUG->save("Language loaded") : "";
@@ -160,7 +177,7 @@ if (IS_CLI) {
         //cli_set_process_title("glial-" . $_SYSTEM['controller'] . "-" . $_SYSTEM['action']." (".$name.")");
     } else {
 
-        throw new InvalidArgumentException('usage : gial <controlleur> <action> [params]');
+        Throw new InvalidArgumentException('usage : gial <controlleur> <action> [params]');
     }
     define('LINK', WWW_ROOT."en"."/");
 } else {  //mode with apache
@@ -170,27 +187,41 @@ if (IS_CLI) {
     if (AUTH_ACTIVE) {
         $auth = new Auth();
         $auth->setInstance($_DB->sql(DB_DEFAULT), "user_main", array("login", "password"));
+
+        $auth->setLog($log);
+
+        //not used yet
         $auth->setFctToHashCookie(function ($password) {
             return password_hash($password.$_SERVER['HTTP_USER_AGENT'].$_SERVER['REMOTE_ADDR'], PASSWORD_DEFAULT);
         });
-        $auth->authenticate(false);
+
+        $is_auth = $auth->authenticate(false);
+
+
         FactoryController::addDi("auth", $auth);
     }
 
     (ENVIRONEMENT) ? $_DEBUG->save("User connexion") : "";
 
+    //$_SYSTEM['controller'] = $url['controller'];
     $_SYSTEM['controller'] = \Glial\Utility\Inflector::camelize($url['controller']);
     $_SYSTEM['action']     = $url['action'];
     $_SYSTEM['param']      = $url['param'];
 
+    
+    
+    
     $acl = new Acl(CONFIG."acl.config.ini");
 
     FactoryController::addDi("acl", $acl);
 
+
     $js = new Javascript();
     FactoryController::addDi("js", $js);
 
+    
     if ($acl->checkIfResourceExist($_SYSTEM['controller']."/".$_SYSTEM['action'])) {
+        
         if (AUTH_ACTIVE) {
             if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller']."/".$_SYSTEM['action'])) {
                 if ($auth->getAccess() == 1) {
@@ -205,14 +236,19 @@ if (IS_CLI) {
 
                 set_flash("error", __("Acess denied"), __("Acess denied")." : ".$msg);
                 header("location: ".LINK.$url);
-                exit;
+
+                Glial::getOut($_DB->sql(DB_DEFAULT));
             }
         }
     } else {
+        
+        echo $acl;
+        exit;
+        
         set_flash("error", __("Error 404"),
             __("Page not found")." : ".__("Sorry, the page you requested : \"".$_SYSTEM['controller']."/".$_SYSTEM['action']."\"is not on this server. Please contact us if you have questions or concerns"));
-        header("location: ".LINK."Error/_404");
-        exit;
+        header("location: ".LINK."ErrorWeb/error404/".$_SYSTEM['controller']."/".$_SYSTEM['action']);
+        Glial::getOut($_DB->sql(DB_DEFAULT));
     }
 }
 
@@ -220,50 +256,39 @@ if (IS_CLI) {
 
 
 //demarre l'application
-FactoryController::rootNode($_SYSTEM['controller'], $_SYSTEM['action'], $_SYSTEM['param']);
+$html = FactoryController::rootNode($_SYSTEM['controller'], $_SYSTEM['action'], $_SYSTEM['param']);
 
 
+
+
+if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {
+    $debug = FactoryController::addNode("Debug", "toolbar", array(TIME_START), FactoryController::EXPORT);
+    $html  = str_replace("[GLIAL_DEBUG_TOOLBAR]", $debug, $html);
+}
+
+echo $html;
+
+
+/*
 $i = 10;
-
 
 (DEBUG) ? $_DEBUG->save("Layout loaded") : "";
 
-
-
-
-
-
 if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
-    $execution_time = microtime(true) - TIME_START;
-
     echo "<hr />";
 
-    echo "Temps d'exéution de la page : ".round($execution_time, 5)." seconds";
-    echo "<br />Nombre de requette : ".$_DB->sql(DB_DEFAULT)->get_count_query();
+    echo "Temps d'exéution de la page : " . round($execution_time, 5) . " seconds";
+    echo "<br />Nombre de requette : " . $_DB->sql(DB_DEFAULT)->get_count_query();
     $file_list = get_included_files();
-    echo "<br />Nombre de fichier loaded : <b>".count($file_list)."</b><br />";
+    echo "<br />Nombre de fichier loaded : <b>" . count($file_list) . "</b><br />";
     debug($file_list);
 
-    if ($_DB->sql(DB_DEFAULT)->get_count_query() != 0) {
-        echo "<table class=\"debug\" style=\"width:100%\">";
-        echo "<tr><th>#</th><th>File</th><th>Line</th><th>Query</th><th>Rows</th><th>Last inserted id</th><th>Time</th></tr>";
-        $i = 0;
-        $j = 0;
-        $k = 0;
-        foreach ($_DB->sql(DB_DEFAULT)->query as $value) {
-            echo "<tr><td>".$k."</td><td>".$value['file']."</td><td>".$value['line']."</td><td>".SqlFormatter::format($value['query'])."</td><td>".$value['rows']."</td><td>".$value['last_id']."</td><td>".$value['time']."</td></tr>";
-            $i += $value['time'];
-            $j += $value['rows'];
-            $k++;
-        }
-
-        echo "<tr><td></td><td></td><td></td><td><b>Total</b></td><td>".$j."</td><td><b>".$i."</b></td></tr>";
-        echo "</table>";
-    }
     $_DEBUG->print_table();
-    echo $_DEBUG->graph();
-    echo $_DEBUG->graph2();
 
+    
+     // echo $_DEBUG->graph();
+     // echo $_DEBUG->graph2();
+     
 
     //debug(get_declared_classes());
 
@@ -285,7 +310,7 @@ if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
     echo "CONSTANTES : <br />";
 
 
-    $display    = false;
+    $display = false;
     $constantes = get_defined_constants();
     foreach ($constantes as $constante => $valeur) {
         if ($constante == "TIME_START") {
@@ -293,8 +318,9 @@ if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {//ENVIRONEMENT
         }
 
         if ($display) {
-            echo 'Constante: <b>'.$constante.'</b> Valeur: '.$valeur.'<br/>';
+            echo 'Constante: <b>' . $constante . '</b> Valeur: ' . $valeur . '<br/>';
         }
     }
 }
     
+*/

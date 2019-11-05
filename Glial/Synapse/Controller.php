@@ -6,10 +6,10 @@ namespace Glial\Synapse;
 use \Glial\Synapse\Variable;
 use \Glial\I18n\I18n;
 use \Glial\Utility\Inflector;
+use \Glial\Synapse\FactoryController;
 
 class Controller
 {
-
     /**
      * 
      * @var string
@@ -17,22 +17,23 @@ class Controller
      */
     var $action;
     var $controller;
-    var $param = array();
-    var $value = array();
-    var $layout = true;
-    var $layout_name = "default";
-    var $title = "undefined";
+    var $param           = array();
+    var $value           = array();
+    var $layout          = true;
+    var $layout_name     = "default";
+    var $title           = "undefined";
     var $view;
-    var $msg_flash = array();
-    var $javascript = array();
+    var $msg_flash       = array();
+    var $javascript      = array();
     var $code_javascript = array();
     var $js;
-    var $data = array();
     var $ariane;
-    var $ajax = false;
+    var $ajax            = false;
     var $error;
     var $html;
-    public $di = array();
+    var $out;
+    var $cli;
+    public $di              = array();
     private $isRootNode;
     public $db;
 
@@ -52,7 +53,7 @@ class Controller
 
         if (AUTH_ACTIVE) {
             if (!IS_CLI) {
-                if (!$GLOBALS['acl']->isAllowed($GLOBALS['auth']->getAccess(), $controller . "/" . $action)) {
+                if (!$GLOBALS['acl']->isAllowed($GLOBALS['auth']->getAccess(), $controller."/".$action)) {
                     return;
                 }
             }
@@ -60,10 +61,10 @@ class Controller
 
 
         $this->controller = $controller;
-        $this->action = $action;
-        $this->param = $param;
-        $this->view = $action;
-        $this->recursive = false;
+        $this->action     = $action;
+        $this->param      = $param;
+        $this->view       = $action;
+        $this->recursive  = false;
     }
 
     final public function setDi($di)
@@ -77,21 +78,28 @@ class Controller
             return;
         }
 
-        $filename = APP_DIR . DS . "controller" . DS . $this->controller . ".controller.php";
-
+        /*
+        $filename = APP_DIR.DS."Controller".DS.$this->controller.".php";
         if (file_exists($filename)) {
             require_once $filename;
         } else {
-            throw new \Exception("GLI-654 Error controller not found : '" . $this->controller . "'");
+            throw new \Exception("GLI-654 Error controller not found : '".$this->controller."'");
         }
-
-        $page = new $this->controller($this->controller, $this->action, $this->param);
+*/
+        
+        $path = '\\App\\Controller\\';
+        $name = $this->controller;
+        
+        $class = $path.$name;
+        
+        $page = new $class($this->controller, $this->action, $this->param);
         $page->setDi($this->di);
+
 
         $this->param = json_decode($this->param);
 
         $this->title = $this->controller;
-        $action = $this->action;
+        $action      = $this->action;
 
 
         $page->before($this->param);
@@ -105,23 +113,29 @@ class Controller
 
         $page->after($this->param);
 
+        $this->value = $page->value;
+
+        if (FactoryController::RESULT === $this->out) {
+            return $resultat;
+        }
+
 
         if (!IS_CLI) {
             $this->ajax = $page->ajax;
             //$this->js = $page->getJavascript();
-            $this->js = $this->di['js']->getJavascript();
+            $this->js   = $this->di['js']->getJavascript();
         }
 
         $this->layout_name = $page->layout_name;
-        $this->view = $page->view;
+        $this->view        = $page->view;
 
 
         if ($page->title !== "undefined") {
-            $this->title = $page->title;
+            $this->title                    = $page->title;
             $GLOBALS['_SITE']['title_page'] = $this->title;
         }
         if (!empty($page->ariane)) {
-            $this->ariane = $page->ariane;
+            $this->ariane               = $page->ariane;
             $GLOBALS['_SITE']['ariane'] = strip_tags($this->ariane);
         }
         $tab = $page->get();
@@ -133,12 +147,22 @@ class Controller
 
         if (!$this->recursive) {
 
+
             if (!Variable::$_open) {
                 ob_start();
             }
 
             if ($this->view) {
-                require APP_DIR . DS . "view" . DS . $this->controller . DS . $this->view . ".view.php";
+
+                //used for rootNode
+                if (IS_CLI) {
+
+                    if (file_exists(APP_DIR.DS."view".DS.$this->controller.DS.$this->view.".view.php")) {
+                        require APP_DIR.DS."view".DS.$this->controller.DS.$this->view.".view.php";
+                    }
+                } else {
+                    require APP_DIR.DS."view".DS.$this->controller.DS.$this->view.".view.php";
+                }
             }
 
             if (!Variable::$_open) {
@@ -147,15 +171,44 @@ class Controller
             }
         } else {
             if ($this->view) {
-                include APP_DIR . DS . "view" . DS . $this->controller . DS . $this->view . ".view.php";
+
+
+                if (FactoryController::EXPORT === $this->out) {
+                    ob_start();
+                }
+
+                //used by addNode
+                require APP_DIR.DS."view".DS.$this->controller.DS.$this->view.".view.php";
+
+
+                if (FactoryController::EXPORT === $this->out) {
+                    $this->html = ob_get_contents();
+                    ob_clean();
+                }
             }
         }
 
         //TODO to fix it
         // (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save($this->controller . "/" . $this->action) : "";
+
+        if (FactoryController::EXPORT == $this->out) {
+            return $this->html;
+        }
+
         return $resultat;
     }
 
+    /**
+     * (Glial 2.1)<br/>
+     * What's that ?
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @param none
+     * @return html
+     * @package Controller
+     * @since 2.1 First time this was introduced.
+     * @description return one node of MVC
+     * @access public
+     */
     final function display()
     {
         if (empty($this->controller)) { // certainement une meilleur maniere de procÃƒÂ©der
@@ -164,6 +217,18 @@ class Controller
         echo $this->html;
     }
 
+    /**
+     * (Glial 2.1)<br/>
+     * What's that ?
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @param none
+     * @return html
+     * @package Controller
+     * @since 2.1 First time this was introduced.
+     * @since 4.2.1 Added GLIALE_DATA to push data/GET from main page to other MVC
+     * @description return one node of MVC
+     * @access public
+     */
     final function setLayout()
     {
         Variable::$_open = false;
@@ -173,8 +238,9 @@ class Controller
             global $_SITE;
 
             $GLIALE_CONTENT = $this->html;
-            $GLIALE_TITLE = $this->title;
-            $GLIALE_ARIANE = $this->ariane;
+            $GLIALE_TITLE   = $this->title;
+            $GLIALE_ARIANE  = $this->ariane;
+            $GLIALE_DATA    = (array) $this->value;
 
             ob_implicit_flush(false);
 
@@ -182,7 +248,7 @@ class Controller
 
             Variable::$_open = true;
 
-            include APP_DIR . DS . "layout" . DS . $this->layout_name . ".layout.php";
+            include APP_DIR.DS."layout".DS.$this->layout_name.".layout.php";
 
             if (!$this->ajax) {
                 //echo $this->js;
@@ -194,10 +260,22 @@ class Controller
             Variable::$_html = ob_get_clean();
             Variable::$_html = I18n::getTranslation(Variable::$_html);
 
-            echo Variable::$_html;
+            return Variable::$_html;
         }
     }
 
+    /**
+     * (Glial 2.1)<br/>
+     * This method set a variable in the array value in controller to be acceded from the view
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @param string, $variable
+     * @example $this->set('data',$data);
+     * @return void
+     * @package Controller
+     * @since 2.1 First time this was introduced.
+     * @description give variable to the view
+     * @access public
+     */
     final function set($var, $valeur)
     {
         $this->value[$var] = $valeur;
@@ -213,19 +291,49 @@ class Controller
         $this->isRootNode = true;
     }
 
+    /**
+     * (Glial 2.0)<br/>
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @return void
+     * @package Controller
+     * @description this function is executed after controller/action (only overwritten)
+     * @access public
+     */
     function after($param)
     {
         
     }
 
-    function before($param)
+    /**
+     * (Glial 2.0)<br/>
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @return void
+     * @package Controller
+     * @description this function is executed before controller/action  (only overwritten)
+     * @access public
+     */
+    public function before($param)
     {
         
     }
 
+    /**
+     * (Glial 1.0)<br/>
+     * DEPRACATED deplaced in package javascript
+     * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
+     * @return void
+     * @package Controller
+     * @since 2.1 DEPRACATED.
+     * @description give javascript name to be add at the bottom of the page
+     * @access public
+     */
     function setJs($js)
     {
         $this->js = $js;
     }
 
+    function setOut($out = FactoryController::DISPLAY)
+    {
+        $this->out = $out;
+    }
 }

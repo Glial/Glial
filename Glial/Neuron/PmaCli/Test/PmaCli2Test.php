@@ -8,7 +8,9 @@
 
 namespace Glial\Neuron\PmaCli\Test;
 
-class Test2PmaCli extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class Test2PmaCli extends TestCase
 {
 
     const TIME_BEHING_MAX = 1;

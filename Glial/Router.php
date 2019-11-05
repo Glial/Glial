@@ -5,8 +5,6 @@ include_once(CONFIG."router.config.php");
 
 if (empty($_GET['glial_path'])) {
 
-    debug($_GET['glial_path']);
-
     //$_GET['path'] = ROUTE_DEFAULT;
 
     if (empty($_SESSION['language'])) {
@@ -26,7 +24,7 @@ if (empty($_GET['glial_path'])) {
 
     header("HTTP/1.1 301 Moved Permanently");
     header("Status: 301 Moved Permanently", false, 301);
-    header("Location: ".WWW_ROOT.$_SESSION['language']."/".ROUTE_LOGIN);
+    header("Location: ".WWW_ROOT.$_SESSION['language']."/".ROUTE_DEFAULT);
     exit;
 }
 
@@ -82,8 +80,13 @@ class Router
 
                     if ($nb_profondeur == 2) {
                         $_GET[$tb[0]] = $tb[1];
-                    } elseif ($nb_profondeur == 3) {
-                        $_GET[$tb[0]][$tb[1]] = $tb[2];
+                    } elseif ($nb_profondeur >= 3) {
+
+                        $tmp = $tb;
+                        unset($tmp[0]);
+                        unset($tmp[1]);
+
+                        $_GET[$tb[0]][$tb[1]] = implode(":",$tmp);
                     }
                 }
             }

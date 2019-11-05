@@ -4,7 +4,9 @@ namespace Glial\Synapse\Test;
 
 use \Glial\Synapse\Validation;
 
-class TestValidation extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class TestValidation extends TestCase
 {
     
     

@@ -7,12 +7,16 @@ use \Glial\I18n\I18n;
 
 class FactoryController
 {
+    const EXPORT  = 1;
+    const DISPLAY = 2;
+    const CALCUL  = 4;
+    const RESULT  = 8;
 
     static $di = array();
     static $controller;
     static $method;
-    /**
 
+    /**
      * (Glial 2.1)<br/>
      * Add a MVC node in a view 
      * @author Aurélien LEQUOY, <aurelien.lequoy@esysteme.com>
@@ -21,16 +25,17 @@ class FactoryController
      * @package Controller
      * @since 2.1 First time this was introduced.
      * @since 4.1.2.5 can return result of method
+     * @since 4.2 can return MVC display on return, ad
      * @description create a new MVC and display the output in standard flux
      * @access public
      */
-    public static function addNode($controller, $action, $param = array())
+    public static function addNode($controller, $action, $param = array(), $out = self::DISPLAY)
     {
-
-
         $node = new Controller($controller, $action, json_encode($param));
         $node->setDi(self::$di);
+        $node->setOut($out);
         $node->recursive = true;
+
         return $node->getController();
     }
 
@@ -56,10 +61,8 @@ class FactoryController
         $node = new Controller($controller, $action, json_encode($param));
         $node->setDi(self::$di);
 
-
-	self::$controller = $controller;
-	self::$method = $action;
-
+        self::$controller = $controller;
+        self::$method     = $action;
 
         $node->setRootNode();
         $node->getController();
@@ -67,14 +70,14 @@ class FactoryController
         if (!empty(self::$di['js'])) {
             $node->setJs(self::$di['js']->getJavascript());
         }
-        
+
         if (!$node->layout_name) {
             $node->display();
             return false;
         } else {
 
-            $node->setLayout();
-            return true;
+            $html = $node->setLayout();
+            return $html;
         }
     }
 
@@ -98,6 +101,19 @@ class FactoryController
         self::$di = $di;
     }
 
+    /**
+     * This method inject dependency
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @param string construct of controller
+     * @return boolean Success
+     * @description should be called 1 time by request. This factory create the (main) root MVC used in boot and display the output in standard flux. it's this controller witch will determine the layout.
+     * @access public
+     * @example \Glial\Synapse\FactoryController::init($array);
+     * @package Controller
+     * @since 4.0 First time this was introduced.
+     */
     public static function addDi($name, $object)
     {
         if (empty(self::$di[$name])) {
@@ -106,5 +122,24 @@ class FactoryController
             throw new \Exception('GLI-019 : This dependency injection already exist !');
         }
     }
-    
+
+
+
+    /**
+     * This method inject dependency
+     * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
+     * @license GPL
+     * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+     * @return array with controller and method used for rood node
+     * @description to know whitch controller and method was called as root node
+     * @access public
+     * @example \Glial\Synapse\FactoryController::GetRootNode();
+     * @package Controller
+     * @since 4.2.6 First time this was introduced.
+     */
+    public static function getRootNode()
+    {
+        return array(self::$controller,self::$method);
+    }
+
 }

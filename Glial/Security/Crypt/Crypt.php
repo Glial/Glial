@@ -10,6 +10,9 @@
 
 namespace Glial\Security\Crypt;
 
+
+use phpseclib\mcrypt_compat;
+
 class Crypt {
         
         /**
@@ -37,7 +40,7 @@ class Crypt {
         /**
          * encrypt
          * 
-         * @param mixed $data
+         * @param mixed $dat 
          * @param string $key
          * @return string 
          */

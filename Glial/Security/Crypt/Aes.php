@@ -24,7 +24,7 @@ class Aes {
          * @var bool
          */
         public $debug = true;
-
+        
         /**
          * __construct()
          * 
@@ -36,14 +36,15 @@ class Aes {
         function __construct($key=null,$options=array()) {
                 
                 // Make sure php mcrypt is available here
-                if(!function_exists('mcrypt_decrypt')) {
-                        throw new Exception("Required PHP dependency library 'mcrypt' is not available - http://php.net/manual/en/book.mcrypt.php");
-                }
+                /*
+		if(!function_exists('mcrypt_decrypt')) {
+                        throw new \Exception("Required PHP dependency library 'mcrypt' is not available - http://php.net/manual/en/book.mcrypt.php");
+                }*/
                 
                 // The options to use
                 $this->options = array_merge(
                         array(
-                            'compress' => true,         // compress the data before encrypting
+                            'compress' => false,         // compress the data before encrypting
                             'base64_encode' => true,    // base64_encode the encrypted data
                             'url_safe' => true,         // make the encrypted data url_safe
                             'use_keygen' => true,       // transform a user supplied key into a key using more of the available keyspace
@@ -147,7 +148,11 @@ class Aes {
                 
                 // Decompress if required
                 if ($this->options['compress']) {
-                        $data = gzuncompress($data);
+                        if (!empty($data))
+			{
+				$data = gzuncompress($data);
+			}
+                        
                 }
 
                 // Unserialize the data

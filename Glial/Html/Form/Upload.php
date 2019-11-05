@@ -32,7 +32,8 @@ class Upload
         $this->_destination = rtrim($destination, '/');
 
         if (!is_writable($this->_destination)) {
-            throw new \Exception("GLI-067 : Impossible to write into this directory : " . $this->_destination);
+            return false;
+            //throw new \Exception("GLI-067 : Impossible to write into this directory : " . $this->_destination);
         }
     }
 
@@ -45,7 +46,6 @@ class Upload
     public function receive($name)
     {
         if (empty($_FILES[$name]) || !self::is_uploaded_file($_FILES[$name]['tmp_name'])) {
-            
             
             //debug($_FILES);
             

@@ -116,7 +116,7 @@ class Compare
         }
         $result = $this->getDiffSql($compRes);
         if ($asString) {
-            $result = implode(";\r\n", $result).';';
+            $result = implode(PHP_EOL, $result);
         }
         return $result;
     }
@@ -447,7 +447,7 @@ class Compare
         }
         foreach ($diff as $tab => $info) {
             if ($info['sourceOrphan']) {//delete it
-                $sqls[] = 'DROP TABLE `'.$tab.'`';
+                $sqls[] = 'DROP TABLE `'.$tab.'`'.";";
             } elseif ($info['destOrphan']) {//create destination table in source
                 $database = '';
                 $destSql  = $this->getTabSql($this->destStruct, $tab, $database);
@@ -460,7 +460,7 @@ class Compare
                 if (!empty($options['forceIfNotExists'])) {
                     $destSql = preg_replace('/(CREATE(?:\s*TEMPORARY)?\s*TABLE\s*)(?:IF\sNOT\sEXISTS\s*)?(`?\w+`?)/i', '$1IF NOT EXISTS $2', $destSql);
                 }
-                $sqls[] = $destSql;
+                $sqls[] = $destSql.";";
             } else {
                 foreach ($info['differs'] as $finfo) {
                     $inDest   = !empty($finfo['dest']);
@@ -476,7 +476,7 @@ class Compare
                         $action = 'modify';
                     }
                     $sql    = $this->getActionSql($action, $tab, $sql);
-                    $sqls[] = $sql;
+                    $sqls[] = $sql.";";
                 }
             }
         }

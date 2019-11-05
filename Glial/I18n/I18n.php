@@ -2,7 +2,9 @@
 
 namespace Glial\I18n {
 
+
     use Glial\Extract\Grabber;
+    use \App\Library\Debug;
 
     class I18n
     {
@@ -269,6 +271,7 @@ namespace Glial\I18n {
         private static $_md5File;
         private static $file_path;
         private static $countNumberElemAtLoading = array();
+        private static $DEBUG                    = false;
 
         /**
          * Constructor
@@ -550,6 +553,8 @@ namespace Glial\I18n {
                         $out = false;
                     } else {
 
+                        $gg = array($default_lg, self::$_language, $string, $key);
+
                         $out = self::translate($default_lg, self::$_language, $string, $key);
                     }
                 } else {
@@ -627,6 +632,13 @@ namespace Glial\I18n {
             return self::$_language;
         }
 
+
+        /*
+         * Deprecated since 01/2018
+         * doesnt work with Google anymore:/
+         */
+
+
         public static function get_answer_from_google($string, $from)
         {
             //debug(self::$_language);
@@ -653,22 +665,17 @@ namespace Glial\I18n {
 
 // if we send no user_agent google send sentence translated in default charset we asked for the language
 //$body = iconv(self::charset[$to], "UTF-8", $body);
+//	debug($body);
 
-	debug($body);
+            Debug::debug($body);
 
             $content = Grabber::getTagContent($body, '<span id=result_box', true);
 
 
-            echo $content;
+            Debug::debug($content);
 
 
-
-
-
-            $out = explode("<br>", $content);
-
-
-            
+            $out     = explode("<br>", $content);
             $content = str_replace('<br>', '', $content);
 
             $out = Grabber::getTagContents($content, '<span title="', true);
@@ -678,15 +685,15 @@ namespace Glial\I18n {
 
             //var_dump($content);
 //verify that we exactly the same number of element in entry
-            
-            
+
+
             $nb = explode("\n", trim($string));
 
-            
+
             if (!is_array($out)) {
                 $out = explode("\n", trim($out));
             }
-            
+
 
 //we check that we have same number of input and output
 
@@ -695,10 +702,8 @@ namespace Glial\I18n {
 
 
 
-                debug($nb);
-                debug($out);
 
-                echo $url."<br>\n";
+
                 throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
                 return false;
             }
@@ -734,8 +739,6 @@ namespace Glial\I18n {
             } else {
 //chargement du fichier de cache en fonction de la BDD
                 $sql = "SELECT * FROM translation_".strtolower(self::$_language)." WHERE file_found ='".self::$file."'";
-
-
 
                 $res23 = self::$_SQL->sql(I18n::DATABASE)->sql_query($sql);
                 while ($ob    = self::$_SQL->sql(I18n::DATABASE)->sql_fetch_object($res23)) {
@@ -910,6 +913,11 @@ END;
                     break;
             }
         }
+
+        static public function setDebug($debug = \I18n::DEBUG)
+        {
+            self::$DEBUG = $debug;
+        }
     }
 }
 
@@ -919,15 +927,31 @@ namespace {
 
     function __($text, $lgfrom = "auto")
     {
-	return $text;
 
-        if ($lgfrom === "auto") $lgfrom     = I18n::GetDefault();
+        if (! LANGUAGE_ACTIVE)
+        {
+            return $text;
+        }
+
         $calledFrom = debug_backtrace();
+
+
+        //return $text;
+
+        if ($text !== strip_tags($text)) {
+            throw new \Exception("GLI-145 : html tag not supported for translation : '".htmlentities($text)."' (".$calledFrom[0]['file'].":".$calledFrom[0]['line'].")");
+        }
+
+        if ($lgfrom === "auto") {
+            $lgfrom = I18n::GetDefault();
+        }
+
+
 //return "<span id=\"".sha1($text)."\" lang=\"".$_LG->Get()."\">".$_LG->_($text,$lgfrom,$calledFrom[0]['file'],$calledFrom[0]['line'])."</span>";
+
 
         $file = str_replace(ROOT."/", '', $calledFrom[0]['file']);
         $var  = I18n::_($text, $lgfrom, $file, $calledFrom[0]['line']);
-
 
 
         //debug(I18n::$_translations);
@@ -935,7 +959,6 @@ namespace {
         if (preg_match_all('#\[(\w+)]#', $var, $m)) {
 //print_r( $m );
         }
-
 
         if (count($m[1]) > 0) {
             $replace_with = array();
@@ -962,5 +985,6 @@ namespace {
             $var = str_replace($m[0], $replace_with, $var);
         }
         return $var;
+
     }
 }
