@@ -43,7 +43,7 @@ class Glial
 
     public static function version()
     {
-        return "5.0.1";
+        return "5.1.1";
     }
 
     public static function date()

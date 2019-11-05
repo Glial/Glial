@@ -99,9 +99,6 @@ class Acl
             $class_controller_method[] = $method->name;
         }
         
-        debug($class_controller_method);
-        
-
         $dir = APP_DIR.DS."Controller".DS;
         if (is_dir($dir)) {
             $dh = opendir($dir);
@@ -116,8 +113,6 @@ class Acl
                             continue;
                         }
 
-                        debug($file);
-                        
                         $class_name = explode(".", $file);
                         $controller = $class_name[0];
 
@@ -181,8 +176,6 @@ class Acl
 
         $tab = parse_ini_file($filename, true);
 
-
-        debug($tab);
 
         //add alias
         foreach ($tab['alias'] as $role => $alias) {
