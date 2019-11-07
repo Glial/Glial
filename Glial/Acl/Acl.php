@@ -182,8 +182,6 @@ class Acl
             $this->alias[$alias] = $role;
         }
 
-
-
         //definistion des roles
         foreach ($tab['role']['add'] as $role) {
             $this->addRole($role);
