@@ -13,7 +13,7 @@ class Controller
     /**
      * 
      * @var string
-     * @access private
+     * @access private 
      */
     var $action;
     var $controller;
@@ -335,5 +335,13 @@ class Controller
     function setOut($out = FactoryController::DISPLAY)
     {
         $this->out = $out;
+    }
+    
+    
+    
+    function getClass()
+    {
+        $gg = new \ReflectionClass($this);
+        return $gg->getShortName(); 
     }
 }
