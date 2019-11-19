@@ -96,7 +96,7 @@ class Controller
         $page->setDi($this->di);
 
 
-        $this->param = json_decode($this->param);
+        $this->param = json_decode($this->param, true);
 
         $this->title = $this->controller;
         $action      = $this->action;
