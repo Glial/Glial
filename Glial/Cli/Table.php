@@ -12,15 +12,15 @@ class Table
     const HORIZONTAL = true;
     const VERTICAL   = false;
 
-    var $style          = 1;
-    var $borderStyle    = [
+    var $style       = 1;
+    var $borderStyle = [
         '0' => array('╔', '╗', '╚', '╝', '╬', '╦', '╣', '╩', '╠', '║', '═'),
         '1' => array('┌', '┐', '└', '┘', '┼', '┬', '┤', '┴', '├', '│', '─'),
         '2' => array('+', '+', '+', '+', '+', '+', '+', '+', '+', '|', '-'),
         '3' => '           ',
     ];
-    var $borderMerge    = ['╢', '╖', '╡', '╢', '╖', '╕', '╜', '╛', '╞', '╟', '╨', '╤', '╥', '╙', '╓', '╫', '╪'];
-    var $_border        = array(
+    var $borderMerge = ['╢', '╖', '╡', '╢', '╖', '╕', '╜', '╛', '╞', '╟', '╨', '╤', '╥', '╙', '╓', '╫', '╪'];
+    var $_border     = array(
         'top' => true,
         'right' => true,
         'bottom' => true,
@@ -35,6 +35,7 @@ class Table
     var $maxRowInTable;
     var $maxLine;
     var $maxLengthByCol = array();
+    var $padding        = 1;
 
     public function __construct($style = 1)
     {
@@ -113,6 +114,11 @@ class Table
         return $tab;
     }
 
+    public function addPadding($padding)
+    {
+        $this->padding = intval($padding);
+    }
+
     private function calcul()
     {
 
@@ -163,14 +169,13 @@ class Table
 
             default:
                 throw new \DomainException("GLI-016 : hr type unknow : ".$type);
-                brea;
         }
 
         $tab       = $this->borderStyle[$this->style][$asci[0]];
         $bordertop = array();
 
         foreach ($this->maxLengthByCol as $colLength) {
-            $bordertop[] = str_repeat($this->borderStyle[$this->style][$asci[3]], $colLength);
+            $bordertop[] = str_repeat($this->borderStyle[$this->style][$asci[3]], $colLength + $this->padding * 2);
         }
 
         $tab .= implode($this->borderStyle[$this->style][$asci[1]], $bordertop);
@@ -187,44 +192,52 @@ class Table
         foreach ($this->data as $line) {
 
 
-            $height = $this->height[$j];
+            if ($this->data_type[$j] === self::HR_LINE) {
+                $tab .= $this->hr(Table::HR_LINE);
+            } else {
 
-            $h = 0;
 
-            do {
-                $tab        .= $this->borderStyle[$this->style][9];
-                $borderData = array();
+                $height = $this->height[$j];
 
-                $i = 0;
-                foreach ($line as $cell) {
-                    $cell_lines = explode("\n", $cell);
+                $h = 0;
 
-                    if (! isset($cell_lines[$h])) {
-                        $cell = "";
-                    } else {
-                        $cell = $cell_lines[$h];
+                do {
+                    $tab        .= $this->borderStyle[$this->style][9];
+                    $borderData = array();
+
+                    $i = 0;
+                    foreach ($line as $cell) {
+                        $cell_lines = explode("\n", $cell);
+
+                        if (!isset($cell_lines[$h])) {
+                            $cell = "";
+                        } else {
+                            $cell = str_repeat(" ", $this->padding).$cell_lines[$h].str_repeat(" ", $this->padding);
+                        }
+
+
+                        $borderData[] = str_pad($cell, strlen($cell) - mb_strlen(Color::strip($cell), "utf8") + $this->maxLengthByCol[$i] + $this->padding * 2);
+
+                        $i++;
                     }
 
-
-                    $borderData[] = str_pad($cell, strlen($cell) - mb_strlen(Color::strip($cell), "utf8") + $this->maxLengthByCol[$i]);
-
-                    $i++;
-                }
-
-                $tab .= implode($this->borderStyle[$this->style][9], $borderData);
-                $tab .= $this->borderStyle[$this->style][9];
-                $tab .= PHP_EOL;
+                    $tab .= implode($this->borderStyle[$this->style][9], $borderData);
+                    $tab .= $this->borderStyle[$this->style][9];
+                    $tab .= PHP_EOL;
 
 
 
 
-                $h++;
-            } while ($height > $h);
-
+                    $h++;
+                } while ($height > $h);
+            }
 
             if ($this->data_type[$j] === Table::HEADER) {
                 $tab .= $this->hr(Table::HR_LINE);
             }
+
+
+
 
             $j++;
         }
@@ -239,5 +252,10 @@ class Table
         $this->maxRowInTable  = 0;
         $this->maxLine        = 0;
         $this->maxLengthByCol = array();
+    }
+
+    public function addHr()
+    {
+        $this->addLine(array(), self::HR_LINE);
     }
 }
