@@ -9,6 +9,7 @@ namespace Glial\Neuron\Controller;
 
 use \Glial\Utility\Inflector;
 use \Glial\Synapse\Basic;
+use \Glial\Sgbd\Sgbd;
 
 trait Administration
 {
