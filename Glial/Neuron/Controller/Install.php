@@ -576,7 +576,7 @@ database=" . $server['database'] . "";
 
     public function createOrganisation() {
         $this->view = false;
-        $DB = $this->di['db']->sql(DB_DEFAULT);
+        $DB = Sgbd::sql(DB_DEFAULT);
 
         createOragnisation:
         $this->cadre("Create organisation");
@@ -641,7 +641,7 @@ database=" . $server['database'] . "";
 
         //country
         $sql = "SELECT libelle FROM geolocalisation_country where libelle != '' ORDER BY libelle";
-        $DB = $this->di['db']->sql(DB_DEFAULT);
+        $DB = Sgbd::sql(DB_DEFAULT);
 
         $res = $DB->sql_query($sql);
         $country = [];
@@ -670,7 +670,7 @@ database=" . $server['database'] . "";
 
         //city
         $sql = "SELECT libelle FROM geolocalisation_city where id_geolocalisation_country = '" . $id_country . "' ORDER BY libelle";
-        $DB = $this->di['db']->sql(DB_DEFAULT);
+        $DB = Sgbd::sql(DB_DEFAULT);
 
         $res = $DB->sql_query($sql);
         $city = [];

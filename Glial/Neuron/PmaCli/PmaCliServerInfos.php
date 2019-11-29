@@ -35,7 +35,7 @@ trait PmaCliServerInfos
 
         $server_name = $param[0];
 
-        $default = $this->di['db']->sql(DB_DEFAULT);
+        $default = Sgbd::sql(DB_DEFAULT);
 
         $MS = new MasterSlave();
 
@@ -130,7 +130,7 @@ trait PmaCliServerInfos
         $this->view = false;
         $server_name = $param[0];
 
-        $default = $this->di['db']->sql(DB_DEFAULT);
+        $default = Sgbd::sql(DB_DEFAULT);
         $id_mysql_server = $this->getServerId($server_name);
 
         //set server status to off to prevent time out / or no answer.

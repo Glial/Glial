@@ -79,7 +79,7 @@ trait Administration
         //foreach ($this->di['db']->connectAll() as $key => $db) {
 
         $key = DB_DEFAULT;
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
 
         $listTable = $db->getListTable();
 
@@ -122,7 +122,7 @@ trait Administration
 
         //foreach ($this->di['db']->getAll() as $key) {
         //$dbLink = $this->di['db']->sql($key);
-        $dbLink = $this->di['db']->sql(DB_DEFAULT);
+        $dbLink = Sgbd::sql(DB_DEFAULT);
 
         $key = DB_DEFAULT;
 

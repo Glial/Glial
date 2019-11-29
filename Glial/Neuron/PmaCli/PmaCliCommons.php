@@ -20,7 +20,7 @@ trait PmaCliCommons
         }
         $server_name = str_replace("-", "_", $server_name);
 
-        $default = $this->di['db']->sql(DB_DEFAULT);
+        $default = Sgbd::sql(DB_DEFAULT);
 
         $sql = "SELECT `id` FROM `mysql_server` WHERE `name` = '" . $server_name . "'";
         $res = $default->sql_query($sql);
@@ -38,7 +38,7 @@ trait PmaCliCommons
 
     public function getReplicationStatsId($param)
     {
-        $default = $this->di['db']->sql(DB_DEFAULT);
+        $default = Sgbd::sql(DB_DEFAULT);
 
         //$id_mysql_server = $this->getServerId($param);
         if (is_array($param)) {

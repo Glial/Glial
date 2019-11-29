@@ -489,7 +489,7 @@ class PmaCliDraining
 
     private function getVirtualForeignKeys()
     {
-        $default = $this->di['db']->sql(DB_DEFAULT);
+        $default = Sgbd::sql(DB_DEFAULT);
 
 //get and set virtual Foreign keys.
         $params = $this->di['db']->sql(DB_DEFAULT)->getParams();

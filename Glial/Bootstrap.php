@@ -40,6 +40,7 @@ use \Monolog\Formatter\LineFormatter;
 use \Monolog\Handler\StreamHandler;
 use Glial\Synapse\Glial;
 
+
 require ROOT.DS.'vendor/autoload.php';
 
 if (!IS_CLI) {
@@ -113,10 +114,11 @@ require __DIR__."/Basic.php";
 (DEBUG) ? $_DEBUG->save("Loading class") : "";
 
 $db  = $config->get("db");
-$_DB = new Sgbd($db);
-$_DB->setLogger($log);
 
-FactoryController::addDi("db", $_DB);
+Sgbd::setConfig($db);
+Sgbd::setLogger($log);
+
+//FactoryController::addDi("db", $_DB);
 
 (DEBUG) ? $_DEBUG->save("Init database") : "";
 
@@ -137,7 +139,7 @@ if (!IS_CLI) {
 
 (DEBUG) ? $_DEBUG->save("Rooter loaded") : "";
 
-I18n::injectDb($_DB);
+I18n::injectDb(Sgbd::sql(DB_DEFAULT));
 I18n::SetDefault("en");
 I18n::SetSavePath(TMP."translations");
 
@@ -186,7 +188,7 @@ if (IS_CLI) {
 
     if (AUTH_ACTIVE) {
         $auth = new Auth();
-        $auth->setInstance($_DB->sql(DB_DEFAULT), "user_main", array("login", "password"));
+        $auth->setInstance(Sgbd::sql(DB_DEFAULT), "user_main", array("login", "password"));
 
         $auth->setLog($log);
 

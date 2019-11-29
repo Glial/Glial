@@ -15,7 +15,7 @@ trait MailBox
         $this->data['request'] = $param[0];
         $this->data['send_to'] = $param;
 
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
         $user = $this->di['auth']->getUser();
 
 
@@ -301,7 +301,7 @@ Your use of Estrildidae is subject to the terms of use and privacy policy of Est
     public function install()
     {
         
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
         
         $sql = "
         CREATE TABLE IF NOT EXISTS `mailbox_main` (
@@ -327,7 +327,7 @@ Your use of Estrildidae is subject to the terms of use and privacy policy of Est
     public function unInstall()
     {
         $sql = "DROP TABLE IF  EXISTS `mailbox_main`;";
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
         $db->sql_query($sql);
 
     }
