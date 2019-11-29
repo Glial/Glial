@@ -53,7 +53,7 @@ class PmaCliDraining
 
     public function start()
     {
-        $db = $this->di['db']->sql($this->link_to_purge);
+        $db = Sgbd::sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
 // to not affect history server, read : https://mariadb.com/kb/en/mariadb/documentation/replication/standard-replication/selectively-skipping-replication-of-binlog-events/
@@ -120,7 +120,7 @@ class PmaCliDraining
 
     public function createTemporaryTable($table)
     {
-        $db = $this->di['db']->sql($this->link_to_purge);
+        $db = Sgbd::sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
         $fields = $this->getTypeOfPrimaryKey($table);
@@ -179,7 +179,7 @@ class PmaCliDraining
     public function init()
     {
         $this->view = false;
-        $db         = $this->di['db']->sql($this->link_to_purge);
+        $db         = Sgbd::sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
 //feed id with main table
@@ -221,7 +221,7 @@ class PmaCliDraining
             echo "--###################################################################".PHP_EOL;
         }
 
-        $db = $this->di['db']->sql($this->link_to_purge);
+        $db = Sgbd::sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
         $list_tables = $this->getOrderBy();
@@ -361,7 +361,7 @@ class PmaCliDraining
 
     public function getPrimaryKey($table)
     {
-        $db = $this->di['db']->sql($this->link_to_purge);
+        $db = Sgbd::sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
         $sql = "SHOW INDEX FROM `".$table."` WHERE Key_name ='PRIMARY'";
@@ -385,7 +385,7 @@ class PmaCliDraining
 
     public function getTypeOfPrimaryKey($table)
     {
-        $db = $this->di['db']->sql($this->link_to_purge);
+        $db = Sgbd::sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
         $sql = "SELECT COLUMN_TYPE, COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE `TABLE_NAME` = '".$table."' AND COLUMN_KEY ='PRI' AND `TABLE_SCHEMA` = '".$this->schema_to_purge."'";
@@ -429,7 +429,7 @@ class PmaCliDraining
 //echo "GGGGGGGGGGGGGGGGGGGG";
         if (Debug::$debug) {
 
-            $db = $this->di['db']->sql($this->link_to_purge);
+            $db = Sgbd::sql($this->link_to_purge);
             $db->sql_select_db($this->schema_to_purge);
 
             if ($this->color) {
@@ -454,7 +454,7 @@ class PmaCliDraining
     private function getForeignKeys()
     {
 //get list of FK and put in array
-        $db = $this->di['db']->sql($this->link_to_purge);
+        $db = Sgbd::sql($this->link_to_purge);
 
 //$db->sql_select_db($this->schema_to_purge);
 
@@ -492,7 +492,7 @@ class PmaCliDraining
         $default = Sgbd::sql(DB_DEFAULT);
 
 //get and set virtual Foreign keys.
-        $params = $this->di['db']->sql(DB_DEFAULT)->getParams();
+        $params = Sgbd::sql(DB_DEFAULT)->getParams();
         $sql    = "SELECT * FROM `".$params['database']."`.`cleaner_foreign_key` WHERE `id_cleaner_main` = ".$this->id_cleaner.";";
 
 
@@ -714,7 +714,7 @@ class PmaCliDraining
 
     public function delete()
     {
-        $db          = $this->di['db']->sql($this->link_to_purge);
+        $db          = Sgbd::sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
         $list_tables = $this->getOrderBy("DESC");
 
@@ -750,7 +750,7 @@ class PmaCliDraining
 
     public function setAffectedRows($table)
     {
-        $db = $this->di['db']->sql($this->link_to_purge);
+        $db = Sgbd::sql($this->link_to_purge);
         $db->sql_select_db($this->schema_to_purge);
 
         if (empty($this->rows_to_delete[$table])) {
@@ -818,7 +818,7 @@ class PmaCliDraining
     {
 
         if (!empty($this->id_backup_storage_area)) {
-            $db = $this->di['db']->sql($this->link_to_purge);
+            $db = Sgbd::sql($this->link_to_purge);
 
             $primary_keys = $this->getPrimaryKey($table);
 
@@ -913,7 +913,7 @@ class PmaCliDraining
     private function get_rows($result)
     {
 
-        $db          = $this->di['db']->sql($this->link_to_purge);
+        $db          = Sgbd::sql($this->link_to_purge);
         $current_row = 0;
 
         $fields_cnt = $db->sql_num_fields($result);

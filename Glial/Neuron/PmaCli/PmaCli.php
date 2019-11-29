@@ -445,7 +445,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
             $server_config['port'] = empty($server_config['port']) ? 3306 : $server_config['port'];
 
 
-            $dblink = $this->di['db']->sql($db);
+            $dblink = Sgbd::sql($db);
 
 
             
@@ -959,7 +959,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
 
             if ($server_config['driver'] === "mysql") {
 
-                $dblink = $this->di['db']->sql($db);
+                $dblink = Sgbd::sql($db);
 
                 if ($dblink->is_connected) {
 

@@ -335,7 +335,7 @@ trait Install {
 
         foreach ($this->di['db']->getAll() as $name) {
             try {
-                $ret = $this->di['db']->sql($name);
+                $ret = Sgbd::sql($name);
                 echo $this->out("Connected to database : $name", "OK");
             } catch (\Exception $ex) {
                 echo $this->out($ex->getMessage(), "KO");
@@ -525,7 +525,7 @@ if (! defined('CRYPT_KEY'))
         //update DB config
 
         $config = "
-;[name_of_connection] => will be acceded in framework with \$this->di['db']->sql('name_of_connection')->method()
+;[name_of_connection] => will be acceded in framework with \Sgbd::sql('name_of_connection')->method()
 ;driver => list of SGBD avaible {mysql, pgsql, sybase, oracle}
 ;hostname => server_name of ip of server SGBD (better to put localhost or real IP)
 ;user => user who will be used to connect to the SGBD

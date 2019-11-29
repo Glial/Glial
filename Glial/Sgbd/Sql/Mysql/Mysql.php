@@ -721,7 +721,7 @@ class Mysql extends Sql
      * @return array all param of slave status for each thread
      * @description if the connection exist return the instance else it create it 
      * @access public
-     * @example echo $this->di['db']->sql('defaul');
+     * @example echo Sgbd::sql('defaul');
      * @package Sgbd
      * @since 3.0a First time this was introduced.
      * @version 3.1 add testAccess

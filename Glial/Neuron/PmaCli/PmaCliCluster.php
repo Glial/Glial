@@ -146,7 +146,7 @@ trait PmaCliCluster
         $this->view = false;
 
         foreach ($param as $server) {
-            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+            $db = Sgbd::sql(str_replace('-', '_', $server));
 
             $sql = "CREATE DATABASE IF NOT EXISTS `" . $server . "`;";
             $db->sql_query($sql);
@@ -157,7 +157,7 @@ trait PmaCliCluster
 
 
         foreach ($param as $server) {
-            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+            $db = Sgbd::sql(str_replace('-', '_', $server));
 
             $sql = "SHOW DATABASES";
             $databases = $db->sql_fetch_yield($sql);
@@ -183,7 +183,7 @@ trait PmaCliCluster
         }
 
         foreach ($param as $server) {
-            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+            $db = Sgbd::sql(str_replace('-', '_', $server));
 
             $sql = "DROP DATABASE `" . $server . "`;";
             $db->sql_query($sql);
@@ -193,7 +193,7 @@ trait PmaCliCluster
 
 
         foreach ($param as $server) {
-            $db = $this->di['db']->sql(str_replace('-', '_', $server));
+            $db = Sgbd::sql(str_replace('-', '_', $server));
 
             $sql = "SHOW DATABASES";
             $databases = $db->sql_fetch_yield($sql);

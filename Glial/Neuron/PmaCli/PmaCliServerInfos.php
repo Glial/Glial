@@ -55,7 +55,7 @@ trait PmaCliServerInfos
         $mysql_replication_stats = [];
 
 
-        $db = $this->di['db']->sql($server_name);
+        $db = Sgbd::sql($server_name);
 
         if ($db->is_connected) {
             $MS->setInstance($db);

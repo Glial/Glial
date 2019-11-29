@@ -45,14 +45,14 @@ trait Administration
                     }
                 }
 
-                $tables = $this->di['db']->sql(DB_DEFAULT)->getListTable();
+                $tables = Sgbd::sql(DB_DEFAULT)->getListTable();
 
                 //debug($tables);
 
                 foreach ($tables['table'] as $table) {
                     //echo $table . "\n";
                     $fp          = fopen(TMP."/database/".strtolower($table).".table.txt", "w");
-                    $description = $this->di['db']->sql(DB_DEFAULT)->getDescription($table);
+                    $description = Sgbd::sql(DB_DEFAULT)->getDescription($table);
                     $data        = array();
 
 
@@ -121,7 +121,7 @@ trait Administration
 
 
         //foreach ($this->di['db']->getAll() as $key) {
-        //$dbLink = $this->di['db']->sql($key);
+        //$dbLink = Sgbd::sql($key);
         $dbLink = Sgbd::sql(DB_DEFAULT);
 
         $key = DB_DEFAULT;
