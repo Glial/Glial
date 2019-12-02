@@ -5,11 +5,11 @@ namespace Glial\Sgbd;
 use \Glial\Cli\Table;
 use \Glial\Sgbd\Sql\FactorySql;
 
-class Sgbd
-{
-    private $db     = array();
-    private $config = array();
-    private $logger;
+class Sgbd {
+
+    static $db = array();
+    static $config = array();
+    static $logger;
 
     /**
      * Set the configuration to know which connection is available
@@ -24,11 +24,11 @@ class Sgbd
      * @package Sgbd
      * @See Glial\Sgbd\Sgbd->sql()
      * @since 3.0 First time this was introduced.
-     * @version 3.0
+     * @since 5.1.5 Switched to static, update __construc to setConfig
+     * @version 4.0
      */
-    function __construct($config)
-    {
-        $this->config = array_merge($this->config, $config);
+    static public function setConfig($config) {
+        self::$config = array_merge(self::$config, $config);
     }
 
     /**
@@ -40,30 +40,29 @@ class Sgbd
      * @return object of a child from class sql/nosql 
      * @description if the connection exist return the instance else it create it 
      * @access public
-     * @example echo $this->di['db']->sql('defaul');
+     * @example $db = Sgbd::sql('defaul');
      * @package Sgbd
      * @since 3.0 First time this was introduced.
+     * @since 5.1.5 Switched to static
      * @version 3.0
      */
-    public function sql($name)
-    {
+    static public function sql($name) {
 
         if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name)) {
-            throw new \Exception("GLI-025 : The name of identifier is invalid : '".$name."' (only letter / number and underscore are allowed) !",
-            50);
+            throw new \Exception("GLI-025 : The name of identifier is invalid : '" . $name . "' (only letter / number and underscore are allowed) !", 50);
         }
 
-        if (array_key_exists($name, $this->config)) {
+        if (array_key_exists($name, self::$config)) {
 
-            if (empty($this->db[$name]) || $this->db[$name]->is_connected === false) {
+            if (empty(self::$db[$name]) || self::$db[$name]->is_connected === false) {
 
-                FactorySql::setLogger($this->logger);
-                $this->db[$name] = FactorySql::connect($name, $this->config[$name]);
+                FactorySql::setLogger(self::$logger);
+                self::$db[$name] = FactorySql::connect($name, self::$config[$name]);
             }
 
-            return $this->db[$name];
+            return self::$db[$name];
         } else {
-            throw new \Exception("GLI-19 : This connection was not configured : '".$name."' !");
+            throw new \Exception("GLI-19 : This connection was not configured : '" . $name . "' !");
         }
     }
 
@@ -80,11 +79,11 @@ class Sgbd
      * @package Sgbd
      * @See Glial\Sgbd\Sgbd->sql()
      * @since 3.0 First time this was introduced.
+     * @since 5.1.5 Switched to static
      * @version 3.0
      */
-    public function getAll()
-    {
-        return array_keys($this->config);
+    static public function getAll() {
+        return array_keys(self::$config);
     }
 
     /**
@@ -96,24 +95,24 @@ class Sgbd
      * @return string return a table with all main's information and tell us with one is connected
      * @description give a status o all databases 
      * @access public
-     * @example echo $this->di['db']->sql(DB_DEFAULT);
+     * @example echo Sgbd::sql(DB_DEFAULT);
      * @package Sgbd
      * @See Also Glial\Cli\Table
      * @since 3.0 First time this was introduced.
+     * @since 5.1.5 Switched to static, renamme to toString
      * @version 3.0
      */
-    public function __toString()
-    {
+    static public function toString() {
         $tab = new Table(1);
         $tab->addHeader(array("Id", "Name", "Is connected ?", "Driver", "IP", "Port", "User", "Password"));
 
         $i = 1;
-        foreach ($this->config as $name => $param) {
-            $port        = (empty($param['port'])) ? "3306" : $param['port'];
-            $isconnected = (empty($this->db[$name])) ? "" : "■";
+        foreach (self::$config as $name => $param) {
+            $port = (empty($param['port'])) ? "3306" : $param['port'];
+            $isconnected = (empty(self::$db[$name])) ? "" : "■";
 
             $tab->addLine(array((string) $i, $name, $isconnected, $param['driver'], $param['hostname'], $port, $param['user'], str_repeat("*",
-                    strlen($param['password']))));
+                        strlen($param['password']))));
             $i++;
         }
 
@@ -133,14 +132,14 @@ class Sgbd
      * @package Sgbd
      * @See Also sql
      * @since 3.0 First time this was introduced.
+     * @since 5.1.5 Switched to static
      * @version 3.0
      */
-    public function getParam($db)
-    {
-        if (!empty($this->config[$db])) {
-            return $this->config[$db];
+    static public function getParam($db) {
+        if (!empty(self::$config[$db])) {
+            return self::$config[$db];
         } else {
-            throw new \Exception("GLI-021 : Error this instances \"".$db."\" doesn't exit", 21);
+            throw new \Exception("GLI-021 : Error this instances \"" . $db . "\" doesn't exit", 21);
         }
     }
 
@@ -157,22 +156,20 @@ class Sgbd
      * @package Sgbd
      * @See Also sql
      * @since 3.0 First time this was introduced.
+     * @since 5.1.5 Switched to static
      * @version 3.0
      */
-    public function connectAll()
-    {
-        foreach ($this->config as $name => $config) {
+    static public function connectAll() {
+        foreach (self::$config as $name => $config) {
             yield $name => $this->sql($name);
         }
     }
 
-    public function setLogger(\Monolog\Logger $logger)
-    {
-        $this->logger = $logger;
+    static public function setLogger(\Monolog\Logger $logger) {
+        self::$logger = $logger;
     }
 
-    
-        /**
+    /**
      * This method is used to return all name of thread connected 
      * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
      * @license GNU/GPL
@@ -185,10 +182,11 @@ class Sgbd
      * @package Sgbd
      * @See Also sql
      * @since 4.1.8 First time this was introduced.
+     * @since 5.1.5 Switched to static
      * @version 4.18
      */
-    public function getConnected()
-    {
-        return array_keys($this->db);
+    static public function getConnected() {
+        return array_keys(self::$db);
     }
+
 }
