@@ -996,4 +996,34 @@ class Mysql extends Sql
     {
         return array('MySQL', 'MariaDB', 'Percona Server');
     }
+
+    public function getProcesslist($time = 1)
+    {
+        if ($this->checkVersion(array('MySQL' => '5.0', 'Percona Server' => '5.0', 'MariaDB' => '5.0'))) {
+            $time = intval($time);
+            $sql  = "select * from information_schema.processlist where command NOT IN ('Sleep', 'Binlog Dump') 
+                AND user NOT IN ('system user', 'event_scheduler') AND TIME > ".$time;
+
+            $res = $this->sql_query($sql);
+            $ret = array();
+            while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+
+                
+                $ret['queries'][] = json_encode($data);
+                $time += $data['TIME'];
+            }
+            
+            return $ret;
+        }
+    }
+    
+    
+    public function getForeignKey()
+    {
+        if ($this->checkVersion(array('MySQL' => '5.0', 'Percona Server' => '5.0', 'MariaDB' => '5.0'))) {
+            //TODO
+        }
+        
+        
+    }
 }
