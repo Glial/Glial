@@ -5,11 +5,12 @@ namespace Glial\Sgbd;
 use \Glial\Cli\Table;
 use \Glial\Sgbd\Sql\FactorySql;
 
-class Sgbd {
-
-    static $db = array();
+class Sgbd
+{
+    static $db     = array();
     static $config = array();
     static $logger;
+    static $number = 1;
 
     /**
      * Set the configuration to know which connection is available
@@ -27,7 +28,8 @@ class Sgbd {
      * @since 5.1.5 Switched to static, update __construc to setConfig
      * @version 4.0
      */
-    static public function setConfig($config) {
+    static public function setConfig($config)
+    {
         self::$config = array_merge(self::$config, $config);
     }
 
@@ -40,29 +42,35 @@ class Sgbd {
      * @return object of a child from class sql/nosql 
      * @description if the connection exist return the instance else it create it 
      * @access public
-     * @example $db = Sgbd::sql('defaul');
+     * @example $db = Sgbd::sql('defaul'); $db = Sgbd::sql('defaul',2); $db = Sgbd::sql('defaul',3);
      * @package Sgbd
      * @since 3.0 First time this was introduced.
      * @since 5.1.5 Switched to static
+     * @since 5.1.6 Added one more parameter optional, multiple connexion for same MySQL server (to prevent problem with current database)
      * @version 3.0
      */
-    static public function sql($name) {
+    static public function sql($name, $num='')
+    {
+
+        if (empty($num)) {
+            $num = self::$number;
+        }
 
         if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name)) {
-            throw new \Exception("GLI-025 : The name of identifier is invalid : '" . $name . "' (only letter / number and underscore are allowed) !", 50);
+            throw new \Exception("GLI-025 : The name of identifier is invalid : '".$name."' (only letter / number and underscore are allowed) !", 50);
         }
 
         if (array_key_exists($name, self::$config)) {
 
-            if (empty(self::$db[$name]) || self::$db[$name]->is_connected === false) {
+            if (empty(self::$db[$name][$num]) || self::$db[$name][$num]->is_connected === false) {
 
                 FactorySql::setLogger(self::$logger);
-                self::$db[$name] = FactorySql::connect($name, self::$config[$name]);
+                self::$db[$name][$num] = FactorySql::connect($name, self::$config[$name]);
             }
 
-            return self::$db[$name];
+            return self::$db[$name][$num];
         } else {
-            throw new \Exception("GLI-19 : This connection was not configured : '" . $name . "' !");
+            throw new \Exception("GLI-19 : This connection was not configured : '".$name."' !");
         }
     }
 
@@ -82,7 +90,8 @@ class Sgbd {
      * @since 5.1.5 Switched to static
      * @version 3.0
      */
-    static public function getAll() {
+    static public function getAll()
+    {
         return array_keys(self::$config);
     }
 
@@ -102,18 +111,21 @@ class Sgbd {
      * @since 5.1.5 Switched to static, renamme to toString
      * @version 3.0
      */
-    static public function toString() {
+    static public function toString()
+    {
         $tab = new Table(1);
         $tab->addHeader(array("Id", "Name", "Is connected ?", "Driver", "IP", "Port", "User", "Password"));
 
         $i = 1;
-        foreach (self::$config as $name => $param) {
-            $port = (empty($param['port'])) ? "3306" : $param['port'];
-            $isconnected = (empty(self::$db[$name])) ? "" : "■";
+        foreach (self::$config as $name => $params) {
 
-            $tab->addLine(array((string) $i, $name, $isconnected, $param['driver'], $param['hostname'], $port, $param['user'], str_repeat("*",
-                        strlen($param['password']))));
-            $i++;
+            foreach($params as $num => $param) {
+                $port        = (empty($param['port'])) ? "3306" : $param['port'];
+                $isconnected = (empty(self::$db[$name])) ? "" : "■";
+
+                $tab->addLine(array((string) $i, $name, $isconnected, $param['driver'], $param['hostname'], $port, $param['user'], str_repeat("*", strlen($param['password']))));
+                $i++;
+            }
         }
 
         return $tab->display();
@@ -135,11 +147,17 @@ class Sgbd {
      * @since 5.1.5 Switched to static
      * @version 3.0
      */
-    static public function getParam($db) {
+    static public function getParam($db)
+    {
+
+        if (empty($num)) {
+            $num = self::$number;
+        }
+
         if (!empty(self::$config[$db])) {
             return self::$config[$db];
         } else {
-            throw new \Exception("GLI-021 : Error this instances \"" . $db . "\" doesn't exit", 21);
+            throw new \Exception("GLI-021 : Error this instances \"".$db."\" doesn't exit", 21);
         }
     }
 
@@ -159,13 +177,15 @@ class Sgbd {
      * @since 5.1.5 Switched to static
      * @version 3.0
      */
-    static public function connectAll() {
+    static public function connectAll()
+    {
         foreach (self::$config as $name => $config) {
             yield $name => $this->sql($name);
         }
     }
 
-    static public function setLogger(\Monolog\Logger $logger) {
+    static public function setLogger(\Monolog\Logger $logger)
+    {
         self::$logger = $logger;
     }
 
@@ -185,8 +205,8 @@ class Sgbd {
      * @since 5.1.5 Switched to static
      * @version 4.18
      */
-    static public function getConnected() {
+    static public function getConnected()
+    {
         return array_keys(self::$db);
     }
-
 }
