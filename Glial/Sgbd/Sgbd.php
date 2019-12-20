@@ -51,7 +51,6 @@ class Sgbd
      */
     static public function sql($name, $num='')
     {
-
         if (empty($num)) {
             $num = self::$number;
         }

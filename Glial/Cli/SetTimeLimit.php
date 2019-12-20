@@ -42,7 +42,7 @@ class SetTimeLimit
 
 
         $params = "'".implode("' '", $param)."'";
-        $cmd = "php -f " . ROOT . "/application/webroot/index.php $controller $action $params";
+        $cmd = "php -f " . APP_DIR .'/'.WEBROOT_DIR. "index.php $controller $action $params";
 
         //echo $cmd."\n";
 

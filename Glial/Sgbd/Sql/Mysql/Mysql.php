@@ -999,7 +999,7 @@ class Mysql extends Sql
 
     public function getProcesslist($time = 1)
     {
-        if ($this->checkVersion(array('MySQL' => '5.0', 'Percona Server' => '5.0', 'MariaDB' => '5.0'))) {
+        if ($this->checkVersion(array('MySQL' => '5.1', 'Percona Server' => '5.1', 'MariaDB' => '5.1'))) {
             $time = intval($time);
             $sql  = "select * from information_schema.processlist where command NOT IN ('Sleep', 'Binlog Dump') 
                 AND user NOT IN ('system user', 'event_scheduler') AND TIME > ".$time;
