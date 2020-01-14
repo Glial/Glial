@@ -14,7 +14,7 @@ trait PmaCliBackup {
 
         $this->view = false;
 
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
 
         $sql = "SELECT id,file_name,is_gziped,date_start FROM mysql_dump WHERE date_start < DATE_SUB(now(),INTERVAL 10 DAY) AND is_available = 1";
 
@@ -54,7 +54,7 @@ trait PmaCliBackup {
     public function backupCompress() {
         $sql = "SELECT file_name FROM mysql_dump where is_gziped=0";
 
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
 
         $res = $db->sql_query($sql);
 
@@ -76,7 +76,7 @@ trait PmaCliBackup {
     public function backupShow($param)
     {
         
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
         
         $sql = "SELECT * FROM mysql_dump a
                 INNER JOIN mysql_server b ON a.id_mysql_server = b.id

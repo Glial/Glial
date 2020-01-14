@@ -721,7 +721,7 @@ class Mysql extends Sql
      * @return array all param of slave status for each thread
      * @description if the connection exist return the instance else it create it 
      * @access public
-     * @example echo $this->di['db']->sql('defaul');
+     * @example echo Sgbd::sql('defaul');
      * @package Sgbd
      * @since 3.0a First time this was introduced.
      * @version 3.1 add testAccess
@@ -995,5 +995,35 @@ class Mysql extends Sql
     public function provider()
     {
         return array('MySQL', 'MariaDB', 'Percona Server');
+    }
+
+    public function getProcesslist($time = 1)
+    {
+        if ($this->checkVersion(array('MySQL' => '5.0', 'Percona Server' => '5.0', 'MariaDB' => '5.0'))) {
+            $time = intval($time);
+            $sql  = "select * from information_schema.processlist where command NOT IN ('Sleep', 'Binlog Dump') 
+                AND user NOT IN ('system user', 'event_scheduler') AND TIME > ".$time;
+
+            $res = $this->sql_query($sql);
+            $ret = array();
+            while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+
+                
+                $ret['queries'][] = json_encode($data);
+                $time += $data['TIME'];
+            }
+            
+            return $ret;
+        }
+    }
+    
+    
+    public function getForeignKey()
+    {
+        if ($this->checkVersion(array('MySQL' => '5.0', 'Percona Server' => '5.0', 'MariaDB' => '5.0'))) {
+            //TODO
+        }
+        
+        
     }
 }

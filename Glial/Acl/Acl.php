@@ -98,13 +98,16 @@ class Acl
         foreach ($methods as $method) {
             $class_controller_method[] = $method->name;
         }
-
-        $dir = APP_DIR.DS."controller".DS;
+        
+        $dir = APP_DIR.DS."Controller".DS;
         if (is_dir($dir)) {
             $dh = opendir($dir);
             if ($dh) {
                 while (($file = readdir($dh)) !== false) {
-                    if (strstr($file, '.controller.php')) {
+
+                    
+
+                    if (strstr($file, '.php')) {
 
                         if (filetype($dir.$file) != "file" || substr($file, 0, 1) === ".") {
                             continue;
@@ -113,17 +116,27 @@ class Acl
                         $class_name = explode(".", $file);
                         $controller = $class_name[0];
 
-                        if (!class_exists($controller)) {
 
+
+
+                        $path = '\\App\\Controller\\';
+                        $name = $controller;
+
+                        $class = $path.$name;
+
+    
+                        
+                        // On ajoute le fichier a la main sans passer par l'autolaoder
+                        if (!class_exists($class)) {
                             require_once($dir.$file);
                         }
 
-                        if (!class_exists($controller)) {
-
-                            throw new \Exception('GLI-034 : The class must be with the same name (check '.ROOT.'application/controller/'.$controller.'.controller.php)');
+                        //si le chemin de class ne correspond pas au nom de la class, penser a vérifier le namespace également.
+                        if (!class_exists($class)) {
+                            throw new \Exception('GLI-034 : The class must be with the same name (check '.ROOT.'App/Controller/'.$controller.'.php)');
                         }
 
-                        $tab  = get_class_methods($controller);
+                        $tab  = get_class_methods($class);
                         //substract methods from class parent (\Glial\Synapse\Controller)
                         $tab3 = array_diff($tab, $class_controller_method);
 
@@ -139,6 +152,8 @@ class Acl
 
                 closedir($dh);
             }
+        } else {
+            throw new \Exception('GLI-035 : impossible to open dir "'.$dir.'"');
         }
     }
     /*
@@ -166,8 +181,6 @@ class Acl
         foreach ($tab['alias'] as $role => $alias) {
             $this->alias[$alias] = $role;
         }
-
-
 
         //definistion des roles
         foreach ($tab['role']['add'] as $role) {
@@ -682,7 +695,7 @@ class Acl
 
         $keys   = array_keys($roles);
         $values = array_unique($values);
-        $main = array_diff($values, $keys);
+        $main   = array_diff($values, $keys);
 
         if (count($main) !== 1) {
             throw new \Exception('GLI-127 : There is two lowest rank');
@@ -748,7 +761,7 @@ class Acl
         }
 
         $lowest = $this->obtenirRangLePlusBas($roles);
-        $ret = $this->calculHierarchie($roles, $lowest);
+        $ret    = $this->calculHierarchie($roles, $lowest);
 
         return $ret;
     }

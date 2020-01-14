@@ -335,7 +335,7 @@ trait Install {
 
         foreach ($this->di['db']->getAll() as $name) {
             try {
-                $ret = $this->di['db']->sql($name);
+                $ret = Sgbd::sql($name);
                 echo $this->out("Connected to database : $name", "OK");
             } catch (\Exception $ex) {
                 echo $this->out($ex->getMessage(), "KO");
@@ -525,7 +525,7 @@ if (! defined('CRYPT_KEY'))
         //update DB config
 
         $config = "
-;[name_of_connection] => will be acceded in framework with \$this->di['db']->sql('name_of_connection')->method()
+;[name_of_connection] => will be acceded in framework with \Sgbd::sql('name_of_connection')->method()
 ;driver => list of SGBD avaible {mysql, pgsql, sybase, oracle}
 ;hostname => server_name of ip of server SGBD (better to put localhost or real IP)
 ;user => user who will be used to connect to the SGBD
@@ -576,7 +576,7 @@ database=" . $server['database'] . "";
 
     public function createOrganisation() {
         $this->view = false;
-        $DB = $this->di['db']->sql(DB_DEFAULT);
+        $DB = Sgbd::sql(DB_DEFAULT);
 
         createOragnisation:
         $this->cadre("Create organisation");
@@ -641,7 +641,7 @@ database=" . $server['database'] . "";
 
         //country
         $sql = "SELECT libelle FROM geolocalisation_country where libelle != '' ORDER BY libelle";
-        $DB = $this->di['db']->sql(DB_DEFAULT);
+        $DB = Sgbd::sql(DB_DEFAULT);
 
         $res = $DB->sql_query($sql);
         $country = [];
@@ -670,7 +670,7 @@ database=" . $server['database'] . "";
 
         //city
         $sql = "SELECT libelle FROM geolocalisation_city where id_geolocalisation_country = '" . $id_country . "' ORDER BY libelle";
-        $DB = $this->di['db']->sql(DB_DEFAULT);
+        $DB = Sgbd::sql(DB_DEFAULT);
 
         $res = $DB->sql_query($sql);
         $city = [];

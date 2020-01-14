@@ -17,9 +17,9 @@ trait PmaCliFailOver
     {
         $this->view = false;
 
-        $db = $this->di['db']->sql("iways_db_node_sa_01");
+        $db = Sgbd::sql("iways_db_node_sa_01");
 
-        $default = $this->di['db']->sql(DB_DEFAULT);
+        $default = Sgbd::sql(DB_DEFAULT);
 
 
         $sql = "SELECT b.id,b.`ip`,b.name,b.port FROM mysql_cluster a

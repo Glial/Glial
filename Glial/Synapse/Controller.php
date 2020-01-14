@@ -13,7 +13,7 @@ class Controller
     /**
      * 
      * @var string
-     * @access private
+     * @access private 
      */
     var $action;
     var $controller;
@@ -78,19 +78,25 @@ class Controller
             return;
         }
 
-        $filename = APP_DIR.DS."controller".DS.$this->controller.".controller.php";
-
+        /*
+        $filename = APP_DIR.DS."Controller".DS.$this->controller.".php";
         if (file_exists($filename)) {
             require_once $filename;
         } else {
             throw new \Exception("GLI-654 Error controller not found : '".$this->controller."'");
         }
-
-        $page = new $this->controller($this->controller, $this->action, $this->param);
+*/
+        
+        $path = '\\App\\Controller\\';
+        $name = $this->controller;
+        
+        $class = $path.$name;
+        
+        $page = new $class($this->controller, $this->action, $this->param);
         $page->setDi($this->di);
 
 
-        $this->param = json_decode($this->param);
+        $this->param = json_decode($this->param, true);
 
         $this->title = $this->controller;
         $action      = $this->action;
@@ -329,5 +335,13 @@ class Controller
     function setOut($out = FactoryController::DISPLAY)
     {
         $this->out = $out;
+    }
+    
+    
+    
+    function getClass()
+    {
+        $gg = new \ReflectionClass($this);
+        return $gg->getShortName(); 
     }
 }

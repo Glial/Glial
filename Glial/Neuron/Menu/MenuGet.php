@@ -16,7 +16,7 @@ class MenuGet extends Controller
         $sql = sprintf(
                 'SELECT * FROM %s WHERE group_id = %s ORDER BY %s, %s', MENU_TABLE, $group_id, MENU_PARENT, MENU_POSITION
         );
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
         $res = $db->sql_query($sql);
         while ($row = $db->sql_fetch_array($res)) {
             $label = '<a href="' . $row[MENU_URL] . '">';
@@ -53,7 +53,7 @@ class MenuGet extends Controller
     }
     public function menuManager($id_group = 1)
     {
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
         $sql = sprintf('SELECT * FROM %s WHERE %s = %s ORDER BY %s, %s', MENU_TABLE, MENU_GROUP, $id_group, MENU_PARENT, MENU_POSITION);
         $menu = $db->sql_fetch_yield($sql);
         $data['menu_ul'] = '<ul id="easymm"></ul>';
@@ -106,7 +106,7 @@ class MenuGet extends Controller
         $this->layout = false;
         $this->view = false;
         $this->is_ajax = true;
-        $db = $this->di['db']->sql(DB_DEFAULT);
+        $db = Sgbd::sql(DB_DEFAULT);
         if (!empty($_POST)) {
             $menu = $_POST['menu'];
             foreach ($menu as $k => $v) {

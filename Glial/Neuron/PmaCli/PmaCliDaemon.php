@@ -34,7 +34,7 @@ trait PmaCliDaemon
         $this->layout_name = false;
         $this->view = false;
 
-        $default = $this->di['db']->sql(DB_DEFAULT);
+        $default = Sgbd::sql(DB_DEFAULT);
         $ip = array();
         $masters = array();
         $i = 0;

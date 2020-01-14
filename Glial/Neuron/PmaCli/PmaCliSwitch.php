@@ -27,8 +27,8 @@ trait PmaCliSwitch
     {
         $this->view = false;
 
-        $slave = $this->di['db']->sql(str_replace('-', '_', $servers[0]));
-        $master = $this->di['db']->sql(str_replace('-', '_', $servers[1]));
+        $slave = Sgbd::sql(str_replace('-', '_', $servers[0]));
+        $master = Sgbd::sql(str_replace('-', '_', $servers[1]));
 
 // first test that the master have log_slave_updates = ON
 

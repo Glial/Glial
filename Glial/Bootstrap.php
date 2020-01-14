@@ -40,6 +40,7 @@ use \Monolog\Formatter\LineFormatter;
 use \Monolog\Handler\StreamHandler;
 use Glial\Synapse\Glial;
 
+
 require ROOT.DS.'vendor/autoload.php';
 
 if (!IS_CLI) {
@@ -91,7 +92,7 @@ if (DEBUG) {
     $_DEBUG->save("Starting...");
 }
 
-
+/*
 spl_autoload_register(function($className) {
 
     //echo LIBRARY . str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')) . '.php';
@@ -100,9 +101,11 @@ spl_autoload_register(function($className) {
     } else {
         return;
         //debug(debug_backtrace());
-        require(APP_DIR.DS."controller".DS.$className.'.controller.php');
+        require(APP_DIR.DS.DS.$className.'.php');
     }
 });
+ * 
+ */
 
 //$_POST = ArrayTools::array_map_recursive("htmlentities", $_POST);
 require __DIR__."/Basic.php";
@@ -111,10 +114,11 @@ require __DIR__."/Basic.php";
 (DEBUG) ? $_DEBUG->save("Loading class") : "";
 
 $db  = $config->get("db");
-$_DB = new Sgbd($db);
-$_DB->setLogger($log);
 
-FactoryController::addDi("db", $_DB);
+Sgbd::setConfig($db);
+Sgbd::setLogger($log);
+
+//FactoryController::addDi("db", $_DB);
 
 (DEBUG) ? $_DEBUG->save("Init database") : "";
 
@@ -135,7 +139,7 @@ if (!IS_CLI) {
 
 (DEBUG) ? $_DEBUG->save("Rooter loaded") : "";
 
-I18n::injectDb($_DB);
+I18n::injectDb(Sgbd::sql(DB_DEFAULT));
 I18n::SetDefault("en");
 I18n::SetSavePath(TMP."translations");
 
@@ -184,7 +188,7 @@ if (IS_CLI) {
 
     if (AUTH_ACTIVE) {
         $auth = new Auth();
-        $auth->setInstance($_DB->sql(DB_DEFAULT), "user_main", array("login", "password"));
+        $auth->setInstance(Sgbd::sql(DB_DEFAULT), "user_main", array("login", "password"));
 
         $auth->setLog($log);
 
@@ -196,30 +200,30 @@ if (IS_CLI) {
         $is_auth = $auth->authenticate(false);
 
 
-
-
-
-
         FactoryController::addDi("auth", $auth);
     }
 
     (ENVIRONEMENT) ? $_DEBUG->save("User connexion") : "";
 
+    //$_SYSTEM['controller'] = $url['controller'];
     $_SYSTEM['controller'] = \Glial\Utility\Inflector::camelize($url['controller']);
     $_SYSTEM['action']     = $url['action'];
     $_SYSTEM['param']      = $url['param'];
 
+    
+    
+    
     $acl = new Acl(CONFIG."acl.config.ini");
 
     FactoryController::addDi("acl", $acl);
 
 
-
-
     $js = new Javascript();
     FactoryController::addDi("js", $js);
 
+    
     if ($acl->checkIfResourceExist($_SYSTEM['controller']."/".$_SYSTEM['action'])) {
+        
         if (AUTH_ACTIVE) {
             if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller']."/".$_SYSTEM['action'])) {
                 if ($auth->getAccess() == 1) {
@@ -239,9 +243,15 @@ if (IS_CLI) {
             }
         }
     } else {
+       	if (strtolower($_SYSTEM['controller']) === "errorweb")
+        {
+		Throw new \Exception('GLI-404 : Impossible to connect to page 404, by security we broken loop');
+		exit;
+        }
+        
         set_flash("error", __("Error 404"),
             __("Page not found")." : ".__("Sorry, the page you requested : \"".$_SYSTEM['controller']."/".$_SYSTEM['action']."\"is not on this server. Please contact us if you have questions or concerns"));
-        header("location: ".LINK."error_web/error404");
+        header("location: ".LINK."ErrorWeb/error404/".$_SYSTEM['controller']."/".$_SYSTEM['action']);
         Glial::getOut($_DB->sql(DB_DEFAULT));
     }
 }
