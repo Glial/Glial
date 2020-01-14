@@ -29,8 +29,6 @@ class TestI18n extends TestCase
 
     public function testGoogleTranslate2()
     {
-
-
         I18n::SetDefault("en");
         I18n::load("en");
 
