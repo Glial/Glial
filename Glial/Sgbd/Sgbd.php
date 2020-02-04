@@ -48,6 +48,7 @@ class Sgbd
      * @since 5.1.5 Switched to static
      * @since 5.1.6 Added one more parameter optional, multiple connexion for same MySQL server (to prevent problem with current database)
      * @version 3.0
+     * TODO : Change name for connect
      */
     static public function sql($name, $num='')
     {

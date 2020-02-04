@@ -501,7 +501,7 @@ namespace Glial\I18n {
             if (in_array("translation_".strtolower($iso), $ret['table'])) {
                 true;
             } else {
-                //self::initiate($iso);
+                self::initiate($iso);
                 return false;
             }
         }
