@@ -767,7 +767,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
         foreach ($this->di['db']->getAll() as $server) {
 
             $all[] = $server;
-            $info_server = $this->di['db']->getParam($server);
+            $info_server = Sgbd::getParam($server);
             $data = array();
 
             if (!empty($all_server[$server])) {
