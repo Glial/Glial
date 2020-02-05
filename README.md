@@ -1,7 +1,7 @@
 Glial
 =====
 
-[![Latest Stable Version](https://poser.pugx.org/glial/glial/v/stable.png)](https://packagist.org/packages/glial/glial) [![Total Downloads](https://poser.pugx.org/glial/glial/downloads.png)](https://packagist.org/packages/glial/glial) [![Latest Unstable Version](https://poser.pugx.org/glial/glial/v/unstable.png)](https://packagist.org/packages/glial/glial) [![License](https://poser.pugx.org/glial/glial/license.png)](https://packagist.org/packages/glial/glial)
+[![Latest Stable Version](https://poser.pugx.org/glial/glial/v/stable.png)](https://packagist.org/packages/glial/glial) [![Total Downloads](https://poser.pugx.org/glial/glial/downloads.png)](https://packagist.org/packages/glial/glial)  [![License](https://poser.pugx.org/glial/glial/license.png)](https://packagist.org/packages/glial/glial)
 [![Reference Status](https://www.versioneye.com/php/glial:glial/reference_badge.svg?style=flat)](https://www.versioneye.com/php/glial:glial/references)
 [![Dependency Status](https://www.versioneye.com/php/glial:glial/dev-master/badge.png)](https://www.versioneye.com/php/glial:glial/dev-master)
 
