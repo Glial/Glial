@@ -237,7 +237,6 @@ if (IS_CLI) {
     } else {
         if (strtolower($_SYSTEM['controller']) === "errorweb") {
             Throw new \Exception('GLI-404 : Impossible to connect to page 404, by security we broken loop');
-            exit;
         }
 
         set_flash("error", __("Error 404"),
