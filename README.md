@@ -103,12 +103,12 @@ if for one table we need to reference two FK on the same table we have to add a 
 
 example : id_user__customer, id_user__provider
 
-When we require to create a table to join 2 others you have to start the name of the table by "link" fallowed by "__" fallowed by the 2 tables to link.
+When we require to create a table to join 2 others you have to start the name of first table fallowed by "__" fallowed by the last table to link.
 the names have to be sort by alphabetique.
 
 example for table user and mail_message
 
-the name will be : link__mail_message__user
+the name will be : mail_message__user
 
 
 
