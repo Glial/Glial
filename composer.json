@@ -16,7 +16,7 @@
          "php": ">=7.0",
          "monolog/monolog": "1.*",
          "jdorn/sql-formatter": "1.2.*",
-	 "phpseclib/mcrypt_compat": "*",
+	 "phpseclib/mcrypt_compat": "*",	 
 	 "hoa/console": "~3.0"
      },
      "autoload": {
