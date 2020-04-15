@@ -87,21 +87,6 @@ if (DEBUG) {
     $_DEBUG->save("Starting...");
 }
 
-/*
-  spl_autoload_register(function($className) {
-
-  //echo LIBRARY . str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')) . '.php';
-  if (file_exists(LIBRARY.str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')).'.php')) {
-  require(LIBRARY.str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')).'.php');
-  } else {
-  return;
-  //debug(debug_backtrace());
-  require(APP_DIR.DS.DS.$className.'.php');
-  }
-  });
- * 
- */
-
 //$_POST = ArrayTools::array_map_recursive("htmlentities", $_POST);
 require __DIR__."/Basic.php";
 
@@ -133,11 +118,12 @@ if (!IS_CLI) {
 
 (DEBUG) ? $_DEBUG->save("Rooter loaded") : "";
 
+I18n::SetDefault("en");
+I18n::SetSavePath(TMP."translations");
+
 // uniquement si la base courante est présente dans la configuration
-if (in_array(DB_DEFAULT, Sgbd::getAll())) {
+if (Sgbd::ifExit(DB_DEFAULT)) {
     I18n::injectDb(Sgbd::sql(DB_DEFAULT));
-    I18n::SetDefault("en");
-    I18n::SetSavePath(TMP."translations");
 }
 
 if (empty($_SESSION['language'])) {
@@ -237,6 +223,7 @@ if (IS_CLI) {
     } else {
         if (strtolower($_SYSTEM['controller']) === "errorweb") {
             Throw new \Exception('GLI-404 : Impossible to connect to page 404, by security we broken loop');
+            exit;
         }
 
         set_flash("error", __("Error 404"),
