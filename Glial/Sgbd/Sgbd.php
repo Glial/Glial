@@ -49,7 +49,7 @@ class Sgbd
      * @since 5.1.6 Added one more parameter optional, multiple connexion for same MySQL server (to prevent problem with current database)
      * @version 3.0
      */
-    static public function sql($name, $num='')
+    static public function sql($name, $num = '')
     {
 
         if (empty($num)) {
@@ -119,7 +119,7 @@ class Sgbd
         $i = 1;
         foreach (self::$config as $name => $params) {
 
-            foreach($params as $num => $param) {
+            foreach ($params as $num => $param) {
                 $port        = (empty($param['port'])) ? "3306" : $param['port'];
                 $isconnected = (empty(self::$db[$name])) ? "" : "■";
 
@@ -208,5 +208,14 @@ class Sgbd
     static public function getConnected()
     {
         return array_keys(self::$db);
+    }
+
+    static public function ifExit($name)
+    {
+        if (array_key_exists($name, self::$config)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -40,7 +40,6 @@ use \Monolog\Formatter\LineFormatter;
 use \Monolog\Handler\StreamHandler;
 use Glial\Synapse\Glial;
 
-
 require ROOT.DS.'vendor/autoload.php';
 
 if (!IS_CLI) {
@@ -92,28 +91,13 @@ if (DEBUG) {
     $_DEBUG->save("Starting...");
 }
 
-/*
-spl_autoload_register(function($className) {
-
-    //echo LIBRARY . str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')) . '.php';
-    if (file_exists(LIBRARY.str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')).'.php')) {
-        require(LIBRARY.str_replace('\\', DIRECTORY_SEPARATOR, ltrim($className, '\\')).'.php');
-    } else {
-        return;
-        //debug(debug_backtrace());
-        require(APP_DIR.DS.DS.$className.'.php');
-    }
-});
- * 
- */
-
 //$_POST = ArrayTools::array_map_recursive("htmlentities", $_POST);
 require __DIR__."/Basic.php";
 
 //debug($_GET);
 (DEBUG) ? $_DEBUG->save("Loading class") : "";
 
-$db  = $config->get("db");
+$db = $config->get("db");
 
 Sgbd::setConfig($db);
 Sgbd::setLogger($log);
@@ -139,9 +123,13 @@ if (!IS_CLI) {
 
 (DEBUG) ? $_DEBUG->save("Rooter loaded") : "";
 
-I18n::injectDb(Sgbd::sql(DB_DEFAULT));
+
 I18n::SetDefault("en");
 I18n::SetSavePath(TMP."translations");
+
+if (Sgbd::ifExit(DB_DEFAULT)) {
+    I18n::injectDb(Sgbd::sql(DB_DEFAULT));
+}
 
 if (empty($_SESSION['language'])) {
     $_SESSION['language'] = "en";
@@ -210,9 +198,9 @@ if (IS_CLI) {
     $_SYSTEM['action']     = $url['action'];
     $_SYSTEM['param']      = $url['param'];
 
-    
-    
-    
+
+
+
     $acl = new Acl(CONFIG."acl.config.ini");
 
     FactoryController::addDi("acl", $acl);
@@ -221,9 +209,9 @@ if (IS_CLI) {
     $js = new Javascript();
     FactoryController::addDi("js", $js);
 
-    
+
     if ($acl->checkIfResourceExist($_SYSTEM['controller']."/".$_SYSTEM['action'])) {
-        
+
         if (AUTH_ACTIVE) {
             if (!$acl->isAllowed($auth->getAccess(), $_SYSTEM['controller']."/".$_SYSTEM['action'])) {
                 if ($auth->getAccess() == 1) {
@@ -243,12 +231,11 @@ if (IS_CLI) {
             }
         }
     } else {
-       	if (strtolower($_SYSTEM['controller']) === "errorweb")
-        {
-		Throw new \Exception('GLI-404 : Impossible to connect to page 404, by security we broken loop');
-		exit;
+        if (strtolower($_SYSTEM['controller']) === "errorweb") {
+            Throw new \Exception('GLI-404 : Impossible to connect to page 404, by security we broken loop');
+            exit;
         }
-        
+
         set_flash("error", __("Error 404"),
             __("Page not found")." : ".__("Sorry, the page you requested : \"".$_SYSTEM['controller']."/".$_SYSTEM['action']."\"is not on this server. Please contact us if you have questions or concerns"));
         header("location: ".LINK."ErrorWeb/error404/".$_SYSTEM['controller']."/".$_SYSTEM['action']);
