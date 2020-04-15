@@ -317,7 +317,11 @@ namespace Glial\I18n {
               UNIQUE KEY `key` (`key`,`file_found`),
               INDEX `id_history_etat` (`id_history_etat`)
               );";
+<<<<<<< HEAD
             self::$DB->sql_query($sql);
+=======
+            self::$_SQL->sql_query($sql);
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
         }
 
         /**
@@ -336,6 +340,7 @@ namespace Glial\I18n {
 
             $translate_auto = 1;
 
+<<<<<<< HEAD
             $sql = "SELECT text,translate_auto from translation_main WHERE ".self::$DB->ESC."key".self::$DB->ESC." ='".$key."' and ".self::$DB->ESC."destination".self::$DB->ESC." = '".$to."'";
             $res = self::$DB->sql_query($sql);
 
@@ -345,6 +350,17 @@ namespace Glial\I18n {
                 $rep            = $ob->text;
                 $translate_auto = $ob->translate_auto;
             } else if (self::$DB->sql_num_rows($res) == 0) {
+=======
+            $sql = "SELECT text,translate_auto from translation_main WHERE ".self::$_SQL->ESC."key".self::$_SQL->ESC." ='".$key."' and ".self::$_SQL->ESC."destination".self::$_SQL->ESC." = '".$to."'";
+            $res = self::$_SQL->sql_query($sql);
+
+
+            if (self::$_SQL->sql_num_rows($res) == 1) {
+                $ob             = self::$_SQL->sql_fetch_object($res);
+                $rep            = $ob->text;
+                $translate_auto = $ob->translate_auto;
+            } else if (self::$_SQL->sql_num_rows($res) == 0) {
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
 
                 self::$_to_translate[$from][$key]['val']  = $text;
                 self::$_to_translate[$from][$key]['file'] = self::$file;
@@ -452,6 +468,7 @@ namespace Glial\I18n {
         private static function insert_db($iso, $source, $text, $key, $translate_auto)
         {
 
+<<<<<<< HEAD
             $sql = "INSERT IGNORE INTO ".self::$DB->ESC."translation_".mb_strtolower($iso)."".self::$DB->ESC."
 		SET ".self::$DB->ESC."key".self::$DB->ESC." ='".$key."',
 		".self::$DB->ESC."source".self::$DB->ESC." = '".self::$DB->sql_real_escape_string($source)."',
@@ -464,14 +481,33 @@ namespace Glial\I18n {
 		".self::$DB->ESC."line_found".self::$DB->ESC." ='".self::$line."'";
 
             self::$DB->sql_query($sql);
+=======
+            $sql = "INSERT IGNORE INTO ".self::$_SQL->ESC."translation_".mb_strtolower($iso)."".self::$_SQL->ESC."
+		SET ".self::$_SQL->ESC."key".self::$_SQL->ESC." ='".$key."',
+		".self::$_SQL->ESC."source".self::$_SQL->ESC." = '".self::$_SQL->sql_real_escape_string($source)."',
+		".self::$_SQL->ESC."text".self::$_SQL->ESC." = '".self::$_SQL->sql_real_escape_string($text)."',
+		".self::$_SQL->ESC."date_inserted".self::$_SQL->ESC." = now(),
+		".self::$_SQL->ESC."date_updated".self::$_SQL->ESC." = now(),
+		".self::$_SQL->ESC."translate_auto".self::$_SQL->ESC." = '".$translate_auto."',
+		".self::$_SQL->ESC."file_found".self::$_SQL->ESC." = '".self::$file."',
+		".self::$_SQL->ESC."id_history_etat".self::$_SQL->ESC." = 1,
+		".self::$_SQL->ESC."line_found".self::$_SQL->ESC." ='".self::$line."'";
+
+            self::$_SQL->sql_query($sql);
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
         }
 
         private static function save_db($iso, $source, $text, $key, $translate_auto, $file, $line)
         {
             $data                                                        = array();
             $data["translation_".mb_strtolower($iso)]['key']             = $key;
+<<<<<<< HEAD
             $data["translation_".mb_strtolower($iso)]['source']          = self::$DB->sql_real_escape_string($source);
             $data["translation_".mb_strtolower($iso)]['text']            = self::$DB->sql_real_escape_string($text);
+=======
+            $data["translation_".mb_strtolower($iso)]['source']          = self::$_SQL->sql_real_escape_string($source);
+            $data["translation_".mb_strtolower($iso)]['text']            = self::$_SQL->sql_real_escape_string($text);
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
             $data["translation_".mb_strtolower($iso)]['date_inserted']   = date("Y-m-d H:i:s");
             $data["translation_".mb_strtolower($iso)]['date_updated']    = date("Y-m-d H:i:s");
             $data["translation_".mb_strtolower($iso)]['translate_auto']  = intval($translate_auto);
@@ -479,16 +515,28 @@ namespace Glial\I18n {
             $data["translation_".mb_strtolower($iso)]['id_history_etat'] = 1;
             $data["translation_".mb_strtolower($iso)]['line_found']      = intval($line);
 
+<<<<<<< HEAD
             self::$DB->set_history_type(6);
             self::$DB->set_history_user(11);
+=======
+            self::$_SQL->set_history_type(6);
+            self::$_SQL->set_history_user(11);
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
 
 
 
 
+<<<<<<< HEAD
             if (!self::$DB->sql_save($data)) {
 
                 debug($data);
                 debug(self::$DB->error);
+=======
+            if (!self::$_SQL->sql_save($data)) {
+
+                debug($data);
+                debug(self::$_SQL->error);
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
                 mail("aurelien.lequoy@gmail.com", "Alstom : Bug with I18n", debug($data)."\n".json_encode($data));
             }
         }
@@ -496,12 +544,16 @@ namespace Glial\I18n {
         public static function testTable($iso)
         {
 
+<<<<<<< HEAD
             $ret = self::$DB->getListTable();
+=======
+            $ret = self::$_SQL->getListTable();
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
 
             if (in_array("translation_".strtolower($iso), $ret['table'])) {
                 true;
             } else {
-                //self::initiate($iso);
+                self::initiate($iso);
                 return false;
             }
         }
@@ -740,8 +792,13 @@ namespace Glial\I18n {
 //chargement du fichier de cache en fonction de la BDD
                 $sql = "SELECT * FROM translation_".strtolower(self::$_language)." WHERE file_found ='".self::$file."'";
 
+<<<<<<< HEAD
                 $res23 = self::$DB->sql_query($sql);
                 while ($ob    = self::$DB->sql_fetch_object($res23)) {
+=======
+                $res23 = self::$_SQL->sql_query($sql);
+                while ($ob    = self::$_SQL->sql_fetch_object($res23)) {
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
                     self::$_translations[self::$_md5File][$ob->key] = $ob->text;
                 }
 
@@ -762,7 +819,11 @@ namespace Glial\I18n {
 
         static public function install()
         {
+<<<<<<< HEAD
             switch (self::$DB->getDriver()) {
+=======
+            switch (self::$_SQL->getDriver()) {
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
                 case 'mysql':
                     self::installMysql();
                     break;
@@ -836,7 +897,11 @@ namespace Glial\I18n {
               )ENGINE=InnoDB DEFAULT CHARSET=utf8;";
 
 
+<<<<<<< HEAD
                 self::$DB->sql_query($sql);
+=======
+                self::$_SQL->sql_query($sql);
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
             }
         }
 
@@ -878,7 +943,11 @@ BEGIN
 END;
 /";
 
+<<<<<<< HEAD
                 self::$DB->sql_query($sql);
+=======
+                self::$_SQL->sql_query($sql);
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
             }
         }
 
@@ -889,21 +958,33 @@ END;
             $lang['main'] = 'true';
 
 
+<<<<<<< HEAD
             $tables = self::$DB->getListTable()['table'];
+=======
+            $tables = self::$_SQL->getListTable()['table'];
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
 
             foreach ($lang as $iso => $libelle) {
 
 
                 if (in_array("translation_".mb_strtolower($iso), $tables)) {
                     $sql = "DROP TABLE `translation_".mb_strtolower($iso)."`;";
+<<<<<<< HEAD
                     self::$DB->sql_query($sql);
+=======
+                    self::$_SQL->sql_query($sql);
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
                 }
             }
         }
 
         static public function unInstall()
         {
+<<<<<<< HEAD
             switch (self::$DB->getDriver()) {
+=======
+            switch (self::$_SQL->getDriver()) {
+>>>>>>> be62823562ed9024ab83d34af073e0e8655f5461
                 case 'mysql':
                     self::unInstallMysql();
                     break;

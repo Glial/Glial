@@ -46,13 +46,11 @@ if (!IS_CLI) {
     session_start();
 }
 
-
 $config = new Config;
 $config->load(CONFIG);
 FactoryController::addDi("config", $config);
 
 $log = new Logger('Glial');
-
 
 $file_log = LOG_FILE;
 
@@ -61,7 +59,6 @@ $handler->setFormatter(new LineFormatter(null, null, false, true));
 $log->pushHandler($handler);
 
 FactoryController::addDi("log", $log);
-
 
 if (!IS_CLI) {
     $developer = $config->get("developer");
@@ -85,7 +82,6 @@ if (!IS_CLI) {
     }
 }
 
-
 if (DEBUG) {
     $_DEBUG = new DebugGlial;
     $_DEBUG->save("Starting...");
@@ -106,7 +102,6 @@ Sgbd::setLogger($log);
 
 (DEBUG) ? $_DEBUG->save("Init database") : "";
 
-
 if (!IS_CLI) {
     include __DIR__.DS.'Router.php';
 
@@ -123,10 +118,10 @@ if (!IS_CLI) {
 
 (DEBUG) ? $_DEBUG->save("Rooter loaded") : "";
 
-
 I18n::SetDefault("en");
 I18n::SetSavePath(TMP."translations");
 
+// uniquement si la base courante est présente dans la configuration
 if (Sgbd::ifExit(DB_DEFAULT)) {
     I18n::injectDb(Sgbd::sql(DB_DEFAULT));
 }
@@ -144,7 +139,6 @@ if (!in_array($_SESSION['language'], $lg)) {
 
     Glial::getOut($_DB->sql(DB_DEFAULT));
 }
-
 
 I18n::load($_SESSION['language']);
 (DEBUG) ? $_DEBUG->save("Language loaded") : "";
@@ -198,13 +192,9 @@ if (IS_CLI) {
     $_SYSTEM['action']     = $url['action'];
     $_SYSTEM['param']      = $url['param'];
 
-
-
-
     $acl = new Acl(CONFIG."acl.config.ini");
 
     FactoryController::addDi("acl", $acl);
-
 
     $js = new Javascript();
     FactoryController::addDi("js", $js);
@@ -245,12 +235,8 @@ if (IS_CLI) {
 
 (DEBUG) ? $_DEBUG->save("ACL loaded") : "";
 
-
 //demarre l'application
 $html = FactoryController::rootNode($_SYSTEM['controller'], $_SYSTEM['action'], $_SYSTEM['param']);
-
-
-
 
 if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {
     $debug = FactoryController::addNode("Debug", "toolbar", array(TIME_START), FactoryController::EXPORT);
@@ -258,7 +244,6 @@ if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {
 }
 
 echo $html;
-
 
 /*
 $i = 10;
