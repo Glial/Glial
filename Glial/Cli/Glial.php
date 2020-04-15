@@ -43,11 +43,11 @@ class Glial
 
     public static function version()
     {
-        return "5.1.6";
+        return "5.1.8";
     }
 
     public static function date()
     {
-        return "2020-02-05";
+        return "2020-04-15";
     }
 }
