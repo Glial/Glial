@@ -590,9 +590,9 @@ class Mysql extends Sql
         {
             $sql = "select @@version_comment limit 1";
             $res = $this->sql_query($sql);
-            while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+            while ($data = $this->sql_fetch_array($res, MYSQLI_NUM)) {
 
-                if ($data['Value'] === "(ProxySQL)")
+                if ($data[0] === "(ProxySQL)")
                 {
                     $data['Value'] = 1;
                 }
