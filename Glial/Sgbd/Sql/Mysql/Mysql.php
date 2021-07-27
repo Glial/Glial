@@ -585,6 +585,26 @@ class Mysql extends Sql
             }
         }
 
+
+        if (version_compare($this->getVersion(), 5.5, '>='))
+        {
+            $sql = "select @@version_comment limit 1";
+            $res = $this->sql_query($sql);
+            while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+
+                if ($data['Value'] === "(ProxySQL)")
+                {
+                    $data['Value'] = 1;
+                }
+                else
+                {
+                    $data['Value'] = 0;
+                }
+
+                $this->variables['is_proxysql'] = $data['Value'];
+            }
+        }
+
         if (empty($var)) {
             return $this->variables;
         } else {

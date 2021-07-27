@@ -8,6 +8,15 @@ use \Glial\I18n\I18n;
 use \Glial\Utility\Inflector;
 use \Glial\Synapse\FactoryController;
 
+
+
+if (!defined('AUTH_ACTIVE')) {
+    define("AUTH_ACTIVE", false);
+}
+
+
+
+
 class Controller
 {
     /**
