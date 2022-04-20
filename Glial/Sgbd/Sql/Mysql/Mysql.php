@@ -164,7 +164,6 @@ class Mysql extends Sql
                         $i++;
                     }
 
-
                     $result->close();
 
                     $msg .= $table->display();
@@ -175,10 +174,8 @@ class Mysql extends Sql
                         fwrite(STDERR, $msg);
                     } else {
 
-
                         // echo dans le navigateur if debug = yes ?
                     }
-
 
                     error_log($msg, 3, TMP."log/sql.log");
                 }
@@ -1045,5 +1042,11 @@ class Mysql extends Sql
         }
         
         
+    }
+
+
+    public function sql_thread_id()
+    {
+        return mysqli_thread_id($this->link);
     }
 }

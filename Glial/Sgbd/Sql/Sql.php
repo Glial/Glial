@@ -70,6 +70,7 @@ abstract class Sql
 
     //abstract protected function sql_ping($result);
 
+    abstract protected function sql_thread_id();
 
     public function sql_fetch_field($res, $field_offset = 0)
     {
