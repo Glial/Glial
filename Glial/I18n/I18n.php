@@ -1,4 +1,9 @@
 <?php
+/*
+ * https://www.sitepoint.com/using-google-translate-api-php/
+ * https://cloud.google.com/translate/docs/basic/translating-text?hl=fr
+ *
+ */
 
 namespace Glial\I18n {
 
@@ -8,7 +13,8 @@ namespace Glial\I18n {
 
     class I18n
     {
-        const DATABASE = DB_DEFAULT;
+        const DATABASE   = DB_DEFAULT;
+        const TABLE_SITE = "translation_glial";
 
 // to prevent kick or/and ban from google
         private static $nb_google_call = 0;
@@ -331,13 +337,12 @@ namespace Glial\I18n {
         public static function translate($from, $to, $text, $key)
         {
 //TODO : insert cost a lost even if fail have to make select before
-            //self::insert_db($from, $from, $text, $key, '0');
+//self::insert_db($from, $from, $text, $key, '0');
 
             $translate_auto = 1;
 
             $sql = "SELECT text,translate_auto from translation_main WHERE ".self::$DB->ESC."key".self::$DB->ESC." ='".$key."' and ".self::$DB->ESC."destination".self::$DB->ESC." = '".$to."'";
             $res = self::$DB->sql_query($sql);
-
 
             if (self::$DB->sql_num_rows($res) == 1) {
                 $ob             = self::$DB->sql_fetch_object($res);
@@ -355,7 +360,7 @@ namespace Glial\I18n {
                 die("We have a problem !");
             }
 
-            //self::insert_db($to, $from, $rep, $key, $translate_auto);
+//self::insert_db($to, $from, $rep, $key, $translate_auto);
 
 
             self::$_translations[self::$_md5File][$key] = $rep;
@@ -365,6 +370,12 @@ namespace Glial\I18n {
 
             return true;
         }
+        /*
+         *
+         * DEPRECATED
+         *
+         *
+         */
 
         public static function getTranslation($html = '')
         {
@@ -373,7 +384,7 @@ namespace Glial\I18n {
 
 
             if (!empty(self::$_to_translate)) {
-                //self::testTable(self::$_language);
+//self::testTable(self::$_language);
             }
 
             foreach (self::$_to_translate as $from => $tab) {
@@ -389,7 +400,7 @@ namespace Glial\I18n {
 
                     if ($nb_char < GOOGLE_NB_CHAR_MAX) {
                         $string_to_translate .= $elem['val'];
-                        $extract[$k][$key] = $elem;
+                        $extract[$k][$key]   = $elem;
                     } else {
                         $k++;
                         $string_to_translate = $elem['val'];
@@ -414,11 +425,11 @@ namespace Glial\I18n {
                     foreach ($result as $key => $str) {
                         $tab_key[]    = '<span id="'.$key.'">'.$str['val'].'</span>';
                         $tab_string[] = $str['val'];
-                        $string       = $string."\n".$str['val'];
+                        $string       = $string." @@ ".$str['val'];
                     }
 
                     $string  = trim($string);
-                    $tab_out = self::get_answer_from_google($string, $from);
+                    $tab_out = self::getAnswerFromApiGoogle($string, $from);
                     (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save("calling google... ") : "";
 
                     if ($tab_out) {
@@ -430,7 +441,7 @@ namespace Glial\I18n {
                             self::$line                              = $data['line'];
                             self::$_md5File                          = $data['md5'];
 
-                            //self::insert_db($to, $from, $rep, $key, $translate_auto);
+//self::insert_db($to, $from, $rep, $key, $translate_auto);
                             self::save_db(self::$_language, $from, $tab_out[$i], $key, '1', $data['file'], $data['line']);
                             $i++;
                         }
@@ -443,7 +454,7 @@ namespace Glial\I18n {
 
             self::saveCashFile();
 
-            //self::$_to_translate = array();
+//self::$_to_translate = array();
 
             return ($html);
         }
@@ -479,7 +490,6 @@ namespace Glial\I18n {
 
             self::$DB->set_history_type(6);
             self::$DB->set_history_user(11);
-
 
             if (!self::$DB->sql_save($data)) {
 
@@ -524,18 +534,18 @@ namespace Glial\I18n {
             self::$_md5File  = md5(self::$file);
             self::$file_path = self::$_path."/".self::$_language.".".self::$_md5File.".ini";
 
-
-
             if (empty(self::$_translations[self::$_md5File])) {
                 self::loadCashFile();
             }
 
-            $string = str_replace("\r\n", " ", $string);
-            $string = str_replace("\n", " ", $string);
+            $trim = trim($string);
 
             $elem = $string;
 
             $key = sha1($elem);
+
+            self::insert_source($lgfrom, $string, $key);
+            return $string;
 
             if (isset(self::$_translations[self::$_md5File][$key])) {
 
@@ -577,7 +587,7 @@ namespace Glial\I18n {
         public static function load($language)
         {
             self::$_language = $language;
-            //self::testTable(self::$_language);
+//self::testTable(self::$_language);
         }
 
         /**
@@ -626,34 +636,31 @@ namespace Glial\I18n {
         {
             return self::$_language;
         }
-
-
         /*
          * Deprecated since 01/2018
          * doesnt work with Google anymore:/
          */
 
-
         public static function get_answer_from_google($string, $from)
         {
-            //debug(self::$_language);
-            //debug($from);
-            //debug($string);
+//debug(self::$_language);
+//debug($from);
+//debug($string);
 //debug("We calling google ...");
 //$url ="http://translate.google.fr/translate_t?text=Traduction%20automatique%20de%20pages%20web%0Aceci%20est%20un%20test&hl=fr&langpair=en&tbb=1&ie=utf-8";
             $url = 'http://translate.google.fr/translate_t?text='.urlencode($string).'&hl='.$from.'&langpair='.self::$_language.'&tbb=1&ie=utf-8';
             $url = 'https://translate.google.fr/?text='.urlencode($string).'&amp;hl='.self::$_language.'&amp;langpair='.$from.'%7Cfr&amp;tbb=1&amp;ie=utf-8';
             $url = 'https://translate.google.fr/?text='.urlencode($string).'&hl='.self::$_language.'&langpair='.$from.'&tbb=1&ie=utf-8';
 
-            //debug($url);
-            //$UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
+//debug($url);
+//$UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
             $UA = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36';
 
             $ch   = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_USERAGENT, $UA);
-            //curl_setopt($ch, CURLOPT_REFERER, "https://translate.google.fr/");
+//curl_setopt($ch, CURLOPT_REFERER, "https://translate.google.fr/");
             $body = curl_exec($ch);
             curl_close($ch);
 
@@ -675,12 +682,11 @@ namespace Glial\I18n {
                 $out = $content;
             }
 
-            //var_dump($content);
+//var_dump($content);
 //verify that we exactly the same number of element in entry
 
 
             $nb = explode("\n", trim($string));
-
 
             if (!is_array($out)) {
                 $out = explode("\n", trim($out));
@@ -688,7 +694,43 @@ namespace Glial\I18n {
 
 
 //we check that we have same number of input and output
+            if (count($nb) != count($out)) {
 
+                throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
+                return false;
+            }
+
+//throw new \Exception("GLI-999 : GOOD".PHP_EOL);
+
+            return $out;
+        }
+
+        static public function getAnswerFromApiGoogle($string, $from)
+        {
+            $url = "https://www.googleapis.com/language/translate/v2/"
+                ."?key=".GOOGLE_API_KEY
+                ."&source=".$from
+                ."&target=".self::$_language
+                ."&q=".urlencode($string);
+
+            debug($url);
+
+            $handle   = curl_init($url);
+            curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);     //We want the result to be saved into variable, not printed out
+            $response = curl_exec($handle);
+            curl_close($handle);
+
+            echo "<pre>";
+            print_r(json_decode($response, true));
+            $data = json_decode($response, true);
+
+            echo "</pre>";
+
+            $out = $data['data']['translations'][0]['translatedText'];
+
+            $nb = explode("@@", trim($string));
+
+            $out = explode("@@", trim($out));
 
             if (count($nb) != count($out)) {
 
@@ -696,24 +738,9 @@ namespace Glial\I18n {
                 return false;
             }
 
-            //throw new \Exception("GLI-999 : GOOD".PHP_EOL);
+//throw new \Exception("GLI-999 : GOOD".PHP_EOL);
 
             return $out;
-        }
-
-        private function get_answer_from_reverso($string, $from)
-        {
-//http://www.reverso.net/text_translation.aspx?lang=FR
-        }
-
-        private function get_answer_from_worldlingo($string, $from)
-        {
-//http://www.worldlingo.com/
-        }
-
-        private function get_answer_from_traductionenligne($string, $from)
-        {
-//http://www.traduction-en-ligne.com/
         }
 
         private static function loadCashFile()
@@ -728,7 +755,6 @@ namespace Glial\I18n {
 //chargement du fichier de cache en fonction de la BDD
                 $sql = "SELECT * FROM translation_".strtolower(self::$_language)." WHERE file_found ='".self::$file."'";
 
-
                 $res23 = self::$DB->sql_query($sql);
                 while ($ob    = self::$DB->sql_fetch_object($res23)) {
                     self::$_translations[self::$_md5File][$ob->key] = $ob->text;
@@ -740,7 +766,9 @@ namespace Glial\I18n {
 
         private static function saveCashFile()
         {
-            //if number of elem more important we save cash file
+            //hack the time to understand
+            return true;
+//if number of elem more important we save cash file
 
             foreach (self::$countNumberElemAtLoading as $md5 => $val) {
                 if (count(self::$_translations[$md5]) > $val) {
@@ -777,8 +805,7 @@ namespace Glial\I18n {
                         else $content .= $key2." = \"".$elem2."\"\n";
                     }
                 }
-            }
-            else {
+            } else {
                 foreach ($assoc_arr as $key => $elem) {
                     if (is_array($elem)) {
                         for ($i = 0; $i < count($elem); $i++) {
@@ -824,9 +851,7 @@ namespace Glial\I18n {
               INDEX `id_history_etat` (`id_history_etat`)
               )ENGINE=InnoDB DEFAULT CHARSET=utf8;";
 
-
                 self::$DB->sql_query($sql);
-
             }
         }
 
@@ -869,7 +894,6 @@ END;
 /";
 
                 self::$DB->sql_query($sql);
-
             }
         }
 
@@ -879,9 +903,7 @@ END;
             unset($lang['auto']);
             $lang['main'] = 'true';
 
-
             $tables = self::$DB->getListTable()['table'];
-
 
             foreach ($lang as $iso => $libelle) {
 
@@ -890,7 +912,6 @@ END;
                     $sql = "DROP TABLE `translation_".mb_strtolower($iso)."`;";
 
                     self::$DB->sql_query($sql);
-
                 }
             }
         }
@@ -913,6 +934,31 @@ END;
         {
             self::$DEBUG = $debug;
         }
+        /*
+         *
+         * The goal is to reference all translation in application to translate all in same time
+         *
+         */
+
+        static public function insert_source($source, $text, $key)
+        {
+
+            $sql = "SELECT /* $text */ * FROM ".self::$DB->ESC.self::TABLE_SITE.self::$DB->ESC." WHERE ".self::$DB->ESC."key".self::$DB->ESC." ='".$key."'"
+                ." AND ".self::$DB->ESC."language".self::$DB->ESC." = '".$source."' "
+                ." AND  ".self::$DB->ESC."file_found".self::$DB->ESC." = '".self::$file."'"
+                ." AND ".self::$DB->ESC."line_found".self::$DB->ESC." = '".self::$line."'";
+
+            $res = self::$DB->sql_query($sql);
+
+            if (self::$DB->sql_num_rows($res) == 0) {
+                $sql2 = "INSERT IGNORE INTO ".self::$DB->ESC.self::TABLE_SITE.self::$DB->ESC."
+                (".self::$DB->ESC."key".self::$DB->ESC.",".self::$DB->ESC."text".self::$DB->ESC.",".self::$DB->ESC."language".self::$DB->ESC." ,"
+                    ." ".self::$DB->ESC."file_found".self::$DB->ESC." , ".self::$DB->ESC."line_found".self::$DB->ESC." )
+                    VALUES ('".$key."','".self::$DB->sql_real_escape_string($text)."','".self::$DB->sql_real_escape_string($source)."','".self::$file."','".self::$line."');";
+
+                self::$DB->sql_query($sql2);
+            }
+        }
     }
 }
 
@@ -923,15 +969,13 @@ namespace {
     function __($text, $lgfrom = "auto")
     {
 
-        if (! LANGUAGE_ACTIVE)
-        {
+        //return $text;
+
+        if (!LANGUAGE_ACTIVE) {
             return $text;
         }
 
         $calledFrom = debug_backtrace();
-
-
-        //return $text;
 
         if ($text !== strip_tags($text)) {
             throw new \Exception("GLI-145 : html tag not supported for translation : '".htmlentities($text)."' (".$calledFrom[0]['file'].":".$calledFrom[0]['line'].")");
@@ -945,11 +989,14 @@ namespace {
 //return "<span id=\"".sha1($text)."\" lang=\"".$_LG->Get()."\">".$_LG->_($text,$lgfrom,$calledFrom[0]['file'],$calledFrom[0]['line'])."</span>";
 
 
+
         $file = str_replace(ROOT."/", '', $calledFrom[0]['file']);
-        $var  = I18n::_($text, $lgfrom, $file, $calledFrom[0]['line']);
 
+        $var = I18n::_($text, $lgfrom, $file, $calledFrom[0]['line']);
 
-        //debug(I18n::$_translations);
+        return $text;
+
+//debug(I18n::$_translations);
 
         if (preg_match_all('#\[(\w+)]#', $var, $m)) {
 //print_r( $m );
@@ -968,7 +1015,6 @@ namespace {
 			where a.scientific_name ='".$scientific_name."'";
                 $res = I18n::getDb()->sql_query($sql);
 
-
                 if (I18n::getDb()->sql_num_rows($res) == 1) {
                     $ob             = I18n::getDb()->sql_fetch_object($res);
                     $replace_with[] = $ob->text." (".$scientific_name.")";
@@ -980,6 +1026,6 @@ namespace {
             $var = str_replace($m[0], $replace_with, $var);
         }
         return $var;
-
     }
 }
+

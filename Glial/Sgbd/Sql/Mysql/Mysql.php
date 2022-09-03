@@ -5,6 +5,7 @@ namespace Glial\Sgbd\Sql\Mysql;
 use \Glial\Sgbd\Sql\Sql;
 use \Glial\Cli\Color;
 use Glial\Cli\Table;
+use \App\Library\Debug;
 
 class Mysql extends Sql
 {
@@ -38,7 +39,6 @@ class Mysql extends Sql
         MYSQLI_PRI_KEY_FLAG => 'primary_key',
         MYSQLI_NOT_NULL_FLAG => 'not_null',
     );
-
 
     /*
      * Store in array cash
@@ -75,7 +75,6 @@ class Mysql extends Sql
 
             $this->is_connected = false;
 
-
             if ($this->name === DB_DEFAULT) {
                 $level = 80;
             } else {
@@ -92,7 +91,6 @@ class Mysql extends Sql
             }
         } else {
             $this->is_connected = true;
-
 
             /*
              * test on évite les A/R à la DB
@@ -121,7 +119,7 @@ class Mysql extends Sql
      * @since Glial 1.0
      * @return Returns FALSE on failure. For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries _query() will return a mysqli_result object. For other successful queries _query() will return TRUE.
      * @param string $dbname The database name.
-     * @description Performs a query against the database. 
+     * @description Performs a query against the database.
      * @alias make the same as mysqli_query
      * @see mysqli_query http://php.net/manual/en/mysqli.query.php
      */
@@ -129,7 +127,6 @@ class Mysql extends Sql
     public function _query($sql)
     {
         $ret = mysqli_query($this->link, $sql);
-
 
         if (mysqli_warning_count($this->link)) {
             $e = mysqli_get_warnings($this->link);
@@ -169,12 +166,14 @@ class Mysql extends Sql
                     $msg .= $table->display();
                     $msg .= $i." rows\n";
 
-
                     if (IS_CLI) {
                         fwrite(STDERR, $msg);
                     } else {
-
+                        \SqlFormatter::$cli = false;
+                        //$msg                = '<span style="background:yellow; color:#000000">[SHOW WARNINGS]</span>'.\SqlFormatter::format($sql)."\n";
+                        //Debug::debug($msg);
                         // echo dans le navigateur if debug = yes ?
+                        // => if --sql then display listig of query
                     }
 
                     error_log($msg, 3, TMP."log/sql.log");
@@ -289,7 +288,7 @@ class Mysql extends Sql
      * @license http://opensource.org/licenses/gpl-license.php GNU Public License
      * @link http://www.glial-framework-php.org/en/manual/mysql.getListTable.php
      * @return array
-     * 
+     *
      */
     public function getListTable()
     {
@@ -299,7 +298,6 @@ class Mysql extends Sql
 
         $table = array();
         $view  = array();
-
 
         while ($ar = $this->sql_fetch_array($res)) {
             if ($ar['Table_type'] === "VIEW") {
@@ -344,7 +342,7 @@ class Mysql extends Sql
      * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
      * @param string name of connection
      * @return string
-     * @description if the connection exist return the instance else it create it 
+     * @description if the connection exist return the instance else it create it
      * @access public
      * @package Sgbd/
      * @since 3.0a First time this was introduced.
@@ -457,9 +455,9 @@ class Mysql extends Sql
     }
 
     /**
-     * Returns true or false is the server support multi master 
+     * Returns true or false is the server support multi master
      * MariaDB >= 10.x
-     * 
+     *
      * @author Aurélien LEQUOY <aurelien.lequoy@esysteme.com>
      * @license GNU/GPL
      * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
@@ -483,7 +481,7 @@ class Mysql extends Sql
      * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
      * @param string name of connection
      * @return string
-     * @description if the connection exist return the instance else it create it 
+     * @description if the connection exist return the instance else it create it
      * @access public
      * @package Sgbd/
      * @since 3.0 First time this was introduced.
@@ -519,7 +517,7 @@ class Mysql extends Sql
      * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
      * @param string name of connection
      * @return string
-     * @description if the connection exist return the instance else it create it 
+     * @description if the connection exist return the instance else it create it
      * @access public
      * @package Sgbd
      * @since 3.0.2 First time this was introduced.
@@ -537,7 +535,6 @@ class Mysql extends Sql
         if (empty($this->status)) {
 
             $sql = "SHOW /*!40003 GLOBAL*/ STATUS;";
-
 
             $res = $this->sql_query($sql);
 
@@ -564,7 +561,7 @@ class Mysql extends Sql
      * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
      * @param string name of connection
      * @return string
-     * @description if the connection exist return the instance else it create it 
+     * @description if the connection exist return the instance else it create it
      * @access public
      * @package Sgbd
      * @since 3.0.2 First time this was introduced.
@@ -583,18 +580,14 @@ class Mysql extends Sql
         }
 
 
-        if (version_compare($this->getVersion(), 5.5, '>='))
-        {
-            $sql = "select @@version_comment limit 1";
-            $res = $this->sql_query($sql);
+        if (version_compare($this->getVersion(), 5.5, '>=')) {
+            $sql  = "select @@version_comment limit 1";
+            $res  = $this->sql_query($sql);
             while ($data = $this->sql_fetch_array($res, MYSQLI_NUM)) {
 
-                if ($data[0] === "(ProxySQL)")
-                {
+                if ($data[0] === "(ProxySQL)") {
                     $data['Value'] = 1;
-                }
-                else
-                {
+                } else {
                     $data['Value'] = 0;
                 }
 
@@ -649,7 +642,7 @@ class Mysql extends Sql
 
     public function getDescription($table)
     {
-        $sql = "SELECT COLUMN_NAME, DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS 
+        $sql = "SELECT COLUMN_NAME, DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE table_name = '".$table."' AND TABLE_SCHEMA = database()
                 ORDER BY `COLUMNS`.`CHARACTER_MAXIMUM_LENGTH` ASC";
 
@@ -701,7 +694,7 @@ class Mysql extends Sql
      * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
      * @param string name of connection
      * @return array all param of master status
-     * @description if the connection exist return the instance else it create it 
+     * @description if the connection exist return the instance else it create it
      * @access public
      * @package Sgbd
      * @since 3.0a First time this was introduced.
@@ -736,7 +729,7 @@ class Mysql extends Sql
      * @license http://opensource.org/licenses/GPL-3.0 GNU Public License
      * @param string name of connection
      * @return array all param of slave status for each thread
-     * @description if the connection exist return the instance else it create it 
+     * @description if the connection exist return the instance else it create it
      * @access public
      * @example echo Sgbd::sql('defaul');
      * @package Sgbd
@@ -852,7 +845,6 @@ class Mysql extends Sql
             $fields[$k]->_flags = $field->flags;
             $fields[$k]->flags  = $this->fieldFlags($result, $k);
 
-
             // Enhance the field objects for mysql-extension compatibility
             //$flags = explode(' ', $fields[$k]->flags);
             //array_unshift($flags, 'dummy');
@@ -894,8 +886,8 @@ class Mysql extends Sql
         // structure. Watch out: some types like DATE returns 63 in charsetnr
         // so we have to check also the type.
         // Unfortunately there is no equivalent in the mysql extension.
-        if (($type == MYSQLI_TYPE_TINY_BLOB || $type == MYSQLI_TYPE_BLOB || $type == MYSQLI_TYPE_MEDIUM_BLOB || $type == MYSQLI_TYPE_LONG_BLOB || $type == MYSQLI_TYPE_VAR_STRING || $type == MYSQLI_TYPE_STRING)
-            && 63 == $charsetnr
+        if (($type == MYSQLI_TYPE_TINY_BLOB || $type == MYSQLI_TYPE_BLOB || $type == MYSQLI_TYPE_MEDIUM_BLOB || $type == MYSQLI_TYPE_LONG_BLOB || $type == MYSQLI_TYPE_VAR_STRING
+            || $type == MYSQLI_TYPE_STRING) && 63 == $charsetnr
         ) {
             $flags[] = 'binary';
         }
@@ -993,7 +985,7 @@ class Mysql extends Sql
      * Compare la version de MySQL / MariaDB / Percona Server, si une des occurances correspond retourne "true" sinon "false"
      * @param array provider => version
      * @return bool
-     * @see 
+     * @see
      */
 
     public function checkVersion($versions)
@@ -1018,32 +1010,28 @@ class Mysql extends Sql
     {
         if ($this->checkVersion(array('MySQL' => '5.1', 'Percona Server' => '5.1', 'MariaDB' => '5.1'))) {
             $time = intval($time);
-            $sql  = "select * from information_schema.processlist where command NOT IN ('Sleep', 'Binlog Dump') 
+            $sql  = "select * from information_schema.processlist where command NOT IN ('Sleep', 'Binlog Dump')
                 AND user NOT IN ('system user', 'event_scheduler') AND TIME > ".$time;
 
-            $res = $this->sql_query($sql);
-            $ret = array();
+            $res  = $this->sql_query($sql);
+            $ret  = array();
             while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
 
-                
+
                 $ret['queries'][] = json_encode($data);
-                $time += $data['TIME'];
+                $time             += $data['TIME'];
             }
-            
+
             return $ret;
         }
     }
-    
-    
+
     public function getForeignKey()
     {
         if ($this->checkVersion(array('MySQL' => '5.0', 'Percona Server' => '5.0', 'MariaDB' => '5.0'))) {
             //TODO
         }
-        
-        
     }
-
 
     public function sql_thread_id()
     {

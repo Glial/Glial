@@ -74,7 +74,7 @@ abstract class Sql
 
     public function sql_fetch_field($res, $field_offset = 0)
     {
-        
+
     }
 
     //function mutualised
@@ -102,22 +102,18 @@ abstract class Sql
                 $indice = 1;
             }
 
-
-
-            $msg = "[".date("Y-m-d H:i:s")."] SQL : ".Color::getColoredString($sql, "yellow")."\n".Color::getColoredString("Error (".$this->_error_num().") : ".$this->_error(), "grey", "red")."".
-                    "\nFILE : ".$called_from[$indice]['file']." LINE : ".$called_from[$indice]['line']."\n";
+            $msg = "[".date("Y-m-d H:i:s")."] SQL : ".Color::getColoredString($sql, "yellow")."\n".Color::getColoredString("Error (".$this->_error_num().") : ".$this->_error(),
+                    "grey", "red")."".
+                "\nFILE : ".$called_from[$indice]['file']." LINE : ".$called_from[$indice]['line']."\n";
 
             //error
             if (IS_CLI) {
-                fwrite(STDERR,$msg);
+                fwrite(STDERR, $msg);
             } else {
                 echo "[".date("Y-m-d H:i:s")."] SQL : $sql<br /><b>ERROR ".$this->_error_num()." : ".$this->_error()."</b>".
                 "<br />FILE : ".$called_from[$indice]['file'].":".$called_from[$indice]['line']."<br />";
             }
-
             error_log($msg, 3, TMP."log/sql.log");
-
-
         }
 
         $this->res = $res;
@@ -128,7 +124,6 @@ abstract class Sql
         $this->query[$this->number_of_query]['time']  = $totaltime;
         $this->query[$this->number_of_query]['file']  = $called_from[0]['file'];
         $this->query[$this->number_of_query]['line']  = $called_from[0]['line'];
-
 
         $this->rows_affected = $this->sql_affected_rows();
 
@@ -165,18 +160,14 @@ abstract class Sql
         $table = $table[0];
         $keys  = array_keys($data[$table]);
 
-
         $this->getInfosTable($table);
 
         $validation = new Validation($this);
 
-
         include_once APP_DIR.DS."model".DS."Identifier".ucwords(strtolower($this->_name)).DS.$table.".php";
-
 
         $model_name = "Identifier".Inflector::camelize($this->_name);
         $table2     = str_replace("-", "", $table);
-
 
         //$my_table = singleton::getInstance('glial\synapse\model\table\\'.$table2);
         $my_table = Singleton::getInstance('application\\model\\'.$model_name.'\\'.$table2);
@@ -278,10 +269,7 @@ abstract class Sql
 
                 $sql = "UPDATE ".static::ESC."".$table."".static::ESC." SET ".implode(",", $str)." WHERE id= ".$this->sql_real_escape_string($id)."";
 
-
                 $this->sql_query($sql, $table, "UPDATE");
-
-
 
                 if ($this->query[$this->number_of_query - 1]['rows'] === 0) {
                     $this->query[$this->number_of_query - 1]['last_id'] = $id;
