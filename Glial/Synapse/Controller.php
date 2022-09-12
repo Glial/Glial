@@ -8,21 +8,16 @@ use \Glial\I18n\I18n;
 use \Glial\Utility\Inflector;
 use \Glial\Synapse\FactoryController;
 
-
-
 if (!defined('AUTH_ACTIVE')) {
     define("AUTH_ACTIVE", false);
 }
 
-
-
-
 class Controller
 {
     /**
-     * 
+     *
      * @var string
-     * @access private 
+     * @access private
      */
     var $action;
     var $controller;
@@ -87,32 +82,20 @@ class Controller
             return;
         }
 
-        /*
-        $filename = APP_DIR.DS."Controller".DS.$this->controller.".php";
-        if (file_exists($filename)) {
-            require_once $filename;
-        } else {
-            throw new \Exception("GLI-654 Error controller not found : '".$this->controller."'");
-        }
-*/
-        
         $path = '\\App\\Controller\\';
         $name = $this->controller;
-        
+
         $class = $path.$name;
-        
+
         $page = new $class($this->controller, $this->action, $this->param);
         $page->setDi($this->di);
-
 
         $this->param = json_decode($this->param, true);
 
         $this->title = $this->controller;
         $action      = $this->action;
 
-
         $page->before($this->param);
-
 
         if (method_exists($page, $action)) {
             $resultat = $page->$action($this->param);
@@ -128,17 +111,15 @@ class Controller
             return $resultat;
         }
 
-
         if (!IS_CLI) {
             $this->ajax = $page->ajax;
-            //$this->js = $page->getJavascript();
             $this->js   = $this->di['js']->getJavascript();
         }
 
         $this->layout_name = $page->layout_name;
         $this->view        = $page->view;
 
-
+        // @title deprecated ?
         if ($page->title !== "undefined") {
             $this->title                    = $page->title;
             $GLOBALS['_SITE']['title_page'] = $this->title;
@@ -188,7 +169,6 @@ class Controller
 
                 //used by addNode
                 require APP_DIR.DS."view".DS.$this->controller.DS.$this->view.".view.php";
-
 
                 if (FactoryController::EXPORT === $this->out) {
                     $this->html = ob_get_contents();
@@ -246,10 +226,10 @@ class Controller
 
             global $_SITE;
 
-            $GLIALE_CONTENT = $this->html;
-            $GLIALE_TITLE   = $this->title;
-            $GLIALE_ARIANE  = $this->ariane;
-            $GLIALE_DATA    = (array) $this->value;
+            $GLIALE_CONTENT = $this->html; /* deprecated */
+            $GLIALE_TITLE   = $this->title; /* deprecated */
+            $GLIALE_ARIANE  = $this->ariane; /* deprecated */
+            $GLIALE_DATA    = (array) $this->value; /* deprecated */
 
             ob_implicit_flush(false);
 
@@ -310,7 +290,7 @@ class Controller
      */
     function after($param)
     {
-        
+
     }
 
     /**
@@ -323,7 +303,7 @@ class Controller
      */
     public function before($param)
     {
-        
+
     }
 
     /**
@@ -345,12 +325,10 @@ class Controller
     {
         $this->out = $out;
     }
-    
-    
-    
+
     function getClass()
     {
         $gg = new \ReflectionClass($this);
-        return $gg->getShortName(); 
+        return $gg->getShortName();
     }
 }

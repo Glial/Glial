@@ -341,19 +341,23 @@ namespace Glial\I18n {
 
             $translate_auto = 1;
 
-            $sql = "SELECT text,translate_auto from translation_main WHERE ".self::$DB->ESC."key".self::$DB->ESC." ='".$key."' and ".self::$DB->ESC."destination".self::$DB->ESC." = '".$to."'";
+            // update query with surcharge in manually translated
+            $sql = "SELECT target_text from translation_google WHERE ".self::$DB->ESC."key".self::$DB->ESC." ='".$key."' and ".self::$DB->ESC."target_language".self::$DB->ESC." = '".$to."'";
             $res = self::$DB->sql_query($sql);
 
             if (self::$DB->sql_num_rows($res) == 1) {
-                $ob             = self::$DB->sql_fetch_object($res);
-                $rep            = $ob->text;
-                $translate_auto = $ob->translate_auto;
+                $ob  = self::$DB->sql_fetch_object($res);
+                $rep = $ob->target_text;
             } else if (self::$DB->sql_num_rows($res) == 0) {
 
                 self::$_to_translate[$from][$key]['val']  = $text;
                 self::$_to_translate[$from][$key]['file'] = self::$file;
                 self::$_to_translate[$from][$key]['md5']  = self::$_md5File;
                 self::$_to_translate[$from][$key]['line'] = self::$line;
+
+                self::insertSource($from, $text, $key);
+                //add to translation to request
+                //ask_google
 
                 return false;
             } else {
@@ -381,11 +385,14 @@ namespace Glial\I18n {
         {
 //first loop to translate language by language
 
-
+            return ($html);
 
             if (!empty(self::$_to_translate)) {
 //self::testTable(self::$_language);
             }
+
+
+            debug(self::$_to_translate);
 
             foreach (self::$_to_translate as $from => $tab) {
                 $string_to_translate = '';
@@ -393,61 +400,30 @@ namespace Glial\I18n {
 
                 $k = 0;
 
-// to escape => ERROR 414 (That’s an error) from google The requested URL /translate_t... is too large to process.
-// $string_to_translate => contain max len
-                foreach ($tab as $key => $elem) {
-                    $nb_char = strlen($string_to_translate) + strlen($elem['val']);
+                $string = '';
 
-                    if ($nb_char < GOOGLE_NB_CHAR_MAX) {
-                        $string_to_translate .= $elem['val'];
-                        $extract[$k][$key]   = $elem;
-                    } else {
-                        $k++;
-                        $string_to_translate = $elem['val'];
-                        $extract[$k][$key]   = $elem;
+                $tab_key    = array();
+                $tab_string = array();
+
+                $tab_key[]    = '<span id="'.$tab['key'].'">'.$tab['val'].'</span>';
+                $tab_string[] = $str['val'];
+
+                $tab_out = self::getAnswerFromApiGoogle($string, $from);
+
+                if ($tab_out) {
+                    $html = str_replace($tab_key, $tab_out, $html);
+                    $i    = 0;
+                    foreach ($result as $key => $data) {
+                        self::$_translations[$data['md5']][$key] = $tab_out[$i];
+                        self::$file                              = $data['file'];
+                        self::$line                              = $data['line'];
+                        self::$_md5File                          = $data['md5'];
+
+                        self::save_db(self::$_language, $from, $tab_out[$i], $key, '1', $data['file'], $data['line']);
+                        $i++;
                     }
-                }
-
-
-                foreach ($extract as $result) {
-
-                    if (self::$nb_google_call > 0) {
-                        sleep(2); // to prevent kick/ban from google or other system
-                    }
-
-                    self::$nb_google_call++;
-
-                    $string = '';
-
-                    $tab_key    = array();
-                    $tab_string = array();
-
-                    foreach ($result as $key => $str) {
-                        $tab_key[]    = '<span id="'.$key.'">'.$str['val'].'</span>';
-                        $tab_string[] = $str['val'];
-                        $string       = $string." @@ ".$str['val'];
-                    }
-
-                    $string  = trim($string);
-                    $tab_out = self::getAnswerFromApiGoogle($string, $from);
-                    (ENVIRONEMENT) ? $GLOBALS['_DEBUG']->save("calling google... ") : "";
-
-                    if ($tab_out) {
-                        $html = str_replace($tab_key, $tab_out, $html);
-                        $i    = 0;
-                        foreach ($result as $key => $data) {
-                            self::$_translations[$data['md5']][$key] = $tab_out[$i];
-                            self::$file                              = $data['file'];
-                            self::$line                              = $data['line'];
-                            self::$_md5File                          = $data['md5'];
-
-//self::insert_db($to, $from, $rep, $key, $translate_auto);
-                            self::save_db(self::$_language, $from, $tab_out[$i], $key, '1', $data['file'], $data['line']);
-                            $i++;
-                        }
-                    } else {
-                        $html = str_replace($tab_key, $tab_string, $html);
-                    }
+                } else {
+                    $html = str_replace($tab_key, $tab_string, $html);
                 }
             }
 
@@ -457,22 +433,6 @@ namespace Glial\I18n {
 //self::$_to_translate = array();
 
             return ($html);
-        }
-
-        private static function insert_db($iso, $source, $text, $key, $translate_auto)
-        {
-            $sql = "INSERT IGNORE INTO ".self::$DB->ESC."translation_".mb_strtolower($iso)."".self::$DB->ESC."
-		SET ".self::$DB->ESC."key".self::$DB->ESC." ='".$key."',
-		".self::$DB->ESC."source".self::$DB->ESC." = '".self::$DB->sql_real_escape_string($source)."',
-		".self::$DB->ESC."text".self::$DB->ESC." = '".self::$DB->sql_real_escape_string($text)."',
-		".self::$DB->ESC."date_inserted".self::$DB->ESC." = now(),
-		".self::$DB->ESC."date_updated".self::$DB->ESC." = now(),
-		".self::$DB->ESC."translate_auto".self::$DB->ESC." = '".$translate_auto."',
-		".self::$DB->ESC."file_found".self::$DB->ESC." = '".self::$file."',
-		".self::$DB->ESC."id_history_etat".self::$DB->ESC." = 1,
-		".self::$DB->ESC."line_found".self::$DB->ESC." ='".self::$line."'";
-
-            self::$DB->sql_query($sql);
         }
 
         private static function save_db($iso, $source, $text, $key, $translate_auto, $file, $line)
@@ -488,15 +448,12 @@ namespace Glial\I18n {
             $data["translation_".mb_strtolower($iso)]['id_history_etat'] = 1;
             $data["translation_".mb_strtolower($iso)]['line_found']      = intval($line);
 
-            self::$DB->set_history_type(6);
-            self::$DB->set_history_user(11);
-
             if (!self::$DB->sql_save($data)) {
 
                 debug($data);
                 debug(self::$DB->error);
 
-                mail("aurelien.lequoy@gmail.com", "Alstom : Bug with I18n", debug($data)."\n".json_encode($data));
+                //mail("aurelien.lequoy@gmail.com", "Alstom : Bug with I18n", debug($data)."\n".json_encode($data));
             }
         }
 
@@ -520,7 +477,7 @@ namespace Glial\I18n {
          * @param string $string
          * @return string
          */
-        public static function _($string, $lgfrom, $file, $line)
+        public static function _($string_brut, $lgfrom, $file, $line)
         {
 
             if ($lgfrom != self::$_defaultlanguage) {
@@ -538,27 +495,19 @@ namespace Glial\I18n {
                 self::loadCashFile();
             }
 
-            $trim = trim($string);
-
-            $elem = $string;
-
-            $key = sha1($elem);
-
-            self::insert_source($lgfrom, $string, $key);
-            return $string;
+            $string = trim($string_brut);
+            $key    = sha1($lgfrom."-".$string);
 
             if (isset(self::$_translations[self::$_md5File][$key])) {
 
                 $res = self::$_translations[self::$_md5File][$key];
             } else {
-// Add string to translations
+                // Add string to translations
                 if (self::$_language != $default_lg) {
-//cas ou une chaine est appellé plusieurs fois dans une même page
+                    //cas ou une chaine est appellé plusieurs fois dans une même page
                     if (array_key_exists($key, self::$_to_translate)) {
                         $out = false;
                     } else {
-
-                        $gg = array($default_lg, self::$_language, $string, $key);
 
                         $out = self::translate($default_lg, self::$_language, $string, $key);
                     }
@@ -641,107 +590,47 @@ namespace Glial\I18n {
          * doesnt work with Google anymore:/
          */
 
-        public static function get_answer_from_google($string, $from)
-        {
-//debug(self::$_language);
-//debug($from);
-//debug($string);
-//debug("We calling google ...");
-//$url ="http://translate.google.fr/translate_t?text=Traduction%20automatique%20de%20pages%20web%0Aceci%20est%20un%20test&hl=fr&langpair=en&tbb=1&ie=utf-8";
-            $url = 'http://translate.google.fr/translate_t?text='.urlencode($string).'&hl='.$from.'&langpair='.self::$_language.'&tbb=1&ie=utf-8';
-            $url = 'https://translate.google.fr/?text='.urlencode($string).'&amp;hl='.self::$_language.'&amp;langpair='.$from.'%7Cfr&amp;tbb=1&amp;ie=utf-8';
-            $url = 'https://translate.google.fr/?text='.urlencode($string).'&hl='.self::$_language.'&langpair='.$from.'&tbb=1&ie=utf-8';
 
-//debug($url);
-//$UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
-            $UA = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36';
+        /*
+          static public function getAnswerFromApiGoogle($string, $from)
+          {
+          self::$nb_google_call++;
 
-            $ch   = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_USERAGENT, $UA);
-//curl_setopt($ch, CURLOPT_REFERER, "https://translate.google.fr/");
-            $body = curl_exec($ch);
-            curl_close($ch);
+          $url = "https://www.googleapis.com/language/translate/v2/"
+          ."?key=".GOOGLE_API_KEY
+          ."&source=".$from
+          ."&target=".self::$_language
+          ."&q=".urlencode($string);
 
-// if we send no user_agent google send sentence translated in default charset we asked for the language
-//$body = iconv(self::charset[$to], "UTF-8", $body);
-//	debug($body);
+          debug($url);
 
-            Debug::debug($body);
+          $handle   = curl_init($url);
+          curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);     //We want the result to be saved into variable, not printed out
+          $response = curl_exec($handle);
+          curl_close($handle);
 
-            $content = Grabber::getTagContent($body, '<span id=result_box', true);
+          echo "<pre>";
+          print_r(json_decode($response, true));
+          $data = json_decode($response, true);
 
-            Debug::debug($content);
+          echo "</pre>";
 
-            $out     = explode("<br>", $content);
-            $content = str_replace('<br>', '', $content);
+          $out = $data['data']['translations'][0]['translatedText'];
 
-            $out = Grabber::getTagContents($content, '<span title="', true);
-            if (empty($out)) {
-                $out = $content;
-            }
+          $nb = explode("@@", trim($string));
 
-//var_dump($content);
-//verify that we exactly the same number of element in entry
+          $out = explode("@@", trim($out));
 
+          if (count($nb) != count($out)) {
 
-            $nb = explode("\n", trim($string));
+          throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
+          return false;
+          }
 
-            if (!is_array($out)) {
-                $out = explode("\n", trim($out));
-            }
+          //throw new \Exception("GLI-999 : GOOD".PHP_EOL);
 
-
-//we check that we have same number of input and output
-            if (count($nb) != count($out)) {
-
-                throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
-                return false;
-            }
-
-//throw new \Exception("GLI-999 : GOOD".PHP_EOL);
-
-            return $out;
-        }
-
-        static public function getAnswerFromApiGoogle($string, $from)
-        {
-            $url = "https://www.googleapis.com/language/translate/v2/"
-                ."?key=".GOOGLE_API_KEY
-                ."&source=".$from
-                ."&target=".self::$_language
-                ."&q=".urlencode($string);
-
-            debug($url);
-
-            $handle   = curl_init($url);
-            curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);     //We want the result to be saved into variable, not printed out
-            $response = curl_exec($handle);
-            curl_close($handle);
-
-            echo "<pre>";
-            print_r(json_decode($response, true));
-            $data = json_decode($response, true);
-
-            echo "</pre>";
-
-            $out = $data['data']['translations'][0]['translatedText'];
-
-            $nb = explode("@@", trim($string));
-
-            $out = explode("@@", trim($out));
-
-            if (count($nb) != count($out)) {
-
-                throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
-                return false;
-            }
-
-//throw new \Exception("GLI-999 : GOOD".PHP_EOL);
-
-            return $out;
-        }
+          return $out;
+          } */
 
         private static function loadCashFile()
         {
@@ -767,12 +656,16 @@ namespace Glial\I18n {
         private static function saveCashFile()
         {
             //hack the time to understand
-            return true;
+            //return true;
 //if number of elem more important we save cash file
 
             foreach (self::$countNumberElemAtLoading as $md5 => $val) {
-                if (count(self::$_translations[$md5]) > $val) {
-                    self::write_ini_file(self::$_translations[$md5], self::$_path."/".self::$_language.".".$md5.".ini");
+
+                //hack le temps de faire le menage ?
+                if (!empty(self::$_translations[$md5])) {
+                    if (count(self::$_translations[$md5]) > $val) {
+                        self::writeIniFile(self::$_translations[$md5], self::$_path."/".self::$_language.".".$md5.".ini");
+                    }
                 }
             }
         }
@@ -790,7 +683,7 @@ namespace Glial\I18n {
             }
         }
 
-        public static function write_ini_file($assoc_arr, $path, $has_sections = false)
+        public static function writeIniFile($assoc_arr, $path, $has_sections = false)
         {
             $content = "";
             if ($has_sections) {
@@ -801,8 +694,11 @@ namespace Glial\I18n {
                             for ($i = 0; $i < count($elem2); $i++) {
                                 $content .= $key2."[] = \"".$elem2[$i]."\"\n";
                             }
-                        } else if ($elem2 == "") $content .= $key2." = \n";
-                        else $content .= $key2." = \"".$elem2."\"\n";
+                        } else if ($elem2 == "") {
+                            $content .= $key2." = \n";
+                        } else {
+                            $content .= $key2." = \"".$elem2."\"\n";
+                        }
                     }
                 }
             } else {
@@ -811,8 +707,11 @@ namespace Glial\I18n {
                         for ($i = 0; $i < count($elem); $i++) {
                             $content .= $key."[] = \"".$elem[$i]."\"\n";
                         }
-                    } else if ($elem == "") $content .= $key." = \n";
-                    else $content .= $key." = \"".$elem."\"\n";
+                    } else if ($elem == "") {
+                        $content .= $key." = \n";
+                    } else {
+                        $content .= $key." = \"".$elem."\"\n";
+                    }
                 }
             }
 
@@ -940,7 +839,7 @@ END;
          *
          */
 
-        static public function insert_source($source, $text, $key)
+        static public function insertSource($source, $text, $key)
         {
 
             $sql = "SELECT /* $text */ * FROM ".self::$DB->ESC.self::TABLE_SITE.self::$DB->ESC." WHERE ".self::$DB->ESC."key".self::$DB->ESC." ='".$key."'"
@@ -994,7 +893,7 @@ namespace {
 
         $var = I18n::_($text, $lgfrom, $file, $calledFrom[0]['line']);
 
-        return $text;
+        return $var;
 
 //debug(I18n::$_translations);
 
