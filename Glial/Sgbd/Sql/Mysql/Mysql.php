@@ -68,7 +68,7 @@ class Mysql extends Sql
         $this->host = $host;
         $this->port = $port;
 
-        $this->link = mysqli_connect($host, $login, $password, $dbname, $port);
+        $this->link = @mysqli_connect($host, $login, $password, $dbname, $port);
         $this->db   = $dbname;
 
         if (!$this->link) {
