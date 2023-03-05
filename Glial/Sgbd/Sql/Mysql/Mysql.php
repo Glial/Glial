@@ -1037,4 +1037,27 @@ class Mysql extends Sql
     {
         return mysqli_thread_id($this->link);
     }
+
+    public function getProxysqlVariables($var = '')
+    {
+
+        if (empty($this->proxysql_variables)) {
+            $sql = "select * from main.runtime_global_variables;";
+            $res = $this->sql_query($sql);
+
+            while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+                $this->proxysql_variables[$data['variable_name']] = $data['variable_value'];
+            }
+        }
+
+        if (empty($var)) {
+            return $this->proxysql_variables;
+        } else {
+            if (!empty($this->proxysql_variables[$var])) {
+                return $this->proxysql_variables[$var];
+            } else {
+                return false;
+            }
+        }
+    }
 }
