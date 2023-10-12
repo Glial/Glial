@@ -42,6 +42,8 @@ class Auth {
      */
     private $_user;
 
+
+    static $id_user_main = 0;
     /*
      *
      * name used to store login in cookie
@@ -238,6 +240,7 @@ class Auth {
                     $this->_user = $ob;
 
                     $this->id_user = $ob->id;
+		    self::$id_user_main = $ob->id;
 
                     setcookie(self::$_name_cookie_login, $ob->{self::$_login}, time() + AUTH_SESSION_TIME, '/', $_SERVER['SERVER_NAME'], false, true);
                     setcookie(self::$_name_cookie_passwd, $hash_password, time() + AUTH_SESSION_TIME, '/', $_SERVER['SERVER_NAME'], false, true);
@@ -299,6 +302,7 @@ class Auth {
                     if ($_COOKIE[self::$_name_cookie_passwd] === $ob->{self::$_passwd}) {
 
                         $this->_user = $ob;
+                        self::$id_user_main = $ob->id;
 
                         if ($ob->is_valid == 0) {
 
@@ -455,5 +459,12 @@ class Auth {
     static public function saltPassword($login, $password) {
         return sha1($password . sha1($login));
     }
+
+    static public function getIdUserMain()
+    {
+	
+	return self::$id_user_main;
+    }
+
 
 }
