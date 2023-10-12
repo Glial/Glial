@@ -5,20 +5,23 @@ namespace Glial\Synapse;
 class Glial
 {
 
-    static public function getOut($db)
+    static public function getOut()
     {
 
-        self::AddStat($db);
+        self::AddStat();
 
 
         exit;
     }
 
-    static public function AddStat($db)
+    static public function AddStat()
     {
 
 
         if (!IS_CLI) {
+	    $db   = Sgbd::sql(DB_DEFAULT);
+	    $data = array();
+
             $data['statistics']['id_user_main'] = 2;
             $data['statistics']['date']         = date('Y-m-d H:i:s');
             $data['statistics']['http_status']  = http_response_code();
@@ -28,19 +31,7 @@ class Glial
             $data['statistics']['variables']    = json_encode($_POST);
             $data['statistics']['user_agent']   = $_SERVER['HTTP_USER_AGENT'];
 
-
-            /*
-            $err = $db->sql_save($data);
-
-            if (!$err) {
-                $db->sql_error();
-
-
-                debug($db->sql_error());
-                debug($data);
-            }
-             * 
-             */
+            $db->sql_save($data);
         }
     }
 }

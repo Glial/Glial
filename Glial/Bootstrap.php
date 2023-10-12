@@ -98,8 +98,6 @@ $db = $config->get("db");
 Sgbd::setConfig($db);
 Sgbd::setLogger($log);
 
-//FactoryController::addDi("db", $_DB);
-
 (DEBUG) ? $_DEBUG->save("Init database") : "";
 
 if (!IS_CLI) {
@@ -112,7 +110,6 @@ if (!IS_CLI) {
     if (isset($_GET['lg'])) {
         $_SESSION['language'] = $_GET['lg'];
         SetCookie("language", $_GET['lg'], time() + 60 * 60 * 24 * 365, "/", $_SERVER['SERVER_NAME'], false, true);
-        //SetCookie("language", $_GET['lg'], time() + 60 * 60 * 24 * 365, "/");
     }
 }
 
@@ -137,7 +134,7 @@ if (!in_array($_SESSION['language'], $lg)) {
     header("location: ".WWW_ROOT.I18n::Get()."/error_web/error404/");
 
 
-    Glial::getOut($_DB->sql(DB_DEFAULT));
+    Glial::getOut();
 }
 
 I18n::load($_SESSION['language']);
@@ -217,7 +214,7 @@ if (IS_CLI) {
                 set_flash("error", __("Acess denied"), __("Acess denied")." : ".$msg);
                 header("location: ".LINK.$url);
 
-                Glial::getOut($_DB->sql(DB_DEFAULT));
+                Glial::getOut();
             }
         }
     } else {
@@ -229,7 +226,7 @@ if (IS_CLI) {
         set_flash("error", __("Error 404"),
             __("Page not found")." : ".__("Sorry, the page you requested : \"".$_SYSTEM['controller']."/".$_SYSTEM['action']."\"is not on this server. Please contact us if you have questions or concerns"));
         header("location: ".LINK."ErrorWeb/error404/".$_SYSTEM['controller']."/".$_SYSTEM['action']);
-        Glial::getOut($_DB->sql(DB_DEFAULT));
+        Glial::getOut();
     }
 }
 
