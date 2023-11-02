@@ -12,7 +12,7 @@ class Form
 
     static public function input($table, $field, $options = array())
     {
-
+    
         $indice = self::getIndice($table, $field);
 
         if (empty($options['class'])) {
@@ -127,9 +127,13 @@ class Form
                 $disable = "";
                 $style   = "";
                 if (!empty($val['error']) && $val['error'] === "1") {
-                    $disable = "disabled";
                     $style   = 'style="background: #d9534f; color: #fff;"';
                 }
+                if (!empty($val['disabled']) && $val['disabled'] === "1") {
+                    $disable = "disabled";
+                }
+
+                
 
                 $extra = "";
                 if (!empty($val['extra'])) {

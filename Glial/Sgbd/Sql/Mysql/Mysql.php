@@ -68,7 +68,11 @@ class Mysql extends Sql
         $this->host = $host;
         $this->port = $port;
 
-        $this->link = @mysqli_connect($host, $login, $password, $dbname, $port);
+        $this->link = mysqli_init();
+        mysqli_options($this->link, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+        mysqli_real_connect($this->link, $host, $login, $password, $dbname, $port);
+
+        //$this->link = mysqli_connect($host, $login, $password, $dbname, $port);
         $this->db   = $dbname;
 
         if (!$this->link) {
@@ -126,7 +130,29 @@ class Mysql extends Sql
 
     public function _query($sql)
     {
-        $ret = mysqli_query($this->link, $sql);
+        try{
+            $ret = mysqli_query($this->link, $sql);
+        }
+        catch (\Exception $e) {
+            $called_from = debug_backtrace();
+
+            $indice = 0;
+            if (strstr($called_from[0]['file'], "/Sgbd/Sql/Sql.php")) {
+                $indice = 1;
+            }
+
+            $file = $called_from[$indice]['file'];
+            $line = $called_from[$indice]['line'];
+
+            $level =60;
+
+            error_log($e->getMessage(), 3, TMP."log/sql.log");
+            throw new \Exception("GLI-562 : ERROR SQL : {".$file.":".$line."}\n$sql", $level);
+            
+        }
+
+        
+
 
         if (mysqli_warning_count($this->link)) {
             $e = mysqli_get_warnings($this->link);
@@ -1059,5 +1085,11 @@ class Mysql extends Sql
                 return false;
             }
         }
+    }
+
+
+    public function sql_connect_error()
+    {
+        return mysqli_connect_error();
     }
 }

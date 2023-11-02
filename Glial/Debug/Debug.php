@@ -36,6 +36,7 @@ class Debug
 
     public function save($text = "")
     {
+/*
         $this->memory[$this->i] = memory_get_usage();
         list($a, $b) = explode(" ", microtime());
         $this->timer[$this->i] = ((float) $a + (float) $b);
@@ -63,6 +64,7 @@ class Debug
         $this->debug[$this->i]['line'] = isset($debug_backtrace[0]['line']) ? $debug_backtrace[0]['line'] : 0;
         $this->comment[$this->i] = $text;
         $this->i++;
+*/
     }
 
     public function graph()

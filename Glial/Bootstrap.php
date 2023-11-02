@@ -237,7 +237,7 @@ $html = FactoryController::rootNode($_SYSTEM['controller'], $_SYSTEM['action'], 
 
 if ((DEBUG && (!IS_CLI) && (!IS_AJAX))) {
     $debug = FactoryController::addNode("Debug", "toolbar", array(TIME_START), FactoryController::EXPORT);
-    $html  = str_replace("[GLIAL_DEBUG_TOOLBAR]", $debug, $html);
+    //$html  = str_replace("[GLIAL_DEBUG_TOOLBAR]", $debug, $html);
 }
 
 echo $html;
