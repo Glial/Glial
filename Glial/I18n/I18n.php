@@ -135,11 +135,9 @@ namespace Glial\I18n {
             "sk" => "slovak",
             "sl" => "slovenian",
             "es" => "spanish",
-            "es" => "swahili",
             "sv" => "swedish",
             "ta" => "tamil",
             "te" => "telugu",
-            "ta" => "thai",
             "tr" => "turkish",
             "uk" => "ukrainian",
             "ur" => "urdu",
@@ -151,7 +149,7 @@ namespace Glial\I18n {
         /**
          * Charset source
          *
-         * @var arrays
+         * @var array
          */
         public static $charset = array(
             "sq" => "albanian",
@@ -201,7 +199,7 @@ namespace Glial\I18n {
         /**
          * language source
          *
-         * @var arrays
+         * @var array
          */
         public static $languagesUTF8 = array(
             "sq" => "albanian",
@@ -253,7 +251,7 @@ namespace Glial\I18n {
         /**
          * language source
          *
-         * @var arrays
+         * @var array
          */
         public static $languagesENGLISH          = array(
             "Czech" => "cs",
@@ -295,35 +293,6 @@ namespace Glial\I18n {
             return self::$DB;
         }
 
-        /**
-         * Method to translate a string
-         *
-         * @access public
-         * @param string $string
-         * @return string
-         * @since 1.0
-         * @deprecated since version 3.1.1
-         */
-        private static function initiate($iso)
-        {
-            $sql = "CREATE TABLE IF NOT EXISTS `translation_".mb_strtolower($iso)."` (
-              `id` int(11) NOT NULL auto_increment,
-              `id_history_etat` int NOT NULL,
-              `key` char(40) NOT NULL,
-              `source` char(2) NOT NULL,
-              `text` text NOT NULL,
-              `date_inserted` datetime NOT NULL,
-              `date_updated` datetime NOT NULL,
-              `translate_auto` int(11) NOT NULL,
-              `file_found` varchar(255) NOT NULL,
-              `line_found` int NOT NULL,
-              PRIMARY KEY  (`id`),
-              UNIQUE KEY `key` (`key`,`file_found`),
-              INDEX `id_history_etat` (`id_history_etat`)
-              );";
-
-            self::$DB->sql_query($sql);
-        }
 
         /**
          * translate a string
@@ -336,8 +305,8 @@ namespace Glial\I18n {
          */
         public static function translate($from, $to, $text, $key)
         {
-//TODO : insert cost a lost even if fail have to make select before
-//self::insert_db($from, $from, $text, $key, '0');
+            //TODO : insert cost a lost even if fail have to make select before
+            //self::insert_db($from, $from, $text, $key, '0');
 
             $translate_auto = 1;
 
@@ -364,13 +333,13 @@ namespace Glial\I18n {
                 die("We have a problem !");
             }
 
-//self::insert_db($to, $from, $rep, $key, $translate_auto);
+            //self::insert_db($to, $from, $rep, $key, $translate_auto);
 
 
             self::$_translations[self::$_md5File][$key] = $rep;
 
             self::saveCashFile();
-// Return translation
+            // Return translation
 
             return true;
         }
@@ -435,6 +404,8 @@ namespace Glial\I18n {
             return ($html);
         }
 
+
+/*
         private static function save_db($iso, $source, $text, $key, $translate_auto, $file, $line)
         {
             $data                                                        = array();
@@ -456,19 +427,8 @@ namespace Glial\I18n {
                 //mail("aurelien.lequoy@gmail.com", "Alstom : Bug with I18n", debug($data)."\n".json_encode($data));
             }
         }
+*/
 
-        public static function testTable($iso)
-        {
-
-            $ret = self::$DB->getListTable();
-
-            if (in_array("translation_".strtolower($iso), $ret['table'])) {
-                true;
-            } else {
-                self::initiate($iso);
-                return false;
-            }
-        }
 
         /**
          * Method to translate a string
@@ -567,7 +527,6 @@ namespace Glial\I18n {
          * Get the default language
          *
          * @access public
-         * @param void
          * @return string $language
          */
         public static function GetDefault()
@@ -585,52 +544,6 @@ namespace Glial\I18n {
         {
             return self::$_language;
         }
-        /*
-         * Deprecated since 01/2018
-         * doesnt work with Google anymore:/
-         */
-
-
-        /*
-          static public function getAnswerFromApiGoogle($string, $from)
-          {
-          self::$nb_google_call++;
-
-          $url = "https://www.googleapis.com/language/translate/v2/"
-          ."?key=".GOOGLE_API_KEY
-          ."&source=".$from
-          ."&target=".self::$_language
-          ."&q=".urlencode($string);
-
-          debug($url);
-
-          $handle   = curl_init($url);
-          curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);     //We want the result to be saved into variable, not printed out
-          $response = curl_exec($handle);
-          curl_close($handle);
-
-          echo "<pre>";
-          print_r(json_decode($response, true));
-          $data = json_decode($response, true);
-
-          echo "</pre>";
-
-          $out = $data['data']['translations'][0]['translatedText'];
-
-          $nb = explode("@@", trim($string));
-
-          $out = explode("@@", trim($out));
-
-          if (count($nb) != count($out)) {
-
-          throw new \Exception("GLI-059 : Problem with machine translation '".trim($string)."' [".$from."=>".self::$_language."]".PHP_EOL);
-          return false;
-          }
-
-          //throw new \Exception("GLI-999 : GOOD".PHP_EOL);
-
-          return $out;
-          } */
 
         private static function loadCashFile()
         {
@@ -641,9 +554,29 @@ namespace Glial\I18n {
 
                 self::$countNumberElemAtLoading[self::$_md5File] = count(self::$_translations[self::$_md5File]);
             } else {
-//chargement du fichier de cache en fonction de la BDD
+                //chargement du fichier de cache en fonction de la BDD
                 $sql = "SELECT * FROM translation_".strtolower(self::$_language)." WHERE file_found ='".self::$file."'";
+                /*
 
+                SELECT 
+  tg.id AS google_id,
+  COALESCE(tm.id, tg.id) AS final_id, -- Gives preference to translation_main's id if it exists
+  tg.key,
+  tg.source_language,
+  tg.source_text,
+  tg.target_language,
+  COALESCE(tm.text, tg.target_text) AS final_text, -- Gives preference to translation_main's text if it exists
+  COALESCE(tm.date_updated, NOW()) AS final_date_updated -- Provides the current date if translation_main's date_updated is null
+FROM 
+  translation_google tg
+LEFT JOIN 
+  translation_main tm 
+ON 
+  tg.key = tm.key 
+  AND tg.target_language = tm.destination;
+
+
+                */
                 $res23 = self::$DB->sql_query($sql);
                 while ($ob    = self::$DB->sql_fetch_object($res23)) {
                     self::$_translations[self::$_md5File][$ob->key] = $ob->text;
@@ -670,6 +603,8 @@ namespace Glial\I18n {
             }
         }
 
+
+        /*
         static public function install()
         {
             switch (self::$DB->getDriver()) {
@@ -682,6 +617,7 @@ namespace Glial\I18n {
                     break;
             }
         }
+*/
 
         public static function writeIniFile($assoc_arr, $path, $has_sections = false)
         {
@@ -725,6 +661,8 @@ namespace Glial\I18n {
             return true;
         }
 
+
+        /*
         static public function installMysql()
         {
             $lang         = self::$languages;
@@ -752,8 +690,10 @@ namespace Glial\I18n {
 
                 self::$DB->sql_query($sql);
             }
-        }
+        }*/
 
+
+        /*
         static public function installOracle()
         {
 
@@ -795,6 +735,10 @@ END;
                 self::$DB->sql_query($sql);
             }
         }
+        */
+
+
+        /*
 
         static public function unInstallMysql()
         {
@@ -827,7 +771,7 @@ END;
                     self::unInstallOracle();
                     break;
             }
-        }
+        }*/
 
         static public function setDebug($debug = \I18n::DEBUG)
         {
@@ -867,9 +811,7 @@ namespace {
 
     function __($text, $lgfrom = "auto")
     {
-
         //return $text;
-
         if (!LANGUAGE_ACTIVE) {
             return $text;
         }
@@ -884,21 +826,14 @@ namespace {
             $lgfrom = I18n::GetDefault();
         }
 
-
-//return "<span id=\"".sha1($text)."\" lang=\"".$_LG->Get()."\">".$_LG->_($text,$lgfrom,$calledFrom[0]['file'],$calledFrom[0]['line'])."</span>";
-
-
-
         $file = str_replace(ROOT."/", '', $calledFrom[0]['file']);
 
         $var = I18n::_($text, $lgfrom, $file, $calledFrom[0]['line']);
-
         return $var;
 
-//debug(I18n::$_translations);
 
         if (preg_match_all('#\[(\w+)]#', $var, $m)) {
-//print_r( $m );
+
         }
 
         if (count($m[1]) > 0) {
