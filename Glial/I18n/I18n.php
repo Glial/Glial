@@ -347,21 +347,17 @@ namespace Glial\I18n {
          *
          * DEPRECATED
          *
-         *
+         * Remove reference !
          */
 
+
+         
         public static function getTranslation($html = '')
         {
-//first loop to translate language by language
+            //first loop to translate language by language
 
             return ($html);
-
-            if (!empty(self::$_to_translate)) {
-//self::testTable(self::$_language);
-            }
-
-
-            debug(self::$_to_translate);
+            //to fix with google api
 
             foreach (self::$_to_translate as $from => $tab) {
                 $string_to_translate = '';
@@ -403,7 +399,7 @@ namespace Glial\I18n {
 
             return ($html);
         }
-
+/***/
 
 /*
         private static function save_db($iso, $source, $text, $key, $translate_auto, $file, $line)
@@ -547,41 +543,26 @@ namespace Glial\I18n {
 
         private static function loadCashFile()
         {
-
             if (file_exists(self::$file_path)) {
-
                 self::$_translations[self::$_md5File] = parse_ini_file(self::$file_path);
-
                 self::$countNumberElemAtLoading[self::$_md5File] = count(self::$_translations[self::$_md5File]);
             } else {
                 //chargement du fichier de cache en fonction de la BDD
-                $sql = "SELECT * FROM translation_".strtolower(self::$_language)." WHERE file_found ='".self::$file."'";
-                /*
-
-                SELECT 
-  tg.id AS google_id,
-  COALESCE(tm.id, tg.id) AS final_id, -- Gives preference to translation_main's id if it exists
-  tg.key,
-  tg.source_language,
-  tg.source_text,
-  tg.target_language,
-  COALESCE(tm.text, tg.target_text) AS final_text, -- Gives preference to translation_main's text if it exists
-  COALESCE(tm.date_updated, NOW()) AS final_date_updated -- Provides the current date if translation_main's date_updated is null
-FROM 
-  translation_google tg
-LEFT JOIN 
-  translation_main tm 
-ON 
-  tg.key = tm.key 
-  AND tg.target_language = tm.destination;
 
 
-                */
+                //We get translation from google, then we overright with manual translation then we link 
+
+                $sql = "SELECT tg.key,
+                COALESCE(tm.text, tg.target_text) AS final_text
+                FROM translation_google tg
+                INNER JOIN translation_glial b ON b.key=tg.key AND tg.source_language = b.language 
+                LEFT JOIN  translation_main tm ON tg.key = tm.key AND tg.target_language = tm.destination
+                WHERE b.file_found ='".self::$file."' AND tg.target_language = '".strtolower(self::$_language)."'";
+
                 $res23 = self::$DB->sql_query($sql);
                 while ($ob    = self::$DB->sql_fetch_object($res23)) {
-                    self::$_translations[self::$_md5File][$ob->key] = $ob->text;
+                    self::$_translations[self::$_md5File][$ob->key] = htmlentities($ob->final_text); //to prevent unwanted quote or double quote from transatlion
                 }
-
                 self::$countNumberElemAtLoading[self::$_md5File] = 0;
             }
         }
@@ -590,7 +571,7 @@ ON
         {
             //hack the time to understand
             //return true;
-//if number of elem more important we save cash file
+            //if number of elem more important we save cash file
 
             foreach (self::$countNumberElemAtLoading as $md5 => $val) {
 

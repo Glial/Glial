@@ -247,7 +247,7 @@ class Controller
             echo "</html>\n"; //TODO a mettre ailleurs
 
             Variable::$_html = ob_get_clean();
-            Variable::$_html = I18n::getTranslation(Variable::$_html);
+            //Variable::$_html = I18n::getTranslation(Variable::$_html);
 
             return Variable::$_html;
         }

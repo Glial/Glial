@@ -154,14 +154,13 @@ class Auth {
                         $data[self::$_tableName]['date_last_login'] = date('Y-m-d H:i:s');
                         $data[self::$_tableName]['date_last_connected'] = date('Y-m-d H:i:s');
 
-                        $id_group = $this->getIdGroup($id_user_main, $ldap);
+                        $id_group = $this->getIdGroup($ob->id_user_main, $ldap);
 
                         $data[self::$_tableName]['id_group'] = $id_group;
                     } elseif (self::$_dbLink->sql_num_rows($res) === 0) {
 
                         $this->log->info("[AUTH][ADD USER] $Identity");
                         $this->log->info("[AUTH][LDAP] $Identity : Login Successful");
-//debug($ldap);
 
                         if (!empty($ldap['c'][0])) {
                             $sql = "SELECT id FROM geolocalisation_country WHERE iso = '" . $ldap['c'][0] . "'";
@@ -175,9 +174,7 @@ class Auth {
                             $data[self::$_tableName]['id_geolocalisation_country'] = LDAP_DEFAULT_COUNTRY;
                         }
 
-
-
-//to do find the good city
+                        //to do find the good city
                         $sql = "select * from geolocalisation_city where libelle ='" . $ldap['l'][0] . "' LIMIT 1";
                         $res = self::$_dbLink->sql_query($sql);
                         while ($ob = self::$_dbLink->sql_fetch_object($res)) {
@@ -187,8 +184,6 @@ class Auth {
                         if (empty($data[self::$_tableName]['id_geolocalisation_city'])) {
                             $data[self::$_tableName]['id_geolocalisation_city'] = LDAP_DEFAULT_CITY;
                         }
-
-
 
                         $data[self::$_tableName]['key_auth'] = "";
                         $data[self::$_tableName]['date_last_login'] = date('Y-m-d H:i:s');
@@ -211,8 +206,7 @@ class Auth {
                     $id_user_main = self::$_dbLink->sql_save($data);
 
                     if (!$id_user_main) {
-                        debug($data);
-                        debug(self::$_dbLink->sql_error());
+                        $this->log->emergency("Impossible to create user (error : ".self::$_dbLink->sql_error().") : ".json_encode($data));
                         die();
                     } else {
 
@@ -223,13 +217,10 @@ class Auth {
                         $data[self::$_tableName]['id'] = $id_user_main;
                         $ret = self::$_dbLink->sql_save($data);
 
-
                         if (!$ret) {
-                            debug($data);
-                            debug(self::$_dbLink->sql_error());
+                            $this->log->emergency("Impossible to update group (error : ".self::$_dbLink->sql_error().") : ".json_encode($data));
                             die();
                         }
-
 
                         $this->log->info("[AUTH][GROUP] change group : " . $id_group . " for user ($id_user_main)");
                     }
@@ -272,8 +263,7 @@ class Auth {
                     $data[self::$_tableName]['id'] = $ob->id;
 
                     if (!self::$_dbLink->sql_save($data)) {
-                        debug($data);
-                        debug(self::$_dbLink->sql_error());
+                        $this->log->error("Impossible to login (error : ".self::$_dbLink->sql_error().") : ".json_encode($data));
                         die();
                     }
 
@@ -284,11 +274,10 @@ class Auth {
                 }
             }
 
-            $this->log->info("[AUTH][POST] $Identity : Login FAILED ! ");
+            $this->log->warning("[AUTH][POST] $Identity : Login FAILED ! ");
 
             return false;
         }
-
 
         if (empty($_POST[self::$_tableName][self::$_login])) {
             if (!empty($_COOKIE[self::$_name_cookie_login]) && !empty($_COOKIE[self::$_name_cookie_passwd])) {
@@ -307,10 +296,10 @@ class Auth {
                         if ($ob->is_valid == 0) {
 
                             if ($_SERVER['REQUEST_METHOD'] === "GET") {
-                                $msg = I18n::getTranslation(__("Hello,") . "<br />" . __("Thank you for registering.") . "<br />"
-                                                . __("To finalise your registration, an administrator have to give you a role."));
+                                $msg = __("Hello,") . "<br />" . __("Thank you for registering.") . "<br />"
+                                                . __("To finalise your registration, an administrator have to give you a role.");
 
-                                $title = I18n::getTranslation(__("Restricted access"));
+                                $title = __("Restricted access");
                                 set_flash("caution", $title, $msg);
                             }
                         }
@@ -323,11 +312,6 @@ class Auth {
         return false;
     }
 
-    public function checkAuth($login, $password) {
-        if ($_SERVER['REQUEST_METHOD'] == "POST") {
-            
-        }
-    }
 
     public function getUser() {
         return $this->_user;
@@ -460,11 +444,7 @@ class Auth {
         return sha1($password . sha1($login));
     }
 
-    static public function getIdUserMain()
-    {
-	
-	return self::$id_user_main;
+    static public function getIdUserMain() {
+	    return self::$id_user_main;
     }
-
-
 }
