@@ -68,12 +68,14 @@ class Form
             $class = "";
         }
 
-
+        $all_available = false;
+        if (!empty($options['all_selectable']) && $options['all_selectable'] === "true"){
+            $all_available = true;
+            unset($options['all_selectable']);
+        }
         $extra = self::formatOptions($options);
 
         $ret = "";
-
-
         if (self::$select_multiple) {
             $add_array = "[]";
             $extra     .= " multiple";
@@ -130,10 +132,12 @@ class Form
                     $style   = 'style="background: #d9534f; color: #fff;"';
                 }
                 if (!empty($val['disabled']) && $val['disabled'] === "1") {
-                    $disable = "disabled";
-                }
 
-                
+                    if ($all_available === false){
+                        $disable = "disabled";
+                    }
+                   
+                }
 
                 $extra = "";
                 if (!empty($val['extra'])) {
@@ -143,13 +147,11 @@ class Form
                     }
                 }
 
-
-
-
-
                 if ((!empty($_GET[$table][$field]) && $_GET[$table][$field] == $val['id']) || (!empty($default_id) && $default_id == $val['id'] && self::$select_multiple === false) || (!empty($_GET[$table][$field])
                     && self::$select_multiple === true && in_array($val['id'], $tab_to_compare))
                 ) {
+                    
+
                     $ret .= "<option value=\"".$val['id']."\" selected=\"selected\" $style $disable$extra>".$val['libelle']."</option>\n";
                 } else {
                     $ret .= "<option value=\"".$val['id']."\" $style $disable$extra>".$val['libelle']."</option>\n";
