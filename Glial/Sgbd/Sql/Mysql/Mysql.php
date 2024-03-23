@@ -147,7 +147,9 @@ class Mysql extends Sql
             $level =60;
 
             error_log($e->getMessage(), 3, TMP."log/sql.log");
-            throw new \Exception("GLI-562 : ERROR SQL : {".$file.":".$line."}\n$sql", $level);
+            error_log(mysqli_error($this->link), 3, TMP."log/sql.log");
+
+            throw new \Exception("GLI-562 : ERROR SQL : {".$file.":".$line.", ERROR: ".mysqli_error($this->link)."}\n$sql", $level);
             
         }
 
