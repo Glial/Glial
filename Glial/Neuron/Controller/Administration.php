@@ -114,12 +114,10 @@ trait Administration
 
     function generate_model()
     {
-
         //php index.php administration generate_model
 
         $this->layout_name = false;
         $this->view        = false;
-
 
         //foreach ($this->di['db']->getAll() as $key) {
         //$dbLink = Sgbd::sql($key);
@@ -130,7 +128,6 @@ trait Administration
         $tab_object = $dbLink->getListTable();
 
         foreach ($tab_object['table'] as $table_name) {
-
 
             if ($key == DB_DEFAULT) {
                 $table = $table_name;
@@ -156,7 +153,6 @@ trait Administration
                     $create_table = $dbLink->getCreateTable($table);
                     $des_table    = $dbLink->getDescription($table);
 
-
                     $i = 0;
 
                     $data  = array();
@@ -170,17 +166,21 @@ trait Administration
                         $i++;
                     }
 
-
                     $text .= $create_table;
                     $text .= "\";\n\nvar \$field = array(".implode(",", $field).");\n\nvar \$validate = array(\n";
 
                     foreach ($data[$table] as $field) {
                         if ($field['field'] == "id") {
                             continue;
+                        }else if (mb_substr($field['field'], 0, 9) === "id_parent") {
+                            $text .= "\t'".$field['field']."' => array(\n\t\t'reference_to' => array('The constraint to ".$table.".id isn\'t respected.','".$table."', 'id')\n\t),\n";
                         }
                         if (mb_substr($field['field'], 0, 2) === "id") {
-                            $text .= "\t'".$field['field']."' => array(\n\t\t'reference_to' => array('The constraint to ".mb_substr($field['field'], 3).".id isn\'t respected.','".mb_substr($field['field'],
-                                    3)."', 'id')\n\t),\n";
+
+                            $new_name = mb_substr($field['field'], 3);
+                            $new_name = explode("__",$new_name)[0];
+
+                            $text .= "\t'".$field['field']."' => array(\n\t\t'reference_to' => array('The constraint to ".$new_name.".id isn\'t respected.','".$new_name."', 'id')\n\t),\n";
                         } elseif (mb_substr($field['field'], 0, 2) === "ip") {
                             $text .= "\t'".$field['field']."' => array(\n\t\t'ip' => array('your IP is not valid')\n\t),\n";
                         } elseif ($field['field'] === "email") {

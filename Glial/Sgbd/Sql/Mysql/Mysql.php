@@ -144,17 +144,14 @@ class Mysql extends Sql
             $file = $called_from[$indice]['file'];
             $line = $called_from[$indice]['line'];
 
-            $level =60;
+            $level = 60;
 
-            error_log($e->getMessage(), 3, TMP."log/sql.log");
-            error_log(mysqli_error($this->link), 3, TMP."log/sql.log");
+            $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")." ".Color::getColoredString(" [ERROR] ", "black", "red")."\n".\SqlFormatter::format($sql);
+
+            error_log($msg."{".$file.":".$line."}\n".Color::getColoredString("ERROR: ".mysqli_error($this->link),"black","red"), 3, TMP."log/sql.log");
 
             throw new \Exception("GLI-562 : ERROR SQL : {".$file.":".$line.", ERROR: ".mysqli_error($this->link)."}\n$sql", $level);
-            
         }
-
-        
-
 
         if (mysqli_warning_count($this->link)) {
             $e = mysqli_get_warnings($this->link);
@@ -553,12 +550,9 @@ class Mysql extends Sql
      */
     public function getStatus($var = '', $refresh = false)
     {
-
-
         if ($refresh) {
             unset($this->status);
         }
-
 
         if (empty($this->status)) {
 
