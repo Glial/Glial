@@ -512,4 +512,12 @@ abstract class Sql
     {
         return $this->db;
     }
+
+    /*
+    * Alias 
+    */
+    public function getDatabase()
+    {
+        return $this->db;
+    }
 }

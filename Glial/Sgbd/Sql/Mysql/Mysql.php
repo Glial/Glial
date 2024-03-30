@@ -1088,4 +1088,5 @@ class Mysql extends Sql
     {
         return mysqli_connect_error();
     }
+
 }

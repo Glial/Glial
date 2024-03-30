@@ -49,6 +49,8 @@ class Javascript
 
         $js = "\n<script type=\"text/javascript\">\n";
         $js .= "var GLIAL_LINK ='".LINK."';\n";   
+        $js .= "var GLIAL_PATH ='".$_GET['glial_path']."';\n";   
+        $js .= "var GLIAL_URL ='".$_GET['url']."';\n";   
         $js .= "</script>\n";
         
         $i = 0;
