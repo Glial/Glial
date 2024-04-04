@@ -224,7 +224,7 @@ if (IS_CLI) {
         }
 
         set_flash("error", __("Error 404"),
-            __("Page not found")." : ".__("Sorry, the page you requested : \"".$_SYSTEM['controller']."/".$_SYSTEM['action']."\"is not on this server. Please contact us if you have questions or concerns"));
+            __("Page not found")." : ".__("Sorry, the page you requested :")." \"".$_SYSTEM['controller']."/".$_SYSTEM['action']."\" ".__("is not on this server. Please contact us if you have questions or concerns"));
         header("location: ".LINK."ErrorWeb/error404/".$_SYSTEM['controller']."/".$_SYSTEM['action']);
         Glial::getOut();
     }
