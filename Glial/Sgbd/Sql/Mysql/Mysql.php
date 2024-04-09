@@ -69,7 +69,7 @@ class Mysql extends Sql
         $this->port = $port;
 
         $this->link = mysqli_init();
-        mysqli_options($this->link, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+        mysqli_options($this->link, MYSQLI_OPT_CONNECT_TIMEOUT, 11);
         mysqli_real_connect($this->link, $host, $login, $password, $dbname, $port);
 
         //$this->link = mysqli_connect($host, $login, $password, $dbname, $port);

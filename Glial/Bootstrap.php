@@ -196,7 +196,6 @@ if (IS_CLI) {
     $js = new Javascript();
     FactoryController::addDi("js", $js);
 
-
     if ($acl->checkIfResourceExist($_SYSTEM['controller']."/".$_SYSTEM['action'])) {
 
         if (AUTH_ACTIVE) {
