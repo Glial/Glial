@@ -174,7 +174,7 @@ class Mysql extends Sql
                     $table = new Table(2);
                     $table->addHeader(array(" Level ", " Code ", " Message "));
 
-                    $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")." ".Color::getColoredString(" [SHOW WARNINGS] ", "black", "yellow")."\n"
+                    $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")." (".$this->host.":".$this->port.") ".Color::getColoredString(" [SHOW WARNINGS] ", "black", "yellow")."\n"
                         .\SqlFormatter::format($sql)."\n";
 
                     $msg .= Color::getColoredString($file.":".$line, "cyan")."\n";
@@ -766,16 +766,20 @@ class Mysql extends Sql
             if (version_compare($this->getVersion(), 10, '>')) {
                 $sql = "SHOW ALL SLAVES STATUS";
             } else {
-                $sql = "SHOW SLAVE STATUS";
+                if (version_compare($this->getVersion(), '8.0.33', '>')) {
+                    $sql = "SHOW REPLICA STATUS";
+                }
+                else {
+                    $sql = "SHOW SLAVE STATUS";
+                }
             }
 
             $res = $this->sql_query($sql);
 
+            $tab_ret = array();
             if ($this->sql_num_rows($res) === 0) {
-                return false;
+                return $tab_ret;
             } else {
-
-                $tab_ret = array();
                 while ($arr     = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
                     $tab_ret[] = $arr;
                 }

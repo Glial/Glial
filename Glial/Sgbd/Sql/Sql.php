@@ -102,7 +102,7 @@ abstract class Sql
                 $indice = 1;
             }
 
-            $msg = "[".date("Y-m-d H:i:s")."] SQL : ".Color::getColoredString($sql, "yellow")."\n".Color::getColoredString("Error (".$this->_error_num().") : ".$this->_error(),
+            $msg = "[".date("Y-m-d H:i:s")."] (".$this->host.":".$this->port.") SQL : ".Color::getColoredString($sql, "yellow")."\n".Color::getColoredString("Error (".$this->_error_num().") : ".$this->_error(),
                     "grey", "red")."".
                 "\nFILE : ".$called_from[$indice]['file']." LINE : ".$called_from[$indice]['line']."\n";
 

@@ -65,7 +65,7 @@ class Sgbd
             if (empty(self::$db[$name][$num]) || self::$db[$name][$num]->is_connected === false) {
 
                 FactorySql::setLogger(self::$logger);
-                self::$db[$name][$num] = FactorySql::connect($name, self::$config[$name]);
+                self::$db[$name][$num] = FactorySql::connect($name, $num, self::$config[$name]);
             }
 
             return self::$db[$name][$num];

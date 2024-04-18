@@ -24,7 +24,7 @@ class FactorySql
      * 
      */
 
-    static function connect($name, $elem)
+    static function connect($name,$num, $elem)
     {
         if (!in_array($elem['driver'], self::$driver)) {
             throw new \Exception("GLI-023 : This driver isn't supported : '".$elem['driver']."' on connection name [".$name."]");
@@ -41,21 +41,21 @@ class FactorySql
             $port = null;
         }
 
-        self::$db[$name] = new $driver($name, $elem);
+        self::$db[$name][$num] = new $driver($name, $elem);
 
-        if (!self::$db[$name]) {
+        if (!self::$db[$name][$num]) {
             return false;
         }
 
-        self::$db[$name]->setLogger(self::$logger);
+        self::$db[$name][$num]->setLogger(self::$logger);
 
         if (!empty($elem['crypted']) && $elem['crypted'] === "1") {
             $elem['password'] = Crypt::decrypt($elem['password'],CRYPT_KEY);
         }
 
-        self::$db[$name]->sql_connect($addr, $elem['user'], $elem['password'], $dbname, $port);
+        self::$db[$name][$num]->sql_connect($addr, $elem['user'], $elem['password'], $dbname, $port);
 
-        return self::$db[$name];
+        return self::$db[$name][$num];
     }
 
     static function setLogger($logger)
