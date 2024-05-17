@@ -40,6 +40,8 @@ class Mysql extends Sql
         MYSQLI_NOT_NULL_FLAG => 'not_null',
     );
 
+    static public $table_list = array();
+
     /*
      * Store in array cash
      */
@@ -146,11 +148,12 @@ class Mysql extends Sql
 
             $level = 60;
 
+            \SqlFormatter::$cli = true;
             $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")." ".Color::getColoredString(" [ERROR] ", "black", "red")."\n".\SqlFormatter::format($sql);
 
             error_log($msg."{".$file.":".$line."}\n".Color::getColoredString("ERROR: ".mysqli_error($this->link),"black","red"), 3, TMP."log/sql.log");
 
-            throw new \Exception("GLI-562 : ERROR SQL : {".$file.":".$line.", ERROR: ".mysqli_error($this->link)."}\n$sql", $level);
+            throw new \Exception("GLI-562 : ERROR SQL : (".$this->host.":".$this->port.") {".$file.":".$line.", ERROR: ".mysqli_error($this->link)."}\n$sql", $level);
         }
 
         if (mysqli_warning_count($this->link)) {
@@ -312,30 +315,45 @@ class Mysql extends Sql
      * @license GPL
      * @license http://opensource.org/licenses/gpl-license.php GNU Public License
      * @link http://www.glial-framework-php.org/en/manual/mysql.getListTable.php
-     * @return array
+     * 
      *
      */
-    public function getListTable()
+    public function getListTable($table_name='', $type='table')
     {
-        $sql = "SHOW FULL TABLES";
 
-        $res = $this->_query($sql);
+        $database = $this->getDatabase();
 
-        $table = array();
-        $view  = array();
+        if (empty(self::$table_list[$database]))
+        {
+            $sql = "SHOW FULL TABLES";
 
-        while ($ar = $this->sql_fetch_array($res)) {
-            if ($ar['Table_type'] === "VIEW") {
-                $view[] = $ar[0];
-            } else {
-                $table[] = $ar[0];
+            $res = $this->_query($sql);
+    
+            $table = array();
+            $view  = array();
+    
+            while ($ar = $this->sql_fetch_array($res)) {
+                if ($ar['Table_type'] === "VIEW") {
+                    $view[] = $ar[0];
+                } else {
+                    $table[] = $ar[0];
+                }
+            }
+            self::$table_list[$database]['table'] = $table;
+            self::$table_list[$database]['view']  = $view;
+        }
+
+        
+        if (!empty($table_name)) {
+            if (in_array($table_name, self::$table_list[$database][$type])) {
+                return true;
+            }
+            else{
+                return false;
             }
         }
 
-        $ret['table'] = $table;
-        $ret['view']  = $view;
-
-        return $ret;
+        return self::$table_list[$database];
     }
 
     public function getIndexUnique($table_name)
@@ -375,8 +393,6 @@ class Mysql extends Sql
      */
     public function getVersion()
     {
-
-
         if (empty($this->variables['version'])) {
             $this->getVariables();
         }
@@ -783,6 +799,7 @@ class Mysql extends Sql
                 while ($arr     = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
                     $tab_ret[] = $arr;
                 }
+
                 return $tab_ret;
             }
         }
@@ -1036,16 +1053,24 @@ class Mysql extends Sql
     {
         if ($this->checkVersion(array('MySQL' => '5.1', 'Percona Server' => '5.1', 'MariaDB' => '5.1'))) {
             $time = intval($time);
-            $sql  = "select * from information_schema.processlist where command NOT IN ('Sleep', 'Binlog Dump')
+
+            if ($this->checkVersion(array('MySQL' => '8.0')))
+            {
+                $sql  = "select * from performance_schema.processlist where command NOT IN ('Sleep', 'Binlog Dump')
                 AND user NOT IN ('system user', 'event_scheduler') AND TIME > ".$time;
+            }
+            else
+            {
+                $sql  = "select * from information_schema.processlist where command NOT IN ('Sleep', 'Binlog Dump')
+                AND user NOT IN ('system user', 'event_scheduler') AND TIME > ".$time;
+            }
 
             $res  = $this->sql_query($sql);
             $ret  = array();
+            $ret['time'] = 0;
             while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
-
-
                 $ret['queries'][] = json_encode($data);
-                $time             += $data['TIME'];
+                //$ret['time']     += $data['time'];
             }
 
             return $ret;

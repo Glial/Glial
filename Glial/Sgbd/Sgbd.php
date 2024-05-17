@@ -47,7 +47,7 @@ class Sgbd
      * @since 3.0 First time this was introduced.
      * @since 5.1.5 Switched to static
      * @since 5.1.6 Added one more parameter optional, multiple connexion for same MySQL server (to prevent problem with current database)
-     * @version 3.0
+     * @since 
      * TODO : Change name for connect
      */
     static public function sql($name, $num = '')
@@ -180,7 +180,7 @@ class Sgbd
     static public function connectAll()
     {
         foreach (self::$config as $name => $config) {
-            yield $name => $this->sql($name);
+            yield $name => self::sql($name);
         }
     }
 
@@ -207,7 +207,7 @@ class Sgbd
      */
     static public function getConnected()
     {
-        return array_keys(self::$db);
+        return self::getFirstTwoLevels(self::$db);
     }
 
     static public function ifExit($name)
@@ -218,4 +218,21 @@ class Sgbd
             return false;
         }
     }
+
+    static function getFirstTwoLevels($array, $currentLevel = 0) {
+        $result = [];
+        foreach ($array as $key => $value) {
+            if ($currentLevel < 2) {
+                if (is_array($value)) {
+                    $result[$key] = self::getFirstTwoLevels($value, $currentLevel + 1);
+                } else {
+                    $result[$key]['db'] = $value->db; //'connected';
+                    $result[$key]['query'] = $value->query; //'connected';
+                    
+                }
+            }
+        }
+        return $result;
+    }
+
 }
