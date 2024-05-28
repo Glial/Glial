@@ -41,6 +41,8 @@ class Controller
     private $isRootNode;
     public $db;
 
+    public $recursive;
+
     /**
      * Short description of method
      *

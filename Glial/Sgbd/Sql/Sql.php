@@ -32,6 +32,9 @@ abstract class Sql
     private $logger;
     public $db;
 
+    //for oracle
+    protected $stid;
+
     //to be surcharged
     public function get_table_to_history()
     {
