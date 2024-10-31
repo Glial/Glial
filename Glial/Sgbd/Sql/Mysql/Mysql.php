@@ -328,10 +328,10 @@ class Mysql extends Sql
             $sql = "SHOW FULL TABLES";
 
             $res = $this->_query($sql);
-    
+            
             $table = array();
             $view  = array();
-    
+            
             while ($ar = $this->sql_fetch_array($res)) {
                 if ($ar['Table_type'] === "VIEW") {
                     $view[] = $ar[0];
@@ -342,7 +342,6 @@ class Mysql extends Sql
             self::$table_list[$database]['table'] = $table;
             self::$table_list[$database]['view']  = $view;
         }
-
         
         if (!empty($table_name)) {
             if (in_array($table_name, self::$table_list[$database][$type])) {

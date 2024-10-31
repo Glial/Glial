@@ -276,11 +276,8 @@ if (! defined('CRYPT_KEY'))
         do {
             echo "MySQL account on (".$hostname.":".$port.")\n";
 
-            $rl   = new \Hoa\Console\Readline\Readline ();
-            $user = $rl->readLine('User     [default : root]    : ');
-
-            $rl       = new \Hoa\Console\Readline\Password();
-            $password = $rl->readLine('Password [default : (empty)] : ');
+            $user = readline('User     [default : root]    : ');
+            $password = readline('Password [default : (empty)] : ');
 
             if (empty($user)) {
                 $user = "root";
@@ -300,17 +297,12 @@ if (! defined('CRYPT_KEY'))
             sleep(1);
         } while ($good === false);
 
-
-
-
         wrong_db:
         $good = false;
         do {
             echo "Name of database who will be used by Glial\n";
 
-
-            $rl       = new \Hoa\Console\Readline\Readline ();
-            $database = $rl->readLine('Database     [default : glial]    : ');
+            $database = readline('Database     [default : glial]    : ');
 
             if (empty($database)) {
                 $database = "glial";
@@ -457,9 +449,8 @@ database=".$server['database']."";
         $this->cadre("Create organisation");
 
         do {
-            $rl            = new \Hoa\Console\Readline\Readline();
-            $oraganisation = $rl->readLine('Your Organisation : ');
-        } while (strlen($oraganisation) < 3);
+            $organization = readline('Your Organization : ');
+        } while (strlen($organization) < 3);
 
 
         $sql = "INSERT INTO client (`id`,`libelle`,`date`) VALUES (1,'".$oraganisation."', '".date('Y-m-d H:i:s')."')";
@@ -485,8 +476,7 @@ database=".$server['database']."";
 
         $email_is_valid = false;
         do {
-            $rl    = new \Hoa\Console\Readline\Readline ();
-            $email = $rl->readLine('Your email [will be used as login] : ');
+            $email = readline('Your email : ');
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $this->displayResult("This email considered as valid !", "KO");
@@ -508,11 +498,14 @@ database=".$server['database']."";
         } while ($email_is_valid === false);
 
 
+        $login = readline('Your login : ');
         //first name
-        $firstname = $rl->readLine('Your firstname : ');
+        $firstname = readline('Your firstname : ');
+
 
         //last name
-        $lastname = $rl->readLine('Your lastname : ');
+        $lastname = readline('Your lastname : ');
+        
 
 
         //country
@@ -526,9 +519,8 @@ database=".$server['database']."";
         }
 
         do {
-            $rl       = new \Hoa\Console\Readline\Readline ();
-            $rl->setAutocompleter(new \Hoa\Console\Readline\Autocompleter\Word($country));
-            $country2 = $rl->readLine('Your country [First letter in upper case, then tab for help] : ');
+            $country2 = readline('Your country [First letter in upper case, then tab for help] : ');
+
 
             $sql = "select id from geolocalisation_country where libelle = '".$DB->sql_real_escape_string($country2)."'";
             $res = $DB->sql_query($sql);
@@ -555,9 +547,7 @@ database=".$server['database']."";
         }
 
         do {
-            $rl    = new \Hoa\Console\Readline\Readline();
-            $rl->setAutocompleter(new \Hoa\Console\Readline\Autocompleter\Word($city));
-            $city2 = $rl->readLine('Your city [First letter in upper case, then tab for help] : ');
+            $city2 = readLine('Your city [First letter in upper case, then tab for help] : ');
 
             $sql = "select id from geolocalisation_city where libelle = '".$DB->sql_real_escape_string($city2)."'";
             $res = $DB->sql_query($sql);
@@ -573,12 +563,12 @@ database=".$server['database']."";
 
 
         //password
-        $rl = new \Hoa\Console\Readline\Password();
+
 
         $good = false;
         do {
-            $pwd  = $rl->readLine('Password : ');
-            $pwd2 = $rl->readLine('Password (repeat) : ');
+            $pwd  = readline('Password : ');
+            $pwd2 = readline('Password (repeat) : ');
 
             if (!empty($pwd) && $pwd === $pwd2) {
                 $good = true;
