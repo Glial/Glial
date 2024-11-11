@@ -18,7 +18,7 @@ class Acl
     protected $access    = array();
     protected $alias     = array();
     protected $maxLength = array();
-    var $initfile;
+    var $inifile;
 
     /*
      * if acl/acl.txt is undefined parse the right in CONFIG ."acl.config.ini.php" and serialize it in acl/acl.txt
