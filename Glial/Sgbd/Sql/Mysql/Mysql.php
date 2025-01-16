@@ -233,6 +233,7 @@ class Mysql extends Sql
 
     public function sql_real_escape_string($data)
     {
+        $data = $data ?? '';
         return mysqli_real_escape_string($this->link, $data);
     }
 
