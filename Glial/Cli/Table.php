@@ -36,6 +36,7 @@ class Table
     var $maxLine;
     var $maxLengthByCol = array();
     var $padding        = 1;
+    var $dataByCol      = array();
 
     public function __construct($style = 1)
     {
