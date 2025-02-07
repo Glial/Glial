@@ -1067,10 +1067,8 @@ class Mysql extends Sql
 
             $res  = $this->sql_query($sql);
             $ret  = array();
-            $ret['time'] = 0;
             while ($data = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
-                $ret['queries'][] = json_encode($data);
-                //$ret['time']     += $data['time'];
+                $ret[] = $data;
             }
 
             return $ret;
