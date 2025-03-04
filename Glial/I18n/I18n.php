@@ -277,6 +277,9 @@ namespace Glial\I18n {
         private static $countNumberElemAtLoading = array();
         private static $DEBUG                    = false;
 
+
+        private static $new_translation = array();
+
         /**
          * Constructor
          *
@@ -310,6 +313,10 @@ namespace Glial\I18n {
 
             $translate_auto = 1;
 
+            if (isset(self::$new_translation[$key])) {
+                return false;
+            }
+            
             // update query with surcharge in manually translated
             $sql = "SELECT target_text from translation_google WHERE ".self::$DB->ESC."key".self::$DB->ESC." ='".$key."' and ".self::$DB->ESC."target_language".self::$DB->ESC." = '".$to."'";
             $res = self::$DB->sql_query($sql);
@@ -327,6 +334,8 @@ namespace Glial\I18n {
                 self::insertSource($from, $text, $key);
                 //add to translation to request
                 //ask_google
+
+                self::$new_translation[$key] = 1;
 
                 return false;
             } else {

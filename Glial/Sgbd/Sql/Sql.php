@@ -32,6 +32,8 @@ abstract class Sql
     private $logger;
     public $db;
 
+    public $time_start;
+
     //for oracle
     protected $stid;
 
@@ -92,6 +94,11 @@ abstract class Sql
             throw new \Exception('GLI-056 : the var $sql must be a string in sql_query !');
         }
 
+        if (empty($this->time_start))
+        {
+            $this->time_start = microtime(true);
+        }
+
         $this->res  = "";
         $this->stid = "";
 
@@ -127,6 +134,7 @@ abstract class Sql
         $this->query[$this->number_of_query]['time']  = $totaltime;
         $this->query[$this->number_of_query]['file']  = $called_from[0]['file'];
         $this->query[$this->number_of_query]['line']  = $called_from[0]['line'];
+        $this->query[$this->number_of_query]['cumulate']  = round(microtime(true) - $this->time_start, 5);;
 
         $this->rows_affected = $this->sql_affected_rows();
 
@@ -522,5 +530,10 @@ abstract class Sql
     public function getDatabase()
     {
         return $this->db;
+    }
+
+    public function getQuery()
+    {
+        return $this->query;
     }
 }
