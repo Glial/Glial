@@ -143,11 +143,18 @@ class Validation {
     }
 
     function ip($elem) {
-        //$success = false;
-        //$success |= $this->ipv4($check);
-        //$success |= $this->ipv6($check);
-        //return $success;
-        return filter_var($elem['value'], FILTER_VALIDATE_IP) !== false;
+    
+        $return =  filter_var($elem['value'], FILTER_VALIDATE_IP) !== false;
+
+        if (! $return) {
+            $ret = trim(shell_exec("getent ahosts ".$elem['value']));
+
+            if (empty($ret)) {
+                return true;
+            }
+        }
+
+        return $return;
     }
 
     function equal_to($elem, $to_test) {
@@ -160,9 +167,6 @@ class Validation {
     }
 
     function reference_to($elem, $table, $field) {
-
-
-
 
         switch (gettype($elem['value'])) {
             case 'double':
