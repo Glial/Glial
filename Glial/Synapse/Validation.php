@@ -149,7 +149,7 @@ class Validation {
         if (! $return) {
             $ret = trim(shell_exec("getent ahosts ".$elem['value']));
 
-            if (empty($ret)) {
+            if ( ! empty($ret)) {
                 return true;
             }
         }
