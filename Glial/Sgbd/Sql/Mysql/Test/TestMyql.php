@@ -14,25 +14,45 @@ use PHPUnit\Framework\TestCase;
 class TestMySQL extends TestCase
 {
 
-    
+    $to_check = []
+
 
     public function testCheckVersion()
     {
-        /*
-        $regex = Ssh::getRegexPrompt();
+        $to_check[1]['version'] = '10.11.11-MariaDB-log';
+        $to_check[1]['version_comment'] = 'managed by https://aws.amazon.com/rds/';
+        $to_check[1]['type_version'] = '10.11.11';
+        $to_check[1]['type_comment'] = 'MariaDB';
 
-        $test_ok = array('root@dba-tools-sa-01:~#', 'logftp@srv-backup-01:/data/Save/DB_ITPROD$','alequoy@dba-tools-sa-01:~$', '[alequoy@SEQ-DWS-02 ~]$','$ ', '# ');
-        $test_fail = array("root@dba-tools-sa-01:~#", "logftp@srv-backup-01:/data/Save/DB_ITPROD$");
+        $to_check[2]['version'] = '10.11.11-MariaDB-deb12-log';
+        $to_check[2]['version_comment'] = 'mariadb.org binary distribution';
+        $to_check[2]['type_version'] = '10.11.11';
+        $to_check[2]['type_comment'] = 'MariaDB';
 
-        foreach ($test_ok as $test) {
 
-            $output_array = [];
-            preg_match_all($regex, $test, $output_array);
+        
 
-            $tmp[0][0] = $test;
-            
-            $this->assertEquals($tmp, $output_array);
-        }*/
+        foreach ($to_check as $key => $data) {
+            // À chaque itération, on affecte les valeurs 'version' et 'version_comment'
+            $this->variables['version'] = $data['version'];
+            $this->variables['version_comment'] = $data['version_comment'];
+
+            // Vérification que getVersion retourne bien type_version du dernier élément
+            $this->assertEquals(
+                $to_check[$key]['type_version'],
+                $versionManager->getVersion(),
+                "La méthode getVersion() doit retourner la valeur type_version du dernier élément."
+            );
+
+            // Vérification que getServerType retourne bien type_comment du dernier élément
+            $this->assertEquals(
+                $to_check[$key]['type_comment'],
+                $versionManager->getServerType(),
+                "La méthode getServerType() doit retourner la valeur type_comment du dernier élément."
+            );
+
+        }
+    
     }
 
 }
