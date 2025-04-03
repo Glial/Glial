@@ -427,7 +427,7 @@ class Mysql extends Sql
     {
 
         if (empty($this->version_full)) {
-            $version_number = $this->getVersion();
+            $this->version_full = $this->getVersion();
         }
 
         if (empty($this->version_comment)) {
@@ -447,7 +447,7 @@ class Mysql extends Sql
                 $this->server_type = 'Percona Server';
             } else if (stripos($version_comment, 'amazon') !== false) {
 
-                $main = explode('.',$version_number)[0];
+                $main = explode('.',$$this->version_full)[0];
                 if ($main >= 10 ) {
                     $this->server_type = 'MariaDB';
                 } else {
