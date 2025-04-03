@@ -427,11 +427,11 @@ class Mysql extends Sql
     {
 
         if (empty($this->version_full)) {
-            $this->getVersion();
+            $version_number = $this->getVersion();
         }
 
         if (empty($this->version_comment)) {
-            $this->getVersionComment();
+            $version_comment = $this->getVersionComment();
         }
 
 
@@ -441,10 +441,18 @@ class Mysql extends Sql
 
             if (stripos($this->version_full, 'drizzle')) {
                 $this->server_type = 'Drizzle';
-            } else if (stripos($this->version_comment, 'mariadb') !== false) {
+            } else if (stripos($version_comment, 'mariadb') !== false) {
                 $this->server_type = 'MariaDB';
-            } else if (stripos($this->version_comment, 'percona') !== false) {
+            } else if (stripos($version_comment, 'percona') !== false) {
                 $this->server_type = 'Percona Server';
+            } else if (stripos($version_comment, 'amazon') !== false) {
+
+                $main = explode('.',$version_number)[0];
+                if ($main >= 10 ) {
+                    $this->server_type = 'MariaDB';
+                } else {
+                    $this->server_type = 'MySQL';
+                }
             }
         }
         return $this->server_type;
