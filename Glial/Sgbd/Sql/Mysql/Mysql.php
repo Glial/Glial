@@ -811,6 +811,8 @@ class Mysql extends Sql
                 return $tab_ret;
             }
         }
+
+        return false;
     }
 
     /**
@@ -844,14 +846,14 @@ class Mysql extends Sql
         if (in_array("BINLOG MONITOR", $grants)) {
             return true;
         }
-        
+
         return false;
     }
 
     /**
      * returns metainfo for fields in $result
      *
-     * @param mysqli_result $result result set identifier
+     * @param \mysqli_result $result result set identifier
      * @license GNU/GPL
      * @return array meta info for fields in $result
       @since 4.2.11 First time this was introduced.
