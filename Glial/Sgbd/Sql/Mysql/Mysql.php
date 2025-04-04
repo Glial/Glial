@@ -829,9 +829,22 @@ class Mysql extends Sql
     {
 
         $grants = $this->getGrants();
-        if (in_array("ALL PRIVILEGES", $grants) || (in_array("SUPER", $grants) || in_array("REPLICATION CLIENT", $grants))) {
+        if (in_array("ALL PRIVILEGES", $grants)) {
             return true;
         }
+
+        if (in_array("SUPER", $grants)) {
+            return true;
+        }
+
+        if (in_array("REPLICATION CLIENT", $grants)) {
+            return true;
+        }
+
+        if (in_array("BINLOG MONITOR", $grants)) {
+            return true;
+        }
+        
         return false;
     }
 
