@@ -397,6 +397,7 @@ class Mysql extends Sql
             $this->getVariables();
         }
 
+        /*
         $version            = $this->variables['version'];
         $this->version_full = $version;
 
@@ -404,8 +405,11 @@ class Mysql extends Sql
             $this->version = explode("-", $version)[0];
         } else {
             $this->version = $version;
-        }
+        }*/
 
+        $tab = self::getMySQLNumVersion($this->variables['version'], $this->variables['version_comment']);
+
+        $this->version = $tab['number'];
 
         return $this->version;
     }
@@ -434,7 +438,7 @@ class Mysql extends Sql
             $version_comment = $this->getVersionComment();
         }
 
-
+        /*
         if (empty($this->server_type)) {
 
             $this->server_type = 'MySQL';
@@ -454,7 +458,12 @@ class Mysql extends Sql
                     $this->server_type = 'MySQL';
                 }
             }
-        }
+        }*/
+
+        $tab = self::getMySQLNumVersion($this->variables['version'], $this->variables['version_comment']);
+
+        $this->server_type = $tab['fork'];
+
         return $this->server_type;
     }
 
@@ -536,7 +545,7 @@ class Mysql extends Sql
      * @since 3.0 First time this was introduced.
      * @version 3.0.1
      */
-    public function XgetVariable()
+    public function getVariable()
     {
 
         if (empty($this->version)) {
@@ -1137,6 +1146,44 @@ class Mysql extends Sql
     public function sql_connect_error()
     {
         return mysqli_connect_error();
+    }
+
+    /*
+        Need to test IT
+
+    */
+
+
+    static public function getMySQLNumVersion($version, $comment)
+    {
+        //10.6.19-15-MariaDB-enterprise-log
+        // need make test with that
+        $enterprise = false;
+
+        if (strpos($version, "-")) {
+            $number = explode("-", $version)[0];
+            $fork   = explode("-", $version)[1];
+            
+            if (preg_match('/^-?\d+$/', $fork)) {
+                $fork   = explode("-", $version)[2];
+                $enterprise = true;
+            }
+        } else {
+            $number = $version;
+            $fork = 'MySQL';
+        }
+
+        $pos = strpos(strtolower($comment), "percona");
+        if ($pos !== false) {
+            $fork = "Percona";
+        }
+
+        $pos = strpos(strtolower($comment), "proxysql");
+        if ($pos !== false) {
+            $fork = "ProxySQL";
+        }
+
+        return array('number'=>$number, 'fork'=> $fork, 'enterprise'=> $enterprise);
     }
 
 }
