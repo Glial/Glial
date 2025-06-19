@@ -794,7 +794,7 @@ class Mysql extends Sql
     public function isSlave()
     {
 
-        if ($this->testAccess()) {
+        if ($this->testAccessReplication()) {
 
             if (version_compare($this->getVersion(), 10, '>')) {
                 $sql = "SHOW ALL SLAVES STATUS";
@@ -858,6 +858,28 @@ class Mysql extends Sql
 
         return false;
     }
+
+
+
+    public function testAccessReplication()
+    {
+
+        $grants = $this->getGrants();
+        if (in_array("ALL PRIVILEGES", $grants)) {
+            return true;
+        }
+
+        if (in_array("SUPER", $grants)) {
+            return true;
+        }
+
+        if (in_array("REPLICATION CLIENT", $grants)) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * returns metainfo for fields in $result
