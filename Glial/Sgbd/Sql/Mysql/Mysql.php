@@ -799,7 +799,7 @@ class Mysql extends Sql
             if (version_compare($this->getVersion(), 10, '>')) {
                 $sql = "SHOW ALL SLAVES STATUS";
             } else {
-                if (version_compare($this->getVersion(), '8.0.33', '>')) {
+                if (version_compare($this->getVersion(), '8.0.22', '>')) {
                     $sql = "SHOW REPLICA STATUS";
                 }
                 else {
