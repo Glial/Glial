@@ -127,7 +127,7 @@ class Console_Getopt
          * erroneous POSIX fix.
          */
         if ($version < 2) {
-            if (isset($args[0]{0}) && $args[0]{0} != '-') {
+            if (isset($args[0][0]) && $args[0][0] != '-') {
                 array_shift($args);
             }
         }
@@ -142,10 +142,10 @@ class Console_Getopt
                 break;
             }
 
-            if ($arg{0} != '-' || (strlen($arg) > 1 && $arg{1} == '-' && !$long_options)) {
+            if ($arg[0] != '-' || (strlen($arg) > 1 && $arg[1] == '-' && !$long_options)) {
                 $non_opts = array_merge($non_opts, array_slice($args, $i));
                 break;
-            } elseif (strlen($arg) > 1 && $arg{1} == '-') {
+            } elseif (strlen($arg) > 1 && $arg[1] == '-') {
                 $error = Console_Getopt::_parseLongOption(substr($arg, 2),
                                                           $long_options,
                                                           $opts,
@@ -188,7 +188,7 @@ class Console_Getopt
     function _parseShortOption($arg, $short_options, &$opts, &$args, $skip_unknown)
     {
         for ($i = 0; $i < strlen($arg); $i++) {
-            $opt     = $arg{$i};
+            $opt     = $arg[$i];
             $opt_arg = null;
 
             /* Try to find the short option in the specifier string. */

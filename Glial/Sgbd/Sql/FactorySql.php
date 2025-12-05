@@ -41,6 +41,14 @@ class FactorySql
             $port = null;
         }
 
+        if (empty($elem['ssl'])) {
+            $elem['ssl'] = "0";
+        }
+
+        if (empty($elem['timeout'])) {
+            $elem['timeout'] = "1";
+        }
+
         self::$db[$name][$num] = new $driver($name, $elem);
 
         if (!self::$db[$name][$num]) {
@@ -53,7 +61,7 @@ class FactorySql
             $elem['password'] = Crypt::decrypt($elem['password'],CRYPT_KEY);
         }
 
-        self::$db[$name][$num]->sql_connect($addr, $elem['user'], $elem['password'], $dbname, $port);
+        self::$db[$name][$num]->sql_connect($addr, $elem['user'], $elem['password'], $dbname, $port, $elem['ssl'], $elem['timeout']);
 
         return self::$db[$name][$num];
     }

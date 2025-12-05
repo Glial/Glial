@@ -2,6 +2,7 @@
 
 namespace Glial\Sgbd\Sql\Mysql;
 
+use Exception;
 use \Glial\Sgbd\Sql\Sql;
 use \Glial\Cli\Color;
 use Glial\Cli\Table;
@@ -42,6 +43,9 @@ class Mysql extends Sql
 
     static public $table_list = array();
 
+
+    static public $proxysql_variables = [];
+
     /*
      * Store in array cash
      */
@@ -61,7 +65,7 @@ class Mysql extends Sql
      * @alias make the same as mysqli::select_db and init charset connection in utf-8
      */
 
-    public function sql_connect($host, $login, $password, $dbname, $port = 3306)
+    public function sql_connect($host, $login, $password, $dbname, $port = 3306, $ssl = 0, $timeout=1)
     {
         if (empty($port)) {
             $port = 3306;
@@ -71,10 +75,19 @@ class Mysql extends Sql
         $this->port = $port;
 
         $this->link = mysqli_init();
-        mysqli_options($this->link, MYSQLI_OPT_CONNECT_TIMEOUT, 11);
-        mysqli_real_connect($this->link, $host, $login, $password, $dbname, $port);
+        mysqli_options($this->link, MYSQLI_OPT_CONNECT_TIMEOUT, $timeout);
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-        //$this->link = mysqli_connect($host, $login, $password, $dbname, $port);
+        if ($ssl == "1")
+        {
+            mysqli_options($this->link, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, false);
+            mysqli_ssl_set($this->link, null, null, null, null, null);
+            mysqli_real_connect($this->link, $host, $login, $password, $dbname, $port, null, MYSQLI_CLIENT_SSL);
+        }
+        else{
+            mysqli_real_connect($this->link, $host, $login, $password, $dbname, $port);
+        }
+
         $this->db   = $dbname;
 
         if (!$this->link) {
@@ -135,23 +148,37 @@ class Mysql extends Sql
         try{
             $ret = mysqli_query($this->link, $sql);
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             $called_from = debug_backtrace();
 
-            $indice = 0;
-            if (strstr($called_from[0]['file'], "/Sgbd/Sql/Sql.php")) {
-                $indice = 1;
-            }
+            $file = "N/A";
+            $line = 0; 
+            foreach($called_from as $elem)
+            {
+                echo $elem['file']."\n";
+                if (strstr($elem['file'], "/Sgbd/Sql/")) {
+                    continue;
+                }
 
-            $file = $called_from[$indice]['file'];
-            $line = $called_from[$indice]['line'];
+                $file = $elem['file'];
+                $line = $elem['line'];
+                break;
+            }
+            echo "Erreur : " . $e->getMessage();
+            //echo "-------------ERROR\n";  
+
+
 
             $level = 60;
 
             \SqlFormatter::$cli = true;
-            $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")." ".Color::getColoredString(" [ERROR] ", "black", "red")."\n".\SqlFormatter::format($sql);
+            $msg = Color::getColoredString("\n[".date("Y-m-d H:i:s")."]", "purple")
+            ." 🔴 ".Color::getColoredString("[ ERROR ] ", "black", "red")."(".$this->host.":".$this->port.")\n"
+            .Color::getColoredString(mysqli_error($this->link),"black","red")."\n"
+            .$file.":".$line."\n"
+            .\SqlFormatter::format($sql);
 
-            error_log($msg."{".$file.":".$line."}\n".Color::getColoredString("ERROR: ".mysqli_error($this->link),"black","red"), 3, TMP."log/sql.log");
+            error_log($msg."\n", 3, TMP."log/sql.log");
 
             throw new \Exception("GLI-562 : ERROR SQL : (".$this->host.":".$this->port.") {".$file.":".$line.", ERROR: ".mysqli_error($this->link)."}\n$sql", $level);
         }
@@ -177,7 +204,8 @@ class Mysql extends Sql
                     $table = new Table(2);
                     $table->addHeader(array(" Level ", " Code ", " Message "));
 
-                    $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")." (".$this->host.":".$this->port.") ".Color::getColoredString(" [SHOW WARNINGS] ", "black", "yellow")."\n"
+                    $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")
+                    ." (".$this->host.":".$this->port.") ".Color::getColoredString(" [SHOW WARNINGS] ", "black", "yellow")."\n"
                         .\SqlFormatter::format($sql)."\n";
 
                     $msg .= Color::getColoredString($file.":".$line, "cyan")."\n";
@@ -296,7 +324,7 @@ class Mysql extends Sql
 
     public function sql_field_name($res, $i)
     {
-        return mysqli_fetch_fields($res, $i);
+        return mysqli_fetch_fields($res);
     }
 
     public function sql_free_result($res)
@@ -306,7 +334,7 @@ class Mysql extends Sql
 
     public function sql_fetch_field($res, $i = 0)
     {
-        return mysqli_fetch_field($res, $i);
+        return mysqli_fetch_field($res);
     }
 
     /**
@@ -634,7 +662,6 @@ class Mysql extends Sql
             }
         }
 
-
         if (version_compare($this->getVersion(), 5.5, '>=')) {
             $sql  = "select @@version_comment limit 1";
             $res  = $this->sql_query($sql);
@@ -656,7 +683,7 @@ class Mysql extends Sql
             if (!empty($this->variables[$var])) {
                 return $this->variables[$var];
             } else {
-                return false;
+                return '';
             }
         }
     }
@@ -763,18 +790,27 @@ class Mysql extends Sql
         if ($this->testAccess()) {
 
             $sql = "SHOW MASTER STATUS";
+
+
+            if ($this->checkVersion(array('MySQL' => '8.4', 'Percona Server' => '8.4')))
+            {
+                $sql = "SHOW BINARY LOG STATUS";
+            }
+            else{
+                $sql = "SHOW MASTER STATUS";
+            }
+
             $res = $this->sql_query($sql);
 
             if ($this->sql_num_rows($res) === 0) {
-                return false;
+                return [];
             } elseif ($this->sql_num_rows($res) !== 1) {
                 throw new \Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
             }
 
-
             return $this->sql_fetch_array($res, MYSQLI_ASSOC);
         }
-        return false;
+        return [];
     }
 
     /**
@@ -793,7 +829,6 @@ class Mysql extends Sql
      */
     public function isSlave()
     {
-
         if ($this->testAccessReplication()) {
 
             if (version_compare($this->getVersion(), 10, '>')) {
@@ -806,7 +841,7 @@ class Mysql extends Sql
                     $sql = "SHOW SLAVE STATUS";
                 }
             }
-
+            
             $res = $this->sql_query($sql);
 
             $tab_ret = array();
@@ -821,7 +856,7 @@ class Mysql extends Sql
             }
         }
 
-        return false;
+        return [];
     }
 
     /**

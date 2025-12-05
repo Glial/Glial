@@ -394,7 +394,7 @@ class Console_GetoptPlus_Getopt
     public function parseShortOption($argument)
     {
         for ($i = 0; $i < strlen($argument); $i++) {
-            $name = $argument{$i};
+            $name = $argument[$i];
             $arg = null;
             // verifies the option is valid
             isset($this->shortOptionsDef[$name]) or self::exception('unrecognized', $name);
@@ -520,7 +520,7 @@ class Console_GetoptPlus_Getopt
                     $parameters[0] = substr($parameters[0], 2);
                     break;
                 }
-            } else if ($arg{0} == '-') {
+            } else if ($arg[0] == '-') {
                 // a short option, e.g. -h
                 $this->parseShortOption(substr($arg, 1));
             } else {

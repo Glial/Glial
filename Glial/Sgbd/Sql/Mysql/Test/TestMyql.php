@@ -14,9 +14,9 @@ use PHPUnit\Framework\TestCase;
 class TestMySQL extends TestCase
 {
 
-    $to_check = []
+    var $to_check = [];
 
-
+    var $versionManager;
     public function testCheckVersion()
     {
         $to_check[1]['version'] = '10.11.11-MariaDB-log';

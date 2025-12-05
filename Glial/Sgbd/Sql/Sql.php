@@ -2,6 +2,7 @@
 
 namespace Glial\Sgbd\Sql;
 
+use Exception;
 use \Glial\Synapse\Singleton;
 use \Glial\Synapse\Validation;
 use \Glial\Utility\Inflector;
@@ -47,7 +48,7 @@ abstract class Sql
 
     abstract protected function __construct($name, $elem);
 
-    abstract protected function sql_connect($var1, $var2, $var3, $db, $port);
+    abstract protected function sql_connect($var1, $var2, $var3, $db, $port, $ssl, $timeout);
 
     abstract protected function sql_select_db($var1);
 
@@ -299,6 +300,8 @@ abstract class Sql
                 $sql = $insert_or_replace." INTO ".static::ESC."".$table."".static::ESC." (".static::ESC."".implode("".static::ESC.",".static::ESC."", $keys)."".static::ESC.") VALUES ('".implode("','",
                         $data[$table])."');";
 
+
+                
                 //debug($sql);
 
                 $this->sql_query($sql, $table, "INSERT");
@@ -334,7 +337,7 @@ abstract class Sql
                         $this->error[] = $sql;
                         $this->error[] = "impossible to select the right row plz have a look on date('c')";
 
-                        throw new \Exception('GLI-031 : Impossible to fine last id inserted in case of insert ignore');
+                        throw new Exception('GLI-031 : Impossible to fine last id inserted in case of insert ignore');
                     }
                 }
             }
@@ -367,6 +370,8 @@ abstract class Sql
                 return $this->sql_insert_id();
             }
         } else {
+
+
             return false;
         }
     }
@@ -535,5 +540,10 @@ abstract class Sql
     public function getQuery()
     {
         return $this->query;
+    }
+
+    public function getError()
+    {
+        return $this->error;
     }
 }
