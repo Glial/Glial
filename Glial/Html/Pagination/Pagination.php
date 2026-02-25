@@ -2,6 +2,8 @@
 
 namespace Glial\Html\Pagination;
 
+
+use Exception;
 /* * **************************************************************************
  * pagination.class.php
  *
@@ -85,7 +87,7 @@ class Pagination
         
         if ($this->start < 0) // to prevent bug
         {
-            throw new \Exception("GLI-069 : Out of range < 0 : '".$this->start."'");
+            throw new Exception("GLI-069 : Out of range < 0 : '".$this->start."'");
         }
         
         $this->run_count ++;

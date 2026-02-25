@@ -10,6 +10,8 @@
 
 namespace Glial\Auth;
 
+
+use Exception;
 use \Glial\Acl\Acl;
 use \Glial\I18n\I18n;
 
@@ -81,21 +83,21 @@ class Auth {
 
         $path = TMP."/database/".$TableName.".table.txt";
         if (!file_exists($path)) {
-            throw new \Exception('GLI-003 : the file cash of "'.$TableName.'" ('.$path.') doent exist');
+            throw new Exception('GLI-003 : the file cash of "'.$TableName.'" ('.$path.') doent exist');
         }
 
         $fields = $DbLink->getInfosTable($TableName)['field'];
 
         if (!in_array($Param[0], $fields)) {
-            throw new \Exception('GLI-004 : the field login referenced by "' . $TableName . '.' . $Param[0] . '" doent exist');
+            throw new Exception('GLI-004 : the field login referenced by "' . $TableName . '.' . $Param[0] . '" doent exist');
         }
 
         if (!in_array($Param[1], $fields)) {
-            throw new \Exception('GLI-005 : the field password referenced by "' . $TableName . '.' . $Param[1] . '" doent exist');
+            throw new Exception('GLI-005 : the field password referenced by "' . $TableName . '.' . $Param[1] . '" doent exist');
         }
 
         if ((string) $Param[0] === (string) $Param[1]) {
-            throw new \Exception('GLI-006 : the field login and password must be different');
+            throw new Exception('GLI-006 : the field login and password must be different');
         }
 
 
@@ -200,7 +202,7 @@ class Auth {
                         $data[self::$_tableName]['is_valid'] = 1;
                         $data[self::$_tableName]['is_ldap'] = 1;
                     } else {
-                        throw new \Exception('GLI-999 : Whilte list failed');
+                        throw new Exception('GLI-999 : Whilte list failed');
                     }
 
                     $id_user_main = self::$_dbLink->sql_save($data);
@@ -356,7 +358,7 @@ class Auth {
 
             ldap_close($ds);
         } else {
-            throw new \Exception('GLI-067 : Impossible to connect to LDAP server :"' . LDAP_URL . ':' . LDAP_PORT . '"');
+            throw new Exception('GLI-067 : Impossible to connect to LDAP server :"' . LDAP_URL . ':' . LDAP_PORT . '"');
         }
         return false;
     }
@@ -387,7 +389,7 @@ class Auth {
 
     public function setIdGroup($id_group) {
         if (!is_int($id_group)) {
-            throw new \Exception("GLI-057 : id_group should be an int (id_group : " . $id_group . ")");
+            throw new Exception("GLI-057 : id_group should be an int (id_group : " . $id_group . ")");
         }
 
         $this->_user->id_group = $id_group;

@@ -7,6 +7,8 @@
 
 namespace Glial\Neuron\PmaCli;
 
+
+use Exception;
 use \Glial\Cli\Color;
 
 class PmaCliDraining
@@ -126,7 +128,7 @@ class PmaCliDraining
         $fields = $this->getTypeOfPrimaryKey($table);
 
         if (count($fields) === 0) {
-            throw new \Exception('GLI-071 : No primary key found on table "'.$table.'"');
+            throw new Exception('GLI-071 : No primary key found on table "'.$table.'"');
 
             if (Debug::$debug) {
                 echo Color::getColoredString("--No Primary key found : '".$table."'", 'black', 'yellow', 'bold').PHP_EOL;
@@ -272,7 +274,7 @@ class PmaCliDraining
 
 
                 if (count($fk_circular) == 2) {
-                    throw new \Exception("PMACTRL-549 : We do not support 2 circulars definitions in same time on same table");
+                    throw new Exception("PMACTRL-549 : We do not support 2 circulars definitions in same time on same table");
                 }
 
 
@@ -370,7 +372,7 @@ class PmaCliDraining
         $this->log($sql);
 
         if ($db->sql_num_rows($res) == "0") {
-            throw new \Exception("GLI-067 : this table '".$table."' haven't primary key !");
+            throw new Exception("GLI-067 : this table '".$table."' haven't primary key !");
         } else {
 
             $index = array();
@@ -394,7 +396,7 @@ class PmaCliDraining
 //$this->log($sql);
 
         if ($db->sql_num_rows($res) === "0") { // should be == 1 have to fix it for PROD_LOT_ITEM
-            throw new \Exception("GLI-067 : this table [".$table."] haven't primary key !");
+            throw new Exception("GLI-067 : this table [".$table."] haven't primary key !");
         } else {
             $ret = array();
             while ($ob  = $db->sql_fetch_object($res)) {
@@ -502,7 +504,7 @@ class PmaCliDraining
         foreach ($foreign_keys as $line) {
 
             if (empty($line['constraint_schema']) || empty($line['constraint_table']) || empty($line['constraint_column']) || empty($line['referenced_schema']) || empty($line['referenced_table']) || empty($line['referenced_column'])) {
-                throw new \Exception("PMACTRL-334 : Value empty in virtual FK");
+                throw new Exception("PMACTRL-334 : Value empty in virtual FK");
             }
 
             $fk[$line['constraint_schema']][$line['constraint_table']][$line['constraint_column']] = $line['referenced_schema']."-".$line['referenced_table']."-".$line['referenced_column'];
@@ -669,7 +671,7 @@ class PmaCliDraining
                         debug($tab2);
                         debug($level);
                         debug($array);
-                        throw new \Exception("PMACTRL-333 Circular definition (table <-> table)");
+                        throw new Exception("PMACTRL-333 Circular definition (table <-> table)");
                     }
                 }
 
@@ -739,7 +741,7 @@ class PmaCliDraining
                 $this->log($sql);
 
                 if (end($db->query)['rows'] == "-1") {
-                    throw new \Exception('PMACLI-666 : Foreign key error, have to update lib of cleaner or order of table set in param');
+                    throw new Exception('PMACLI-666 : Foreign key error, have to update lib of cleaner or order of table set in param');
                 }
 
                 $sql = "DELETE FROM `".$this->schema_delete."`.`".$this->prefix.$table."`";
@@ -892,7 +894,7 @@ class PmaCliDraining
 
 
         if (!is_writable($path)) {
-            throw new \Exception("GLI-985 : Impossible to write in directory : (".$path.")", 80);
+            throw new Exception("GLI-985 : Impossible to write in directory : (".$path.")", 80);
         }
     }
     /*

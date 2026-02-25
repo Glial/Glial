@@ -92,7 +92,7 @@ abstract class Sql
         }
 
         if (!is_string($sql)) {
-            throw new \Exception('GLI-056 : the var $sql must be a string in sql_query !');
+            throw new Exception('GLI-056 : the var $sql must be a string in sql_query !');
         }
 
         if (empty($this->time_start))
@@ -489,8 +489,8 @@ abstract class Sql
             try {
                 $this->_table[$table] = unserialize(file_get_contents(TMP."database".DS.$table.".table.txt"));
                 return $this->_table[$table];
-            } catch (\Exception $e) {
-                throw new \Exception("GLI-010 : This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
+            } catch (Exception $e) {
+                throw new Exception("GLI-010 : This table cash doesn't exist, please run 'php index.php administration admin_table'", 0, $e);
             }
         }
     }

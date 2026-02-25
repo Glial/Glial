@@ -9,6 +9,8 @@ namespace Glial\I18n {
 
 
     use Glial\Extract\Grabber;
+
+use Exception;
     use \App\Library\Debug;
 
     class I18n
@@ -809,7 +811,7 @@ namespace {
         $calledFrom = debug_backtrace();
 
         if ($text !== strip_tags($text)) {
-            throw new \Exception("GLI-145 : html tag not supported for translation : '".htmlentities($text)."' (".$calledFrom[0]['file'].":".$calledFrom[0]['line'].")");
+            throw new Exception("GLI-145 : html tag not supported for translation : '".htmlentities($text)."' (".$calledFrom[0]['file'].":".$calledFrom[0]['line'].")");
         }
 
         if ($lgfrom === "auto") {

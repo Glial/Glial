@@ -2,6 +2,8 @@
 
 namespace Glial\Cli;
 
+
+use Exception;
 class Ssh
 {
     const DEBUG_ON      = 1;
@@ -62,7 +64,7 @@ class Ssh
         if (!($this->connection = @ssh2_connect($this->ssh_host, $this->ssh_port))) {
 
             return false;
-            //throw new \Exception('Cannot connect to server');
+            //throw new Exception('Cannot connect to server');
         }
 
         /*
@@ -89,7 +91,7 @@ class Ssh
         if (!($stream = @ssh2_exec($this->connection, $cmd))) {
 
             return false;
-            //throw new \Exception('GLI-885 : SSH command failed');
+            //throw new Exception('GLI-885 : SSH command failed');
         }
         stream_set_blocking($stream, true);
         $data = "";
@@ -211,7 +213,7 @@ class Ssh
         $tmp = trim(explode(" ", trim(explode(":", $paths)[1]))[0]);
 
         if (empty($tmp)) {
-            throw new \Exception("GLI-060 : Impossible to find : ".$cmd."\n return : ".$paths);
+            throw new Exception("GLI-060 : Impossible to find : ".$cmd."\n return : ".$paths);
         }
 
         return $tmp;

@@ -2,6 +2,8 @@
 
 namespace Glial\Synapse;
 
+
+use Exception;
 class Config
 {
 
@@ -67,10 +69,10 @@ class Config
 
             if ($filename === "db")
             {
-                throw new \Exception("GLI-051 This ini file \"".'db.config.ini.php'."\" wasn't loaded or is empty (no connection configured)");
+                throw new Exception("GLI-051 This ini file \"".'db.config.ini.php'."\" wasn't loaded or is empty (no connection configured)");
             }
 
-            throw new \Exception("GLI-051 This ini file \"".$filename."\" wasn't loaded");
+            throw new Exception("GLI-051 This ini file \"".$filename."\" wasn't loaded");
         }
 
         return $this->data[$filename];

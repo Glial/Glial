@@ -8,6 +8,8 @@
 
 namespace Glial\Html\Form;
 
+
+use Exception;
 class Upload
 {
 
@@ -33,7 +35,7 @@ class Upload
 
         if (!is_writable($this->_destination)) {
             return false;
-            //throw new \Exception("GLI-067 : Impossible to write into this directory : " . $this->_destination);
+            //throw new Exception("GLI-067 : Impossible to write into this directory : " . $this->_destination);
         }
     }
 

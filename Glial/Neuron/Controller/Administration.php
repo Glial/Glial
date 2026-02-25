@@ -7,6 +7,8 @@
 
 namespace Glial\Neuron\Controller;
 
+
+use Exception;
 use \Glial\Utility\Inflector;
 use \Glial\Synapse\Basic;
 use \Glial\Sgbd\Sgbd;
@@ -94,7 +96,7 @@ trait Administration
         if (is_writable(TMP."keys/")) {
             file_put_contents(TMP."keys/".$key."_index_unique.txt", $json);
         } else {
-            throw new \Exception("GLI-016 : This directory should be writable : ".TMP."keys/", 16);
+            throw new Exception("GLI-016 : This directory should be writable : ".TMP."keys/", 16);
         }
         //}
         //exit(95);

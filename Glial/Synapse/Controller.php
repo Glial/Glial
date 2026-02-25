@@ -2,6 +2,8 @@
 
 namespace Glial\Synapse;
 
+
+use Exception;
 //use \Glial\Synapse\Singleton;
 use \Glial\Synapse\Variable;
 use \Glial\I18n\I18n;
@@ -102,7 +104,7 @@ class Controller
         if (method_exists($page, $action)) {
             $resultat = $page->$action($this->param);
         } else {
-            throw new \Exception("GLI-026 Impossible to access to this controller/action => '$this->controller/$action'");
+            throw new Exception("GLI-026 Impossible to access to this controller/action => '$this->controller/$action'");
         }
 
         $page->after($this->param);

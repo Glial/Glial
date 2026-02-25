@@ -2,6 +2,8 @@
 
 namespace Glial\Synapse;
 
+
+use Exception;
 class Validation {
 
     protected $db;
@@ -176,7 +178,7 @@ class Validation {
                 break;
 
             default:
-                throw new \Exception("GLI-061 : This type is not supported (only : integer,double,string) : " . gettype($elem['value']) . " (".$elem['value'].") [check, data you set in sql_save]", 80);
+                throw new Exception("GLI-061 : This type is not supported (only : integer,double,string) : " . gettype($elem['value']) . " (".$elem['value'].") [check, data you set in sql_save]", 80);
                 break;
         }
 

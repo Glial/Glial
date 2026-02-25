@@ -23,6 +23,8 @@
 
 namespace Glial\Img;
 
+
+use Exception;
 class FaceDetection
 {
     protected $detection_data;
@@ -43,7 +45,7 @@ class FaceDetection
     public function faceDetect($file)
     {
         if (!is_file($file)) {
-            throw new \Exception("Can not load $file");
+            throw new Exception("Can not load $file");
         } $this->canvas = imagecreatefromjpeg($file);
         $im_width     = imagesx($this->canvas);
         $im_height    = imagesy($this->canvas);         //Resample before detection?

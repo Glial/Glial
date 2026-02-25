@@ -2,6 +2,8 @@
 
 namespace Glial\Sgbd;
 
+
+use Exception;
 use \Glial\Cli\Table;
 use \Glial\Sgbd\Sql\FactorySql;
 
@@ -57,7 +59,7 @@ class Sgbd
         }
 
         if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name)) {
-            throw new \Exception("GLI-025 : The name of identifier is invalid : '".$name."' (only letter / number and underscore are allowed) !", 50);
+            throw new Exception("GLI-025 : The name of identifier is invalid : '".$name."' (only letter / number and underscore are allowed) !", 50);
         }
 
         if (array_key_exists($name, self::$config)) {
@@ -70,7 +72,7 @@ class Sgbd
 
             return self::$db[$name][$num];
         } else {
-            throw new \Exception("GLI-19 : This connection was not configured : '".$name."' !");
+            throw new Exception("GLI-19 : This connection was not configured : '".$name."' !");
         }
     }
 
@@ -157,7 +159,7 @@ class Sgbd
         if (!empty(self::$config[$db])) {
             return self::$config[$db];
         } else {
-            throw new \Exception("GLI-021 : Error this instances \"".$db."\" doesn't exit", 21);
+            throw new Exception("GLI-021 : Error this instances \"".$db."\" doesn't exit", 21);
         }
     }
 

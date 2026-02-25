@@ -2,6 +2,8 @@
 
 namespace Glial\Neuron\Controller;
 
+
+use Exception;
 use \Glial\Cli\Glial;
 use \Glial\Cli\Color;
 use \Glial\Security\Crypt\Crypt;
@@ -105,7 +107,7 @@ trait Install
                 break;
 
             default:
-                throw new \Exception("GLI-024 : Arguement '".$msg.$type."' not valid {OK|KO|NA}", 21);
+                throw new Exception("GLI-024 : Arguement '".$msg.$type."' not valid {OK|KO|NA}", 21);
         }
 
 
@@ -200,7 +202,7 @@ trait Install
             try {
                 $ret = Sgbd::sql($name);
                 echo $this->out("Connected to database : $name", "OK");
-            } catch (\Exception $ex) {
+            } catch (Exception $ex) {
                 echo $this->out($ex->getMessage(), "KO");
             }
 

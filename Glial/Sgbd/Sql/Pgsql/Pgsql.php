@@ -2,6 +2,8 @@
 
 namespace Glial\Sgbd\Sql\Pgsql;
 
+
+use Exception;
 use \Glial\Sgbd\Sql\Sql;
 
 class Pgsql extends Sql
@@ -33,7 +35,7 @@ class Pgsql extends Sql
         
         if (! $this->link)
         {
-            throw new \Exception('GLI-012 : Impossible to connect to : '.$host);
+            throw new Exception('GLI-012 : Impossible to connect to : '.$host);
         }
 
         return $this->link;

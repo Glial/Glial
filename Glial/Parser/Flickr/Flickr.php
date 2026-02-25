@@ -17,6 +17,8 @@ order by a.total_found desc
 
 namespace Glial\Parser\Flickr;
 
+
+use Exception;
 use \Glial\Extract\Grabber;
 
 //http://farm8.staticflickr.com/7253/8161959793_a81037254c.jpg
@@ -173,7 +175,7 @@ class Flickr
                 $data['id_author'] = $out[1];
 
             } else {
-                throw new \Exception("GLI-366 : impossible to get the author");
+                throw new Exception("GLI-366 : impossible to get the author");
                 return false;
                 //die("Error : Impossible to get id_author\n");
                 //return false;
@@ -181,7 +183,7 @@ class Flickr
         }
         else
         {
-            throw new \Exception("GLI-366 : Impossible to find tag : <div class=\"attribution-info\"");
+            throw new Exception("GLI-366 : Impossible to find tag : <div class=\"attribution-info\"");
         }
 
         //print_r($data);

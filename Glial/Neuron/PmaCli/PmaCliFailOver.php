@@ -8,6 +8,8 @@
 
 namespace Glial\Neuron\PmaCli;
 
+
+use Exception;
 trait PmaCliFailOver
 {
 
@@ -82,7 +84,7 @@ trait PmaCliFailOver
             
             if (empty($GTID))
             {
-                throw new \Exception("GLI-066 : GTID empty on : ".$current_thread);
+                throw new Exception("GLI-066 : GTID empty on : ".$current_thread);
             }
             
             
@@ -135,7 +137,7 @@ trait PmaCliFailOver
                     debug($data);
                     debug($default->sql_error());
                     
-                    throw new \Exception("GLI-089 : Impossible to select the id server (".$slave[$next_thread]->Master_Host.":".$slave[$next_thread]->Master_Port.") corresponding to the thread : ".$this->connection_name[$next_thread]);
+                    throw new Exception("GLI-089 : Impossible to select the id server (".$slave[$next_thread]->Master_Host.":".$slave[$next_thread]->Master_Port.") corresponding to the thread : ".$this->connection_name[$next_thread]);
                 }
             }
         }

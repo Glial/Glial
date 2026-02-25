@@ -2,6 +2,8 @@
 
 namespace Glial\Cli;
 
+
+use Exception;
 define("CRONTAB_FILE", "/tmp/crontab_php");
 
 class Crontab
@@ -17,7 +19,7 @@ class Crontab
         /* TODO : Add check
           if (!self::assertLineIsValid($new_elem))
           {
-          throw new \Exception("GLI-125 : Crontab malformed : '".$new_elem."'");
+          throw new Exception("GLI-125 : Crontab malformed : '".$new_elem."'");
           } */
 
         $new_elem .= ' ' . $chpCommande;
@@ -86,7 +88,7 @@ class Crontab
         $output = shell_exec('crontab ' . CRONTAB_FILE . ' 2>&1');    /* on le soumet comme crontab */
 
         if (!empty($output)) {
-            throw new \Exception("GLI-075 : Impossible to install new crontab : '" . $new_elem . "'\n" . $output . "");
+            throw new Exception("GLI-075 : Impossible to install new crontab : '" . $new_elem . "'\n" . $output . "");
         }
 
         unlink(CRONTAB_FILE);

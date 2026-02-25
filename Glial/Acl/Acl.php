@@ -9,6 +9,8 @@
 
 namespace Glial\Acl;
 
+
+use Exception;
 use Glial\Cli\Color;
 
 class Acl
@@ -133,7 +135,7 @@ class Acl
 
                         //si le chemin de class ne correspond pas au nom de la class, penser a vérifier le namespace également.
                         if (!class_exists($class)) {
-                            throw new \Exception('GLI-034 : The class must be with the same name (check '.ROOT.'App/Controller/'.$controller.'.php)');
+                            throw new Exception('GLI-034 : The class must be with the same name (check '.ROOT.'App/Controller/'.$controller.'.php)');
                         }
 
                         $tab  = get_class_methods($class);
@@ -153,7 +155,7 @@ class Acl
                 closedir($dh);
             }
         } else {
-            throw new \Exception('GLI-035 : impossible to open dir "'.$dir.'"');
+            throw new Exception('GLI-035 : impossible to open dir "'.$dir.'"');
         }
     }
     /*
@@ -169,7 +171,7 @@ class Acl
     function loadIniFile($filename)
     {
         if (!is_file($filename)) {
-            throw new \Exception('GLI-008 : impossible to load the ini file : "'.$filename.'".');
+            throw new Exception('GLI-008 : impossible to load the ini file : "'.$filename.'".');
         }
 
         $this->maxLength['role'] = 0;
@@ -659,7 +661,7 @@ class Acl
         foreach ($test as $value) {
             if (empty($data[$value])) {
 
-                throw new \Exception("GLI-581 : the format of array is not correct ('alias', 'role', 'allow', 'deny')", 80);
+                throw new Exception("GLI-581 : the format of array is not correct ('alias', 'role', 'allow', 'deny')", 80);
                 return false;
             }
         }
@@ -698,7 +700,7 @@ class Acl
         $main   = array_diff($values, $keys);
 
         if (count($main) !== 1) {
-            throw new \Exception('GLI-127 : There is two lowest rank');
+            throw new Exception('GLI-127 : There is two lowest rank');
         }
 
         return end($main);

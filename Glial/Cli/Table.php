@@ -2,6 +2,8 @@
 
 namespace Glial\Cli;
 
+
+use Exception;
 class Table
 {
     const DATA       = "data";
@@ -95,7 +97,7 @@ class Table
     {
         foreach ($line as $elem) {
             if (!empty($elem) && !is_string($elem) && !is_int($elem) && !is_float($elem)) {
-                throw new \Exception("GLI-015 : \$line must be an array of string/int : '".$elem."'");
+                throw new Exception("GLI-015 : \$line must be an array of string/int : '".$elem."'");
             }
         }
 

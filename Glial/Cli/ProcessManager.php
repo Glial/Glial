@@ -18,6 +18,8 @@
 
 namespace Glial\Cli;
 
+
+use Exception;
 class ProcessManager
 {
 
@@ -70,10 +72,10 @@ class ProcessManager
     public function __construct($iMaxChildrens = 20)
     {
         if (!function_exists('pcntl_fork'))
-            throw new \Exception('Your configuration does not include pcntl functions.');
+            throw new Exception('Your configuration does not include pcntl functions.');
 
         if (!is_int($iMaxChildrens) || $iMaxChildrens < 1)
-            throw new \Exception('Childrens must be an Integer');
+            throw new Exception('Childrens must be an Integer');
 
         $this->_iMaxChildrens = $iMaxChildrens;
         $this->_iPid = getmypid();
@@ -99,10 +101,10 @@ class ProcessManager
     public function fork($mFunction, $aParams = array())
     {
         if (!is_string($mFunction) && !is_array($mFunction))
-            throw new \Exception('Function given must be a String or an Array');
+            throw new Exception('Function given must be a String or an Array');
 
         if (!is_array($aParams))
-            throw new \Exception('Parameters must be an Array');
+            throw new Exception('Parameters must be an Array');
 
 
         //to keep order in log
@@ -112,7 +114,7 @@ class ProcessManager
         $iPid = pcntl_fork();
 
         if ($iPid === -1)
-            throw new \Exception('Unable to fork.');
+            throw new Exception('Unable to fork.');
         elseif ($iPid > 0) {
             // We are in the parent process
             $this->_aChildrens[] = $iPid;
@@ -152,13 +154,13 @@ class ProcessManager
     public function addSignal($iSignal, $mFunction)
     {
         if (!is_int($iSignal))
-            throw new \Exception('Signal must be an Integer.');
+            throw new Exception('Signal must be an Integer.');
 
         if (!is_string($mFunction) && !is_array($mFunction))
-            throw new \Exception('Function to callback must be a String or an Array.');
+            throw new Exception('Function to callback must be a String or an Array.');
 
         if (!pcntl_signal($iSignal, $mFunction))
-            throw new \Exception('Unable to set up the signal.');
+            throw new Exception('Unable to set up the signal.');
     }
 
     /**

@@ -8,6 +8,8 @@ Login : logftp
 
 namespace Glial\Neuron\PmaCli;
 
+
+use Exception;
 trait PmaCliBackup {
 
     public function backupDeleteOld() {
@@ -35,7 +37,7 @@ trait PmaCliBackup {
                 try {
                     if (!unlink($tab['file_name'] . ".gz")) {
 
-                        throw new \Exception("GLI-050 Impossible to delete : " . $file);
+                        throw new Exception("GLI-050 Impossible to delete : " . $file);
                     } else {
                         echo "deleted file : " . $file . "\n";
                     }

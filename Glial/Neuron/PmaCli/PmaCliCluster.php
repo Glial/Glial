@@ -8,6 +8,8 @@
 
 namespace Glial\Neuron\PmaCli;
 
+
+use Exception;
 use \Glial\Cli\Color;
 
 trait PmaCliCluster
@@ -90,7 +92,7 @@ trait PmaCliCluster
                 $res = $default->sql_query($sql);
 
                 if ($default->sql_num_rows($res) !== 1) {
-                    throw new \Exception('GLI-050 : Impossible to select the right MySQL serveur ! ' . "\n" . $sql);
+                    throw new Exception('GLI-050 : Impossible to select the right MySQL serveur ! ' . "\n" . $sql);
                 } else {
 
 

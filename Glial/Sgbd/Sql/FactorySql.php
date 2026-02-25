@@ -3,6 +3,8 @@
 
 namespace Glial\Sgbd\Sql;
 
+
+use Exception;
 use \Glial\Security\Crypt\Crypt;
 
 /*
@@ -27,7 +29,7 @@ class FactorySql
     static function connect($name,$num, $elem)
     {
         if (!in_array($elem['driver'], self::$driver)) {
-            throw new \Exception("GLI-023 : This driver isn't supported : '".$elem['driver']."' on connection name [".$name."]");
+            throw new Exception("GLI-023 : This driver isn't supported : '".$elem['driver']."' on connection name [".$name."]");
         }
 
         $driver = '\Glial\Sgbd\Sql\\'.ucwords(strtolower($elem['driver'])).'\\'.ucwords(strtolower($elem['driver']));

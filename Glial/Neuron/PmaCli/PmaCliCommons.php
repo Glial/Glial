@@ -8,6 +8,8 @@
 
 namespace Glial\Neuron\PmaCli;
 
+
+use Exception;
 trait PmaCliCommons
 {
 
@@ -26,7 +28,7 @@ trait PmaCliCommons
         $res = $default->sql_query($sql);
 
         if ($default->sql_num_rows($res) != 1) {
-            throw new \Exception("PMACTRL-058 : Impossible to find this server '" . $server_name . "'");
+            throw new Exception("PMACTRL-058 : Impossible to find this server '" . $server_name . "'");
         }
 
 

@@ -8,6 +8,8 @@
 
 namespace Glial\Neuron\PmaCli;
 
+
+use Exception;
 use \Glial\Sgbd\Sql\Mysql\MasterSlave;
 use \Glial\Cli\Table;
 
@@ -35,7 +37,7 @@ trait PmaCliSwitch
         $log_slave_updates = $master->getVariables("log_slave_updates");
 
         if ($log_slave_updates !== 'ON') {
-            throw new \Exception("[ERROR] PMACLI-001 : log_slave_updates must be unabled on new master : '" . $servers[1] . "'");
+            throw new Exception("[ERROR] PMACLI-001 : log_slave_updates must be unabled on new master : '" . $servers[1] . "'");
         }
 
         $MS = new MasterSlave();
@@ -53,7 +55,7 @@ trait PmaCliSwitch
                 $slave_master_host[$thread['Master_Host']] = $conn;
             }
         } else {
-            throw new \Exception("[ERROR] PMACLI-002 : the server should configured as slave : '" . $servers[0] . "'");
+            throw new Exception("[ERROR] PMACLI-002 : the server should configured as slave : '" . $servers[0] . "'");
         }
 
         $MS->setInstance($master);
@@ -67,14 +69,14 @@ trait PmaCliSwitch
                 $master_master_host[$thread['Master_Host']] = $conn;
             }
         } else {
-            throw new \Exception("[ERROR] PMACLI-002 : the server should configured as slave : '" . $servers[1] . "'");
+            throw new Exception("[ERROR] PMACLI-002 : the server should configured as slave : '" . $servers[1] . "'");
         }
 
 
         $cmp = array_intersect_key($slave_master_host, $master_master_host);
 
         if (count($cmp) !== 1) {
-            throw new \Exception("[ERROR] PMACLI-003 : the servers must have the same master");
+            throw new Exception("[ERROR] PMACLI-003 : the servers must have the same master");
         }
         $ip_of_master = array_keys($cmp)[0];
 
@@ -113,7 +115,7 @@ trait PmaCliSwitch
 
 
         if ($MASTER_MASTER_LOG_FILE !== $SLAVE_MASTER_LOG_FILE || $SLAVE_MASTER_LOG_POS > $MASTER_MASTER_LOG_POS) {
-            throw new \Exception("[ERROR] PMACLI-005 : Error the new master is behind the slave");
+            throw new Exception("[ERROR] PMACLI-005 : Error the new master is behind the slave");
         }
 
         $tab = new Table(1);

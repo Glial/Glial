@@ -2,6 +2,8 @@
 
 namespace Glial\Net;
 
+
+use Exception;
 class Ssh
 {
     private $connection;
@@ -27,11 +29,11 @@ class Ssh
 
         if ($ssh) {
             if (!($this->stdio = ssh2_shell($this->connection, "xterm"))) {
-                throw new \Exception("GLI-014 : Connexion to ssh impossible on : ".$user."@".$host.":".$port."");
+                throw new Exception("GLI-014 : Connexion to ssh impossible on : ".$user."@".$host.":".$port."");
             }
         } else {
             echo "Connexion to ssh impossible on : " . $user . "@" . $host . ":" . $port."\n";
-            //throw new \Exception("GLI-014 : Connexion to ssh impossible on : " . $user . "@" . $host . ":" . $port . "");
+            //throw new Exception("GLI-014 : Connexion to ssh impossible on : " . $user . "@" . $host . ":" . $port . "");
         }
     }
 
@@ -48,7 +50,7 @@ class Ssh
 
         if (!($stream = ssh2_exec($this->connection, $cmd))) {
 
-            //throw new \Exception('SSH command failed');
+            //throw new Exception('SSH command failed');
             return false;
         }
         stream_set_blocking($stream, true);

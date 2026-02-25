@@ -2,6 +2,8 @@
 
 namespace Glial\Sgbd\Sql\Mysql;
 
+
+use Exception;
 class MasterSlave {
 
     private $instance;
@@ -53,7 +55,7 @@ class MasterSlave {
             if ($this->instance->sql_num_rows($res) === 0) {
                 return false;
             } elseif ($this->instance->sql_num_rows($res) !== 1) {
-                throw new \Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
+                throw new Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
             }
 
 

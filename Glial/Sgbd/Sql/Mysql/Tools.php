@@ -2,6 +2,8 @@
 
 namespace Glial\Sgbd\Sql\Mysql;
 
+
+use Exception;
 class Tools {
 
     private $instance = array();
@@ -37,7 +39,7 @@ class Tools {
         }
         elseif ($instance->sql_num_rows($res) !== 1)
         {
-            throw new \Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
+            throw new Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
         }
         
         return $instance->sql_fetch_array($res, MYSQLI_ASSOC);

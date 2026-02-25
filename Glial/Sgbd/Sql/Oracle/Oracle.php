@@ -2,6 +2,8 @@
 
 namespace Glial\Sgbd\Sql\Oracle;
 
+
+use Exception;
 use \Glial\Sgbd\Sql\Sql;
 
 class Oracle extends Sql
@@ -40,7 +42,7 @@ class Oracle extends Sql
         $this->link  = oci_connect($login, $password, $string);
 
         if (!$this->link) {
-            throw new \Exception('GLI-012 : Impossible to connect to : ' . $host . 'string : ' . $string);
+            throw new Exception('GLI-012 : Impossible to connect to : ' . $host . 'string : ' . $string);
         }
         
         $this->is_connected = true;

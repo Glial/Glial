@@ -2,6 +2,8 @@
 
 namespace Glial\Neuron\PmaCli;
 
+
+use Exception;
 use \Glial\Cli\Table;
 use \Glial\Cli\Window;
 use \Glial\Sgbd\Sql\Mysql\MasterSlave;
@@ -360,7 +362,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
 
             return true;
         } else {
-            throw new \Exception("GLI-035 : Impossible to write to : '" . $file_name . "'");
+            throw new Exception("GLI-035 : Impossible to write to : '" . $file_name . "'");
         }
 
         return false;
@@ -546,7 +548,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
                 if (!$id_mysql_replication_stats) {
                     debug($default->sql_error());
                     debug($data);
-                    throw new \Exception("GLI-031 : Impossible to get id_mysql_replication_stats");
+                    throw new Exception("GLI-031 : Impossible to get id_mysql_replication_stats");
                 }
 
                 $thread = [];
@@ -583,7 +585,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
                         if (!$id_mysql_replication_thread) {
                             debug($default->sql_error());
                             debug($data);
-//throw new \Exception("GLI-032 : Impossible to save row in mysql_replication_thread");
+//throw new Exception("GLI-032 : Impossible to save row in mysql_replication_thread");
                         } else {
                             $thread['id_mysql_replication_thread'] = $default->sql_insert_id();
                         }
@@ -598,7 +600,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
         $default->sql_query('COMMIT;');
 
         /*
-          } catch (\Exception $ex) {
+          } catch (Exception $ex) {
 
 
           $default->sql_query('ROLLBACK;');
@@ -738,9 +740,9 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
 
             try {
                 if (!unlink($file)) {
-                    throw new \Exception('GLI-040 Impossible to delete file : "' . $file . '"');
+                    throw new Exception('GLI-040 Impossible to delete file : "' . $file . '"');
                 }
-            } catch (\Exception $ex) {
+            } catch (Exception $ex) {
                 echo $ex->getMessage() . PHP_EOL;
             }
 
@@ -1171,7 +1173,7 @@ use \Glial\Neuron\PmaCli\PmaCliCommons;
                 $ret .= '</table>';
             }
         } else {
-            throw new \Exception('PMACLI-072 Impossible to get id of server !');
+            throw new Exception('PMACLI-072 Impossible to get id of server !');
         }
 
         return $ret;
