@@ -691,26 +691,56 @@ class Mysql extends Sql
     public function getGrants()
     {
         if (empty($this->grant)) {
-
-            $sql  = "SHOW grants for current_user;";
-            $res  = $this->sql_query($sql);
             $this->grant = [];
 
-            while ($data = $this->sql_fetch_array($res, MYSQLI_NUM)) {
-                if (empty($data[0])) {
+            // Compatibilité MySQL/MariaDB/Percona/SingleStore :
+            // certaines variantes n'acceptent pas "SHOW grants for current_user;"
+            $queries = [
+                "SHOW GRANTS",
+                "SHOW grants for CURRENT_USER()",
+                "SHOW grants for current_user;",
+            ];
+
+            foreach ($queries as $sql) {
+                $res = $this->sql_query_silent($sql);
+                if ($res === false) {
                     continue;
                 }
 
-                $output_array = [];
-                preg_match("/GRANT\s+(.+?)\s+ON\s+/i", $data[0], $output_array);
+                while ($data = $this->sql_fetch_array($res, MYSQLI_NUM)) {
+                    if (empty($data[0])) {
+                        continue;
+                    }
 
-                if (empty($output_array[1])) {
-                    continue;
+                    $output_array = [];
+                    preg_match("/GRANT\s+(.+?)\s+ON\s+/i", $data[0], $output_array);
+
+                    if (empty($output_array[1])) {
+                        continue;
+                    }
+
+                    foreach (explode(', ', $output_array[1]) as $privilege) {
+                        if (!in_array($privilege, $this->grant, true)) {
+                            $this->grant[] = $privilege;
+                        }
+                    }
                 }
 
-                foreach (explode(', ', $output_array[1]) as $privilege) {
-                    if (!in_array($privilege, $this->grant, true)) {
-                        $this->grant[] = $privilege;
+                if (!empty($this->grant)) {
+                    break;
+                }
+            }
+
+            // Fallback SingleStore (ou autres forks) : si impossible d'obtenir SHOW GRANTS,
+            // on considère le compte admin comme compte "root" fonctionnel.
+            if (empty($this->grant)) {
+                $resUser = $this->sql_query_silent("SELECT CURRENT_USER() AS current_user");
+                if ($resUser !== false) {
+                    $userRow = $this->sql_fetch_array($resUser, MYSQLI_ASSOC);
+                    $currentUser = strtolower((string)($userRow['current_user'] ?? ''));
+
+                    if (str_starts_with($currentUser, 'admin@') || $currentUser === 'admin') {
+                        $this->grant[] = "ALL PRIVILEGES";
                     }
                 }
             }
