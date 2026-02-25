@@ -147,6 +147,19 @@ abstract class Sql
         return $res;
     }
 
+    /**
+     * Execute a query without raising exception to caller.
+     * Return false on failure.
+     */
+    public function sql_query_silent($sql, $table = "", $type = "")
+    {
+        try {
+            return $this->sql_query($sql, $table, $type);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
     public function sql_error()
     {
         return $this->error;

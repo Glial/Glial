@@ -103,7 +103,7 @@ class Mysql extends Sql
             $this->is_connected = false;
 
             if ($level === 80) {
-                throw new \Exception('GLI-012 : Can\'t connect to ('.$login.'@'.$host.":".$port.') MySQL server'.' {'.error_get_last()['message'].'}', $level);
+                throw new Exception('GLI-012 : Can\'t connect to ('.$login.'@'.$host.":".$port.') MySQL server'.' {'.error_get_last()['message'].'}', $level);
             } else {
                 //return $this->link;
                 //return 'Can\'t connect to (' . $login . '@' . $host . ":" . $port . ') MySQL server' . ' {' . error_get_last()['message'] . '}';
@@ -180,7 +180,7 @@ class Mysql extends Sql
 
             error_log($msg."\n", 3, TMP."log/sql.log");
 
-            throw new \Exception("GLI-562 : ERROR SQL : (".$this->host.":".$this->port.") {".$file.":".$line.", ERROR: ".mysqli_error($this->link)."}\n$sql", $level);
+            throw new Exception("GLI-562 : ERROR SQL : (".$this->host.":".$this->port.") {".$file.":".$line.", ERROR: ".mysqli_error($this->link)."}\n$sql", $level);
         }
 
         if (mysqli_warning_count($this->link)) {
@@ -390,7 +390,7 @@ class Mysql extends Sql
         $res = $this->_query($sql);
 
         if (!$res) {
-            throw new \Exception("GLI-030 : problem with this query : '".$sql."'");
+            throw new Exception("GLI-030 : problem with this query : '".$sql."'");
         }
 
         $index = array();
@@ -694,11 +694,26 @@ class Mysql extends Sql
 
             $sql  = "SHOW grants for current_user;";
             $res  = $this->sql_query($sql);
-            $data = $this->sql_fetch_array($res, MYSQLI_NUM);
+            $this->grant = [];
 
-            preg_match("/GRANT ([\w ,]+) ON /", $data[0], $output_array);
+            while ($data = $this->sql_fetch_array($res, MYSQLI_NUM)) {
+                if (empty($data[0])) {
+                    continue;
+                }
 
-            $this->grant = explode(', ', $output_array[1]);
+                $output_array = [];
+                preg_match("/GRANT\s+(.+?)\s+ON\s+/i", $data[0], $output_array);
+
+                if (empty($output_array[1])) {
+                    continue;
+                }
+
+                foreach (explode(', ', $output_array[1]) as $privilege) {
+                    if (!in_array($privilege, $this->grant, true)) {
+                        $this->grant[] = $privilege;
+                    }
+                }
+            }
 
             return $this->grant;
         } else {
@@ -716,7 +731,7 @@ class Mysql extends Sql
         }
 
         if (empty($elem)) {
-            throw new \Exception("GLI-101 : couldn't find the table : '".$table."'");
+            throw new Exception("GLI-101 : couldn't find the table : '".$table."'");
         }
 
         return $elem;
@@ -805,7 +820,7 @@ class Mysql extends Sql
             if ($this->sql_num_rows($res) === 0) {
                 return [];
             } elseif ($this->sql_num_rows($res) !== 1) {
-                throw new \Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
+                throw new Exception("GLI-011 : more than one line returned in SHOW MASTER STATUS");
             }
 
             return $this->sql_fetch_array($res, MYSQLI_ASSOC);
@@ -1042,7 +1057,7 @@ class Mysql extends Sql
             $res = $this->sql_query($sql);
 
             if ($this->sql_num_rows($res) == "0") {
-                throw new \Exception("GLI-067 : this table '".$table."' haven't primary key !");
+                throw new Exception("GLI-067 : this table '".$table."' haven't primary key !");
             } else {
 
                 $index = array();
@@ -1075,7 +1090,7 @@ class Mysql extends Sql
             $res = $this->sql_query($sql);
 
             if ($this->sql_num_rows($res) === "0") {
-                throw new \Exception("GLI-067 : this table [".$table."] haven't primary key !");
+                throw new Exception("GLI-067 : this table [".$table."] haven't primary key !");
             } else {
                 while ($ob = $this->sql_fetch_object($res)) {
 
