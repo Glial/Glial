@@ -674,6 +674,13 @@ class Mysql extends Sql
                 }
 
                 $this->variables['is_proxysql'] = $data['Value'];
+
+                $versionComment = strtolower((string)($data[0] ?? ''));
+                if (str_contains($versionComment, 'singlestore') || str_contains($versionComment, 'memsql')) {
+                    $this->variables['is_single_store'] = 1;
+                } else {
+                    $this->variables['is_single_store'] = 0;
+                }
             }
         }
 
