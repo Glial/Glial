@@ -78,14 +78,32 @@ class Mysql extends Sql
         mysqli_options($this->link, MYSQLI_OPT_CONNECT_TIMEOUT, $timeout);
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-        if ($ssl == "1")
-        {
-            mysqli_options($this->link, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, false);
-            mysqli_ssl_set($this->link, null, null, null, null, null);
-            mysqli_real_connect($this->link, $host, $login, $password, $dbname, $port, null, MYSQLI_CLIENT_SSL);
+        $connectionWarning = null;
+
+        set_error_handler(static function ($severity, $message, $file, $line) use (&$connectionWarning) {
+            $connectionWarning = $message;
+            return true;
+        });
+
+        try {
+            if ($ssl == "1")
+            {
+                mysqli_options($this->link, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, false);
+                mysqli_ssl_set($this->link, null, null, null, null, null);
+                mysqli_real_connect($this->link, $host, $login, $password, $dbname, $port, null, MYSQLI_CLIENT_SSL);
+            }
+            else{
+                mysqli_real_connect($this->link, $host, $login, $password, $dbname, $port);
+            }
+        } catch (\Throwable $e) {
+            restore_error_handler();
+            throw new Exception($e->getMessage(), (int) $e->getCode(), $e);
         }
-        else{
-            mysqli_real_connect($this->link, $host, $login, $password, $dbname, $port);
+
+        restore_error_handler();
+
+        if (! empty($connectionWarning)) {
+            throw new Exception($connectionWarning, 60);
         }
 
         $this->db   = $dbname;

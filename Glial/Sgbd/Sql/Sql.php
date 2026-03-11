@@ -198,6 +198,15 @@ abstract class Sql
         $my_table = Singleton::getInstance('application\\model\\'.$model_name.'\\'.$table2);
         $validate = $my_table->validate;
 
+        // Le cache TMP/database/*.table.txt peut être obsolète (ex: nouveau champ ajouté en base/modèle).
+        // On fusionne avec la liste des champs du modèle pour éviter de dropper silencieusement
+        // des colonnes valides lors du filtrage des clés à sauver.
+        $allowed_fields = $this->_table[$table]['field'] ?? array();
+        if (!empty($my_table->field) && is_array($my_table->field)) {
+            $allowed_fields = array_values(array_unique(array_merge($allowed_fields, $my_table->field)));
+            $this->_table[$table]['field'] = $allowed_fields;
+        }
+
         //debug($validate);
 
         foreach ($keys as $field) {
@@ -255,7 +264,7 @@ abstract class Sql
 
         for ($i = 0; $i < $nb; $i++) {
 
-            if (!in_array($keys[$i], $this->_table[$table]['field'])) {
+            if (!in_array($keys[$i], $allowed_fields, true)) {
                 unset($data[$table][$keys[$i]]);
                 unset($keys[$i]);
             } else {
