@@ -96,6 +96,7 @@ class MasterSlave {
 
                 $tab_ret = array();
                 while ($arr = $this->instance->sql_fetch_array($res, MYSQLI_ASSOC)) {
+                    $arr = Mysql::normalizeReplicationStatusRow($arr);
                     $tab_ret[] = $arr;
                 }
                 return $tab_ret;

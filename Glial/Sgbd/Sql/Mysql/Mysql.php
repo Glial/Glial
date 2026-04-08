@@ -46,6 +46,36 @@ class Mysql extends Sql
 
     static public $proxysql_variables = [];
 
+    public static function normalizeReplicationStatusRow(array $row): array
+    {
+        $aliases = [
+            'Source_Host' => 'Master_Host',
+            'Source_Port' => 'Master_Port',
+            'Source_Log_File' => 'Master_Log_File',
+            'Read_Source_Log_Pos' => 'Read_Master_Log_Pos',
+            'Relay_Source_Log_File' => 'Relay_Master_Log_File',
+            'Exec_Source_Log_Pos' => 'Exec_Master_Log_Pos',
+            'Replica_IO_Running' => 'Slave_IO_Running',
+            'Replica_SQL_Running' => 'Slave_SQL_Running',
+            'Replica_IO_State' => 'Slave_IO_State',
+            'Replica_SQL_Running_State' => 'Slave_SQL_Running_State',
+            'Seconds_Behind_Source' => 'Seconds_Behind_Master',
+            'Channel_Name' => 'Connection_name',
+        ];
+
+        foreach ($aliases as $sourceKey => $legacyKey) {
+            if (isset($row[$sourceKey]) && !isset($row[$legacyKey])) {
+                $row[$legacyKey] = $row[$sourceKey];
+            }
+
+            if (isset($row[$legacyKey]) && !isset($row[$sourceKey])) {
+                $row[$sourceKey] = $row[$legacyKey];
+            }
+        }
+
+        return $row;
+    }
+
     /*
      * Store in array cash
      */
@@ -129,16 +159,27 @@ class Mysql extends Sql
         } else {
             $this->is_connected = true;
 
-            /*
-             * test on évite les A/R à la DB
-              mysqli_set_charset($this->link, 'utf8');
-              $this->_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
-              $this->_query("SET NAMES 'utf8'");
-
-             */
+            $this->applyConnectionCharset();
         }
 
         return $this->link;
+    }
+
+    private function applyConnectionCharset(): void
+    {
+        foreach (['utf8mb4', 'utf8'] as $charset) {
+            try {
+                mysqli_set_charset($this->link, $charset);
+                $this->_query(
+                    "SET character_set_results = '".$charset."', "
+                    ."character_set_client = '".$charset."', "
+                    ."character_set_connection = '".$charset."'"
+                );
+                return;
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
     }
     /*
      * @since Glial 1.0
@@ -919,6 +960,7 @@ class Mysql extends Sql
                 return $tab_ret;
             } else {
                 while ($arr     = $this->sql_fetch_array($res, MYSQLI_ASSOC)) {
+                    $arr = self::normalizeReplicationStatusRow($arr);
                     $tab_ret[] = $arr;
                 }
 
