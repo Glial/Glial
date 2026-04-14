@@ -1024,6 +1024,16 @@ class Mysql extends Sql
             return true;
         }
 
+        // MariaDB 10.5+ renamed REPLICATION CLIENT to BINLOG MONITOR
+        if (in_array("BINLOG MONITOR", $grants)) {
+            return true;
+        }
+
+        // MySQL 8.0.26+ alias for REPLICATION CLIENT
+        if (in_array("REPLICA MONITOR", $grants)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -1330,11 +1340,12 @@ class Mysql extends Sql
         $enterprise = false;
 
         if (strpos($version, "-")) {
-            $number = explode("-", $version)[0];
-            $fork   = explode("-", $version)[1];
+            $parts = explode("-", $version);
+            $number = $parts[0];
+            $fork   = $parts[1] ?? 'MySQL';
             
-            if (preg_match('/^-?\d+$/', $fork)) {
-                $fork   = explode("-", $version)[2];
+            if (preg_match('/^-?\d+$/', $fork) && !empty($parts[2])) {
+                $fork   = $parts[2];
                 $enterprise = true;
             }
         } else {
