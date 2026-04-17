@@ -486,7 +486,8 @@ use Exception;
                 if ($out) {
                     $res = self::$_translations[self::$_md5File][$key];
                 } else {
-                    $res = '<span id="'.$key.'">'.$string.'</span>';
+                    // No translation found — return source text as clean fallback
+                    $res = $string;
                 }
             }
 
@@ -575,6 +576,11 @@ use Exception;
                     self::$_translations[self::$_md5File][$ob->key] = htmlentities($ob->final_text); //to prevent unwanted quote or double quote from transatlion
                 }
                 self::$countNumberElemAtLoading[self::$_md5File] = 0;
+
+                // Persist .ini cache immediately so subsequent requests skip the DB
+                if (!empty(self::$_translations[self::$_md5File]) && is_dir(self::$_path) && is_writable(self::$_path)) {
+                    self::writeIniFile(self::$_translations[self::$_md5File], self::$file_path);
+                }
             }
         }
 
