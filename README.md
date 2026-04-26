@@ -32,6 +32,57 @@ Simply add a dependency on glial/glial to your project's composer.json file if y
 }
 ```
 
+If your application uses the scoped CSRF helper or same-site request helper,
+require Glial 5.1.40 or newer in the 5.1 series:
+
+```json
+{
+    "require": {
+        "glial/glial": ">=5.1.40 <5.2"
+    }
+}
+```
+
+<h2>Security helpers since 5.1.40</h2>
+
+Glial 5.1.40 adds reusable helpers for POST hardening:
+
+* `Glial\Security\Csrf` keeps the historical `token()`, `field()` and
+  `verify()` API, and adds scoped tokens for endpoints that need independent
+  CSRF state.
+* `Glial\Http\Request` centralizes method checks and same-site validation with
+  `Origin` first, then `Referer` fallback. The comparison uses scheme, host and
+  port, and rejects ambiguous sources such as `Origin: null`, protocol-relative
+  URLs and relative URLs.
+
+Example for a form or inline edit endpoint:
+
+```php
+use Glial\Security\Csrf;
+
+$token = Csrf::issueToken($_SESSION, 'worker.update');
+```
+
+```php
+use Glial\Http\Request;
+use Glial\Security\Csrf;
+
+if (!Request::isMethod($_SERVER, 'POST')) {
+    http_response_code(405);
+    exit;
+}
+
+if (!Request::isSameSite($_SERVER)) {
+    http_response_code(403);
+    exit;
+}
+
+if (!Csrf::validateToken($_POST, $_SESSION, 'worker.update')) {
+    http_response_code(403);
+    exit;
+}
+```
+
 <h2>Why use Glial?</h2>
 
 <h3>Build application quickly</h3>
@@ -125,7 +176,6 @@ Each controller/action, will be checked by auth, to decide to display or not. Mo
 
 We decided to use PHP, and not an engine of template because nobody can be faster than PHP only, and the goal of Glial it's to focus on developement.
 And not spend time to learn a new language even it's easy.
-
 
 
 
