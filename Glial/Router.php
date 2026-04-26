@@ -5,25 +5,21 @@ include_once(CONFIG."router.config.php");
 
 if (empty($_GET['glial_path'])) {
 
-    //$_GET['path'] = ROUTE_DEFAULT;
+    $_LG_choice = explode(",", LANGUAGE_AVAILABLE);
 
-    if (empty($_SESSION['language'])) {
+    if (empty($_SESSION['language']) || !in_array($_SESSION['language'], $_LG_choice)) {
+        // Detect from Accept-Language header; fall back to EN
+        $lgnew = 'en';
         if (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            $_LG_choice = explode(",", LANGUAGE_AVAILABLE);
-
-            $lgnew = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-            if (in_array($lgnew, $_LG_choice)) {
-                $_SESSION['language'] = $lgnew;
-            } else {
-                $_SESSION['language'] = "en";
+            $detected = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
+            if (in_array($detected, $_LG_choice)) {
+                $lgnew = $detected;
             }
-        } else {
-            $_SESSION['language'] = "en";
         }
+        $_SESSION['language'] = $lgnew;
     }
 
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Status: 301 Moved Permanently", false, 301);
+    header("HTTP/1.1 302 Found");
     header("Location: ".WWW_ROOT.$_SESSION['language']."/".ROUTE_DEFAULT);
     exit;
 }
@@ -55,6 +51,10 @@ class Router
         $lang_available = explode(",", LANGUAGE_AVAILABLE);
 
         if (!in_array($_GET['lg'], $lang_available)) {
+            // Unknown lang segment → redirect to EN equivalent of the same path
+            $rest = implode('/', array_slice($tab, 1));
+            header('HTTP/1.1 302 Found');
+            header('Location: '.WWW_ROOT.'en/'.ltrim($rest, '/'));
             exit;
         }
 

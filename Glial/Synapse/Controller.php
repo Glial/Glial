@@ -77,6 +77,10 @@ class Controller
 
     final public function setDi($di)
     {
+        if (empty($di['js'])) {
+            $di['js'] = new Javascript();
+        }
+
         $this->di = $di;
     }
 

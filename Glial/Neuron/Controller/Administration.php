@@ -19,8 +19,6 @@ trait Administration
     function admin_table()
     {
         if (IS_CLI) {
-
-            $this->view        = false;
             $this->layout_name = false;
         }
 

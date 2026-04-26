@@ -15,7 +15,7 @@
      "require": {
          "php": ">=7.0",
          "monolog/monolog": "1.*",
-         "jdorn/sql-formatter": "1.2.*",
+         "doctrine/sql-formatter": "^1.5",
 	 "phpseclib/mcrypt_compat": "*"
      },
      "autoload": {

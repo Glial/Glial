@@ -83,6 +83,23 @@ abstract class Sql
 
     }
 
+    /**
+     * Truncate a SQL string for logging: keep first $head and last $tail chars.
+     */
+    public static function truncateSqlForLog(string $sql, int $maxLen = 20480): string
+    {
+        if (strlen($sql) <= $maxLen) {
+            return $sql;
+        }
+
+        $half = intdiv($maxLen, 2);
+        $skipped = strlen($sql) - $maxLen;
+
+        return substr($sql, 0, $half)
+            . "\n\n[... truncated " . $skipped . " chars ...]\n\n"
+            . substr($sql, -$half);
+    }
+
     //function mutualised
 
     final public function sql_query($sql, $table = "", $type = "")
@@ -113,7 +130,9 @@ abstract class Sql
                 $indice = 1;
             }
 
-            $msg = "[".date("Y-m-d H:i:s")."] (".$this->host.":".$this->port.") SQL : ".Color::getColoredString($sql, "yellow")."\n".Color::getColoredString("Error (".$this->_error_num().") : ".$this->_error(),
+            $logSql = self::truncateSqlForLog($sql);
+
+            $msg = "[".date("Y-m-d H:i:s")."] (".$this->host.":".$this->port.") SQL : ".Color::getColoredString($logSql, "yellow")."\n".Color::getColoredString("Error (".$this->_error_num().") : ".$this->_error(),
                     "grey", "red")."".
                 "\nFILE : ".$called_from[$indice]['file']." LINE : ".$called_from[$indice]['line']."\n";
 
@@ -121,7 +140,7 @@ abstract class Sql
             if (IS_CLI) {
                 fwrite(STDERR, $msg);
             } else {
-                echo "[".date("Y-m-d H:i:s")."] SQL : $sql<br /><b>ERROR ".$this->_error_num()." : ".$this->_error()."</b>".
+                echo "[".date("Y-m-d H:i:s")."] SQL : ".$logSql."<br /><b>ERROR ".$this->_error_num()." : ".$this->_error()."</b>".
                 "<br />FILE : ".$called_from[$indice]['file'].":".$called_from[$indice]['line']."<br />";
             }
             error_log($msg, 3, TMP."log/sql.log");

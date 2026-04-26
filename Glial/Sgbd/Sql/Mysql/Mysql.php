@@ -167,7 +167,16 @@ class Mysql extends Sql
 
     private function applyConnectionCharset(): void
     {
-        foreach (['utf8mb4', 'utf8'] as $charset) {
+        // Detect version from the connection handshake (no SQL query)
+        // to skip utf8mb4 on servers older than MySQL 5.5.3.
+        $charsets = ['utf8mb4', 'utf8'];
+        $serverInfo = $this->link->server_info ?? '';
+        $numVer = preg_replace('/[^0-9.].*/', '', $serverInfo);
+        if ($numVer !== '' && version_compare($numVer, '5.5.3', '<')) {
+            $charsets = ['utf8'];
+        }
+
+        foreach ($charsets as $charset) {
             try {
                 mysqli_set_charset($this->link, $charset);
                 $this->_query(
@@ -230,16 +239,18 @@ class Mysql extends Sql
 
             $level = 60;
 
+            $logSql = \Glial\Sgbd\Sql\Sql::truncateSqlForLog($sql);
+
             \SqlFormatter::$cli = true;
             $msg = Color::getColoredString("\n[".date("Y-m-d H:i:s")."]", "purple")
             ." 🔴 ".Color::getColoredString("[ ERROR ] ", "black", "red")."(".$this->host.":".$this->port.")\n"
             .Color::getColoredString(mysqli_error($this->link),"black","red")."\n"
             .$file.":".$line."\n"
-            .\SqlFormatter::format($sql);
+            .\SqlFormatter::format($logSql);
 
             error_log($msg."\n", 3, TMP."log/sql.log");
 
-            throw new Exception("GLI-562 : ERROR SQL : (".$this->host.":".$this->port.") {".$file.":".$line.", ERROR: ".mysqli_error($this->link)."}\n$sql", $level);
+            throw new Exception("GLI-562 : ERROR SQL : (".$this->host.":".$this->port.") {".$file.":".$line.", ERROR: ".mysqli_error($this->link)."}\n".$logSql, $level);
         }
 
         if (mysqli_warning_count($this->link)) {
@@ -263,9 +274,11 @@ class Mysql extends Sql
                     $table = new Table(2);
                     $table->addHeader(array(" Level ", " Code ", " Message "));
 
+                    $logSql = \Glial\Sgbd\Sql\Sql::truncateSqlForLog($sql);
+
                     $msg = Color::getColoredString("[".date("Y-m-d H:i:s")."]", "purple")
                     ." (".$this->host.":".$this->port.") ".Color::getColoredString(" [SHOW WARNINGS] ", "black", "yellow")."\n"
-                        .\SqlFormatter::format($sql)."\n";
+                        .\SqlFormatter::format($logSql)."\n";
 
                     $msg .= Color::getColoredString($file.":".$line, "cyan")."\n";
 
@@ -1335,35 +1348,46 @@ class Mysql extends Sql
 
     static public function getMySQLNumVersion($version, $comment)
     {
-        //10.6.19-15-MariaDB-enterprise-log
-        // need make test with that
+        // Examples:
+        //   8.0.32                              → number=8.0.32, fork=MySQL, enterprise=false
+        //   8.0.44-log                          → number=8.0.44, fork=log, enterprise=false
+        //   10.11.16-MariaDB                    → fork=MariaDB, enterprise=false
+        //   10.6.19-MariaDB-log                 → fork=MariaDB, enterprise=false
+        //   10.11.16-15                         → fork=15, enterprise=true   (numeric build suffix)
+        //   10.6.19-15-MariaDB-enterprise-log   → fork=MariaDB, enterprise=true
+        //   8.4.8-8   + Percona comment         → fork=Percona, enterprise=true
+        //   5.5.30    + ProxySQL comment        → fork=ProxySQL, enterprise=false
         $enterprise = false;
 
-        if (strpos($version, "-")) {
-            $parts = explode("-", $version);
+        if (strpos($version, "-") !== false) {
+            $parts  = explode("-", $version);
             $number = $parts[0];
-            $fork   = $parts[1] ?? 'MySQL';
-            
-            if (preg_match('/^-?\d+$/', $fork) && !empty($parts[2])) {
-                $fork   = $parts[2];
+            $second = $parts[1] ?? 'MySQL';
+
+            if (preg_match('/^\d+$/', $second)) {
+                // Numeric build/release number after version → enterprise/release build.
                 $enterprise = true;
+                // Prefer the 3rd segment as fork (e.g. "MariaDB"); fall back to the numeric string itself.
+                $fork = !empty($parts[2]) ? $parts[2] : $second;
+            } else {
+                $fork = $second;
             }
         } else {
             $number = $version;
-            $fork = 'MySQL';
+            $fork   = 'MySQL';
         }
 
-        $pos = strpos(strtolower($comment), "percona");
-        if ($pos !== false) {
+        $lowerComment = strtolower((string) $comment);
+
+        if (strpos($lowerComment, "percona") !== false) {
             $fork = "Percona";
         }
 
-        $pos = strpos(strtolower($comment), "proxysql");
-        if ($pos !== false) {
+        if (strpos($lowerComment, "proxysql") !== false) {
             $fork = "ProxySQL";
         }
 
-        return array('number'=>$number, 'fork'=> $fork, 'enterprise'=> $enterprise);
+        return array('number' => $number, 'fork' => $fork, 'enterprise' => $enterprise);
     }
 
 }
