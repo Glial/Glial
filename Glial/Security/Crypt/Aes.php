@@ -36,13 +36,9 @@ class Aes {
          * @param string $iv 
          */
         function __construct($key=null,$options=array()) {
-                
-                // Make sure php mcrypt is available here
-                /*
-		if(!function_exists('mcrypt_decrypt')) {
-                        throw new Exception("Required PHP dependency library 'mcrypt' is not available - http://php.net/manual/en/book.mcrypt.php");
-                }*/
-                
+
+                // Encryption is backed by OpenSSL (ext-openssl), bundled with PHP.
+
                 // The options to use
                 $this->options = array_merge(
                         array(
@@ -207,13 +203,15 @@ class Aes {
                 }
 
                $this->_preChecks($key);
- 				
-                // encrypt the data
-                $data = mcrypt_decrypt(
-                        MCRYPT_RIJNDAEL_128,    // AES is RIJNDAEL with a block size of 128 bits only
-                        $key,                   // secret key - NOTE: key size determines AES_128, AES_192 or AES_256
-                        substr($data_with_iv_suffix,0,(strlen($data_with_iv_suffix)-16)), // the data with the last 128 bytes (16 chars) removed since that part is the iv
-                        MCRYPT_MODE_CBC,        // cipher mode
+
+                // decrypt the data — OpenSSL replacement for the removed mcrypt
+                // extension. RIJNDAEL_128 == AES; the key length selects the
+                // AES variant, the last 16 bytes are the IV (CBC, zero padding).
+                $data = openssl_decrypt(
+                        substr($data_with_iv_suffix,0,(strlen($data_with_iv_suffix)-16)), // ciphertext (IV suffix removed)
+                        $this->_opensslCipher($key),                                      // aes-128/192/256-cbc
+                        $key,                                                             // secret key
+                        OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,                           // raw bytes, mcrypt-style zero padding
                         substr($data_with_iv_suffix,(strlen($data_with_iv_suffix)-16),16) // the iv
                 );
                 
@@ -243,20 +241,41 @@ class Aes {
 
                 $this->_preChecks($key);
                 
-                // Choose a good random iv -> 16chars * 8bits = 128 block size for MCRYPT_RIJNDAEL_128
+                // Choose a good random iv -> 16chars * 8bits = 128 block size for AES (RIJNDAEL_128)
                 $iv = $this->keygen(md5(mt_rand(0,1000000000)).md5(mt_rand(0,1000000000)),16);
-                
-                // encrypt the data
-                $data = mcrypt_encrypt(
-                        MCRYPT_RIJNDAEL_128,    // AES is RIJNDAEL with a block size of 128 bits only
-                        $key,                   // secret key - NOTE: key size determines AES_128, AES_192 or AES_256
-                        $data,                  // data to encrypt
-                        MCRYPT_MODE_CBC,        // cipher mode
-                        $iv                     // the random iv
+
+                // mcrypt zero-padded the plaintext up to the 16-byte block size.
+                // OPENSSL_ZERO_PADDING disables OpenSSL's own (PKCS#7) padding,
+                // so we reproduce the zero padding here for byte compatibility.
+                $pad = 16 - (strlen($data) % 16);
+                if ($pad !== 16) {
+                        $data .= str_repeat("\0", $pad);
+                }
+
+                // encrypt the data — OpenSSL replacement for the removed mcrypt extension
+                $data = openssl_encrypt(
+                        $data,                                  // data to encrypt (zero-padded)
+                        $this->_opensslCipher($key),            // aes-128/192/256-cbc
+                        $key,                                   // secret key
+                        OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, // raw bytes, padding handled above
+                        $iv                                     // the random iv
                 );
-                
+
                 // Append the iv at the end, the return data is useless without knowing it
                 return $data.$iv;
+        }
+
+        /**
+         * _opensslCipher
+         *
+         * Map the (already length-validated) key to its AES-CBC cipher name,
+         * matching the strength MCRYPT_RIJNDAEL_128 selected from the key size.
+         *
+         * @param string $key
+         * @return string aes-128-cbc | aes-192-cbc | aes-256-cbc
+         */
+        protected function _opensslCipher($key) {
+                return 'aes-' . (strlen($key) * 8) . '-cbc';
         }
         
         
