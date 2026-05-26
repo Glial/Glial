@@ -120,28 +120,24 @@ abstract class Sql
         $this->res  = "";
         $this->stid = "";
 
-        $called_from = debug_backtrace();
+        $called_from = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $caller      = $this->getSqlQueryCaller($called_from);
         $startmtime  = microtime(true);
 
         if (!$res = $this->_query($sql)) {
-
-            $indice = 0;
-            if (strstr($called_from[0]['file'], "/Sgbd/Sql/Sql.php")) {
-                $indice = 1;
-            }
 
             $logSql = self::truncateSqlForLog($sql);
 
             $msg = "[".date("Y-m-d H:i:s")."] (".$this->host.":".$this->port.") SQL : ".Color::getColoredString($logSql, "yellow")."\n".Color::getColoredString("Error (".$this->_error_num().") : ".$this->_error(),
                     "grey", "red")."".
-                "\nFILE : ".$called_from[$indice]['file']." LINE : ".$called_from[$indice]['line']."\n";
+                "\nFILE : ".$caller['file']." LINE : ".$caller['line']."\n";
 
             //error
             if (IS_CLI) {
                 fwrite(STDERR, $msg);
             } else {
                 echo "[".date("Y-m-d H:i:s")."] SQL : ".$logSql."<br /><b>ERROR ".$this->_error_num()." : ".$this->_error()."</b>".
-                "<br />FILE : ".$called_from[$indice]['file'].":".$called_from[$indice]['line']."<br />";
+                "<br />FILE : ".$caller['file'].":".$caller['line']."<br />";
             }
             error_log($msg, 3, TMP."log/sql.log");
         }
@@ -152,8 +148,8 @@ abstract class Sql
 
         $this->query[$this->number_of_query]['query'] = $sql;
         $this->query[$this->number_of_query]['time']  = $totaltime;
-        $this->query[$this->number_of_query]['file']  = $called_from[0]['file'];
-        $this->query[$this->number_of_query]['line']  = $called_from[0]['line'];
+        $this->query[$this->number_of_query]['file']  = $caller['file'];
+        $this->query[$this->number_of_query]['line']  = $caller['line'];
         $this->query[$this->number_of_query]['cumulate']  = round(microtime(true) - $this->time_start, 5);;
 
         $this->rows_affected = $this->sql_affected_rows();
@@ -164,6 +160,27 @@ abstract class Sql
         $this->number_of_query++;
 
         return $res;
+    }
+
+    private function getSqlQueryCaller($called_from)
+    {
+        foreach ($called_from as $frame) {
+            if (empty($frame['file'])) {
+                continue;
+            }
+
+            $file = str_replace('\\', '/', $frame['file']);
+            if (strpos($file, '/Sgbd/Sql/') !== false) {
+                continue;
+            }
+
+            return array(
+                'file' => $frame['file'],
+                'line' => isset($frame['line']) ? $frame['line'] : 0,
+            );
+        }
+
+        return array('file' => '?', 'line' => 0);
     }
 
     /**

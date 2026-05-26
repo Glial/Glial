@@ -1,8 +1,9 @@
 <?php
+
 namespace Glial\Security;
 
 /**
- * CSRF token helper — session-scoped, rotated after verification.
+ * CSRF token helper - session-scoped, rotated after verification by default.
  *
  * Usage in a form:
  *   echo Csrf::field();
@@ -12,40 +13,112 @@ namespace Glial\Security;
  */
 class Csrf
 {
-    private const SESSION_KEY = '_csrf_token';
+    public const DEFAULT_FIELD = '_csrf_token';
+
+    private const DEFAULT_SCOPE = '_default';
+    private const DEFAULT_SESSION_KEY = '_csrf_token';
+    private const SCOPED_SESSION_KEY = '_csrf_tokens';
 
     /**
-     * Return the current session token, generating one on first call.
+     * Return the current token for a scope, generating one on first call.
      */
-    public static function token(): string
+    public static function token(string $scope = self::DEFAULT_SCOPE): string
     {
-        if (empty($_SESSION[self::SESSION_KEY])) {
-            $_SESSION[self::SESSION_KEY] = bin2hex(random_bytes(32));
+        return self::issueToken($_SESSION, $scope);
+    }
+
+    public static function issueToken(array &$session, string $scope = self::DEFAULT_SCOPE): string
+    {
+        if ($scope === self::DEFAULT_SCOPE) {
+            if (empty($session[self::DEFAULT_SESSION_KEY]) || !is_string($session[self::DEFAULT_SESSION_KEY])) {
+                $session[self::DEFAULT_SESSION_KEY] = self::generateToken();
+            }
+
+            return $session[self::DEFAULT_SESSION_KEY];
         }
-        return $_SESSION[self::SESSION_KEY];
+
+        if (
+            empty($session[self::SCOPED_SESSION_KEY][$scope])
+            || !is_string($session[self::SCOPED_SESSION_KEY][$scope])
+        ) {
+            $session[self::SCOPED_SESSION_KEY][$scope] = self::generateToken();
+        }
+
+        return $session[self::SCOPED_SESSION_KEY][$scope];
     }
 
     /**
      * Hidden input tag containing the current token.
      */
-    public static function field(): string
-    {
-        return '<input type="hidden" name="_csrf_token" value="'
-            . htmlspecialchars(self::token(), ENT_QUOTES) . '">';
+    public static function field(
+        string $scope = self::DEFAULT_SCOPE,
+        string $field = self::DEFAULT_FIELD
+    ): string {
+        $field = htmlspecialchars($field, ENT_QUOTES, 'UTF-8');
+        $token = htmlspecialchars(self::token($scope), ENT_QUOTES, 'UTF-8');
+
+        return '<input type="hidden" name="' . $field . '" value="' . $token . '">';
+    }
+
+    public static function validateToken(
+        array $request,
+        array $session,
+        string $scope = self::DEFAULT_SCOPE,
+        string $field = self::DEFAULT_FIELD
+    ): bool {
+        $expected = self::getTokenFromSession($session, $scope);
+        $provided = $request[$field] ?? null;
+
+        return is_string($expected)
+            && is_string($provided)
+            && $expected !== ''
+            && hash_equals($expected, $provided);
     }
 
     /**
-     * Verify $_POST['_csrf_token'] matches the session token.
-     * On success, rotate the token to prevent replay.
+     * Verify a posted token against the current session token.
+     * On success, rotate the token by default to prevent replay.
      */
-    public static function verify(): bool
-    {
-        $posted = $_POST['_csrf_token'] ?? '';
-        $stored = $_SESSION[self::SESSION_KEY] ?? '';
-        if ($stored === '' || !hash_equals($stored, $posted)) {
+    public static function verify(
+        string $scope = self::DEFAULT_SCOPE,
+        ?string $posted = null,
+        bool $rotate = true,
+        string $field = self::DEFAULT_FIELD
+    ): bool {
+        $request = [$field => $posted ?? ($_POST[$field] ?? null)];
+
+        if (!self::validateToken($request, $_SESSION, $scope, $field)) {
             return false;
         }
-        $_SESSION[self::SESSION_KEY] = bin2hex(random_bytes(32));
+
+        if ($rotate) {
+            self::rotate($scope);
+        }
+
         return true;
+    }
+
+    public static function rotate(string $scope = self::DEFAULT_SCOPE): void
+    {
+        if ($scope === self::DEFAULT_SCOPE) {
+            unset($_SESSION[self::DEFAULT_SESSION_KEY]);
+            return;
+        }
+
+        unset($_SESSION[self::SCOPED_SESSION_KEY][$scope]);
+    }
+
+    private static function getTokenFromSession(array $session, string $scope): ?string
+    {
+        if ($scope === self::DEFAULT_SCOPE) {
+            return $session[self::DEFAULT_SESSION_KEY] ?? null;
+        }
+
+        return $session[self::SCOPED_SESSION_KEY][$scope] ?? null;
+    }
+
+    private static function generateToken(): string
+    {
+        return bin2hex(random_bytes(32));
     }
 }
