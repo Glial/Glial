@@ -131,8 +131,7 @@ $lg = explode(",", LANGUAGE_AVAILABLE);
 
 if (!in_array($_SESSION['language'], $lg)) {
     $_SESSION['URL_404'] = $_SERVER['QUERY_STRING'];
-    header("location: ".WWW_ROOT.I18n::Get()."/error_web/error404/");
-
+    http_response_code(404);
 
     Glial::getOut();
 }
@@ -224,7 +223,7 @@ if (IS_CLI) {
 
         set_flash("error", __("Error 404"),
             __("Page not found")." : ".__("Sorry, the page you requested :")." \"".$_SYSTEM['controller']."/".$_SYSTEM['action']."\" ".__("is not on this server. Please contact us if you have questions or concerns"));
-        header("location: ".LINK."ErrorWeb/error404/".$_SYSTEM['controller']."/".$_SYSTEM['action']);
+        http_response_code(404);
         Glial::getOut();
     }
 }
