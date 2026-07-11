@@ -100,10 +100,21 @@ class Form
 
         $tab_to_compare = array();
         if (self::$select_multiple === true) {
-
-            if (!empty($_GET[$table][$field])) {
-                $tab_to_compare = explode(",", substr($_GET[$table][$field], 1, -1));
+            $selection = $default_id;
+            if (isset($_GET[$table]) && is_array($_GET[$table])) {
+                if (
+                    $indice !== -1
+                    && isset($_GET[$table][$indice])
+                    && is_array($_GET[$table][$indice])
+                    && array_key_exists($field, $_GET[$table][$indice])
+                ) {
+                    $selection = $_GET[$table][$indice][$field];
+                } elseif (array_key_exists($field, $_GET[$table])) {
+                    $selection = $_GET[$table][$field];
+                }
             }
+
+            $tab_to_compare = self::normalizeSelectValues($selection);
         }
 
         //debug($tab_to_compare);
@@ -147,9 +158,19 @@ class Form
                     }
                 }
 
-                if ((!empty($_GET[$table][$field]) && $_GET[$table][$field] == $val['id']) || (!empty($default_id) && $default_id == $val['id'] && self::$select_multiple === false) || (!empty($_GET[$table][$field])
-                    && self::$select_multiple === true && in_array($val['id'], $tab_to_compare))
-                ) {
+                if (self::$select_multiple === true) {
+                    $selected = in_array((string) $val['id'], $tab_to_compare, true);
+                } else {
+                    $selected = (
+                        !empty($_GET[$table][$field])
+                        && $_GET[$table][$field] == $val['id']
+                    ) || (
+                        !empty($default_id)
+                        && $default_id == $val['id']
+                    );
+                }
+
+                if ($selected) {
                     
 
                     $ret .= "<option value=\"".$val['id']."\" selected=\"selected\" $style $disable$extra>".$val['libelle']."</option>\n";
@@ -169,6 +190,73 @@ class Form
         self::$select_multiple = false;
 
         return $ret;
+    }
+
+    /**
+     * Normalize multi-select values from current arrays, JSON payloads and
+     * legacy bracketed/comma-separated strings.
+     *
+     * @param mixed $selection
+     * @return array<int,string>
+     */
+    static private function normalizeSelectValues($selection)
+    {
+        $current = $selection;
+
+        for ($depth = 0; $depth < 5 && is_string($current); $depth++) {
+            $text = trim($current);
+            if ($text === '') {
+                return array();
+            }
+
+            $decoded = json_decode($text, true, 512, JSON_BIGINT_AS_STRING);
+            if (json_last_error() !== JSON_ERROR_NONE || (!is_array($decoded) && !is_string($decoded))) {
+                break;
+            }
+
+            $current = $decoded;
+        }
+
+        if (is_array($current)) {
+            $values = array_values($current);
+        } elseif (is_scalar($current)) {
+            $text = trim((string) $current);
+            if ($text === '') {
+                return array();
+            }
+
+            if (strlen($text) >= 2 && $text[0] === '[' && $text[strlen($text) - 1] === ']') {
+                $text = substr($text, 1, -1);
+            }
+
+            $values = str_getcsv($text, ',', '"', '\\');
+        } else {
+            return array();
+        }
+
+        $normalized = array();
+        foreach ($values as $value) {
+            if (!is_scalar($value)) {
+                continue;
+            }
+
+            $value = trim((string) $value);
+            while (strlen($value) >= 2) {
+                $first = $value[0];
+                $last = $value[strlen($value) - 1];
+                if (($first !== '"' || $last !== '"') && ($first !== "'" || $last !== "'")) {
+                    break;
+                }
+
+                $value = trim(substr($value, 1, -1));
+            }
+
+            if ($value !== '') {
+                $normalized[$value] = true;
+            }
+        }
+
+        return array_map('strval', array_keys($normalized));
     }
 
     static public function checkBox($table, $field, $value, $text, $options = array())
