@@ -51,7 +51,7 @@ class Form
             $name = $table."[".$field."]";
         }
 
-        return "<input id=\"".$id."\" name=\"".$name."\" ".$extra." />".$error;
+        return "<input id=\"".self::escapeAttribute($id)."\" name=\"".self::escapeAttribute($name)."\" ".$extra." />".$error;
     }
 
     static public function select($table, $field, $data, $default_id = "", $options = array(), $indice = -1)
@@ -85,14 +85,17 @@ class Form
 
         if (!self::$ajax) {
             if ($indice != -1) {
-                $ret .= "<select id=\"".$table."-".$indice."-".$field."\" $extra name=\"".$table."[".$indice."]"."[".$field."]".$add_array."\">\n";
+                $id   = $table."-".$indice."-".$field;
+                $name = $table."[".$indice."]"."[".$field."]".$add_array;
             } else {
-                $ret .= "<select id=\"".$table."-".$field."\" $extra name=\"".$table."[".$field."]".$add_array."\">\n";
+                $id   = $table."-".$field;
+                $name = $table."[".$field."]".$add_array;
             }
+            $ret .= "<select id=\"".self::escapeAttribute($id)."\" $extra name=\"".self::escapeAttribute($name)."\">\n";
         }
 
         if (count($data) != 1 && self::$select_display_msg) {
-            $ret .= "<option value=\"\">".__("Nothing selected")."</option>";
+            $ret .= "<option value=\"\">".self::escapeText(__("Nothing selected"))."</option>";
         }
 
         $i = 0;
@@ -123,20 +126,11 @@ class Form
             if (!empty($val['group']) && 1 === $val['group']) {
 
                 if ($i != 0) $ret .= "</optgroup>";
-                $ret .= "<optgroup LABEL=\"".$val['libelle']."\">";
+                $ret .= "<optgroup LABEL=\"".self::escapeAttribute($val['libelle'])."\">";
 
                 $i++;
             }
             else {
-                $option_to_option = '';
-                if (!empty($val['options'])) {
-                    if (is_array($val['options'])) {
-                        foreach ($val['options'] as $key_opt => $key_val) {
-                            $option_to_option .= ' '.$key_opt.'="'.$key_val.'" ';
-                        }
-                    }
-                }
-
                 $disable = "";
                 $style   = "";
                 if (!empty($val['error']) && $val['error'] === "1") {
@@ -154,7 +148,7 @@ class Form
                 if (!empty($val['extra'])) {
 
                     foreach ($val['extra'] as $opt => $v) {
-                        $extra .= ' '.$opt.'="'.$v.'"';
+                        $extra .= ' '.$opt.'="'.self::escapeAttribute($v).'"';
                     }
                 }
 
@@ -173,9 +167,9 @@ class Form
                 if ($selected) {
                     
 
-                    $ret .= "<option value=\"".$val['id']."\" selected=\"selected\" $style $disable$extra>".$val['libelle']."</option>\n";
+                    $ret .= "<option value=\"".self::escapeAttribute($val['id'])."\" selected=\"selected\" $style $disable$extra>".self::escapeText($val['libelle'])."</option>\n";
                 } else {
-                    $ret .= "<option value=\"".$val['id']."\" $style $disable$extra>".$val['libelle']."</option>\n";
+                    $ret .= "<option value=\"".self::escapeAttribute($val['id'])."\" $style $disable$extra>".self::escapeText($val['libelle'])."</option>\n";
                 }
             }
         }
@@ -263,7 +257,7 @@ class Form
     {
 
         return '<label class="checkbox-inline">'
-            .'<input type="checkbox" id="'.$table.'-'.$field.'" value="'.$value.'">'.$text.''
+            .'<input type="checkbox" id="'.self::escapeAttribute($table.'-'.$field).'" value="'.self::escapeAttribute($value).'">'.self::escapeText($text).''
             .'</label>';
     }
 
@@ -320,11 +314,11 @@ class Form
 
         if ($indice != -1) {
 //return "<input id=\"" . $table . "-" . $indice . "-" . $field . "\" class=\"" . $classo . "text" . $class . "\" type=\"text\" name=\"" . $table . "[" . $indice . "][" . $field . "]\" value=\"" . $value . "\" />" . $error;
-            return "<input id=\"".$table."-".$indice."-".$field."_auto\" $extra type=\"text\" name=\"".$table."[".$indice."][".$field."_auto]\" value=\"".$valueauto."\" />"
-                ."<input id=\"".$table."-".$indice."-".$field."\" name=\"".$table."[".$indice."][".$field."]\" class=\"auto\" type=\"hidden\" value=\"".$value."\" />".$error;
+            return "<input id=\"".self::escapeAttribute($table."-".$indice."-".$field."_auto")."\" $extra type=\"text\" name=\"".self::escapeAttribute($table."[".$indice."][".$field."_auto]")."\" value=\"".self::escapeAttribute($valueauto)."\" />"
+                ."<input id=\"".self::escapeAttribute($table."-".$indice."-".$field)."\" name=\"".self::escapeAttribute($table."[".$indice."][".$field."]")."\" class=\"auto\" type=\"hidden\" value=\"".self::escapeAttribute($value)."\" />".$error;
         } else {
-            return "<input id=\"".$table."-".$field."_auto\" $extra type=\"text\" name=\"".$table."[".$field."_auto]\" value=\"".$valueauto."\" />"
-                ."<input id=\"".$table."-".$field."\" name=\"".$table."[".$field."]\" class=\"hidden\" type=\"hidden\" value=\"".$value."\" />".$error;
+            return "<input id=\"".self::escapeAttribute($table."-".$field."_auto")."\" $extra type=\"text\" name=\"".self::escapeAttribute($table."[".$field."_auto]")."\" value=\"".self::escapeAttribute($valueauto)."\" />"
+                ."<input id=\"".self::escapeAttribute($table."-".$field)."\" name=\"".self::escapeAttribute($table."[".$field."]")."\" class=\"hidden\" type=\"hidden\" value=\"".self::escapeAttribute($value)."\" />".$error;
         }
     }
 
@@ -337,10 +331,22 @@ class Form
                 self::$select_multiple = true;
             }
 
-            $extra .= $key.'="'.$val.'" ';
+            $extra .= $key.'="'.self::escapeAttribute($val).'" ';
         }
 
         return $extra;
+    }
+
+    static private function escapeAttribute($value)
+    {
+        // Some legacy callers already encode values before calling Form.
+        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8", false);
+    }
+
+    static private function escapeText($value)
+    {
+        // Keep the same logical browser text for raw and already encoded callers.
+        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8", false);
     }
 
     static public function setAjax($val)
