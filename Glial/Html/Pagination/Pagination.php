@@ -198,7 +198,7 @@ class Pagination
 
     private function random_id()
     {
-        srand((double) microtime() * 1000000000);
+        srand((float) microtime() * 1000000000);
         return rand();
     }
 
